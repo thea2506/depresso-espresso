@@ -9,6 +9,7 @@ CMPUT404-project-socialdistribution
 ## Contributors:
 
 - Thea Nguyen thiminhh@ualberta.ca
+- Harshit Malik harshit1@ualberta.ca
 
 ## Licensing:
 
