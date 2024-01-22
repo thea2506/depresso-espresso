@@ -10,6 +10,7 @@ CMPUT404-project-socialdistribution
 
 - Thea Nguyen thiminhh@ualberta.ca
 - Harshit Malik harshit1@ualberta.ca
+- Sarah Thomson smt@ualberta.ca
 
 ## Licensing:
 
