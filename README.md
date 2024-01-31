@@ -12,6 +12,7 @@ CMPUT404-project-socialdistribution
 - Harshit Malik harshit1@ualberta.ca
 - Sarah Thomson smt@ualberta.ca
 - Afra Rahmanfard rahmanfa@ualberta.ca
+- Scott Gebert sagebert@ualberta.ca
 
 ## Licensing:
 
