@@ -23,3 +23,4 @@ from django.db import models
 #         return str(self.name)
 #---------------------------------------------------------
 # Add your table right here then run django-admin makemigrations (creates the newly added models) and django-admin migrate (add the models to the database). This process has to be done every time you add one or more models to the database.
+
