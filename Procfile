@@ -1,1 +1,1 @@
-web: gunicorn lab3.wsgi --chdir depresso_espresso
+web: gunicorn depresso_espresso.wsgi --chdir depresso_espresso
