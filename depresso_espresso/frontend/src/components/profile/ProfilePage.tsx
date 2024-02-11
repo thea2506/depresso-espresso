@@ -1,10 +1,15 @@
+//#region imports
+import React, { useState } from "react";
+//#endregion
+
+// components
 import { Button } from "../Button";
 
 const Profile = () => {
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
       <div className="relative">
-        <div className="w-48 h-48 rounded-full md:w-64 md:h-64 bg-accent-3"></div>
+        <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3"></div>
         <Button
           className="absolute right-4 top-4"
           buttonType="icon"
@@ -31,19 +36,24 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
 
-  const handleClick = () => {
-    console.log("Move to new section");
+  const [currentTopic, setCurrentTopic] = useState(topics[0].context);
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setCurrentTopic((e.target as HTMLButtonElement).innerText);
   };
 
   return (
-    <div className="flex flex-col mx-0 md:mx-8 gap-y-12">
+    <div className="flex flex-col gap-y-8">
       <Profile />
       <ul className="flex items-center justify-between gap-x-4">
         {topics.map((topic, index) => (
           <button
             key={index}
             onClick={handleClick}
-            className="w-1/2 py-3 text-base text-white transition duration-75 ease-in-out rounded-lg md:text-lg md:py-4 bg-primary hover:bg-secondary-light"
+            // buttonType="text"
+            className={`w-1/2 py-3 text-base text-white rounded-lg md:text-lg md:py-4 bg-primary hover:bg-secondary-light ${
+              currentTopic === topic.context ? "bg-secondary-light" : ""
+            }`}
           >
             {topic.context}
           </button>
