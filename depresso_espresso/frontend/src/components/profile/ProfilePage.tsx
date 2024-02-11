@@ -4,6 +4,7 @@ import React, { useState } from "react";
 // components
 import { Button } from "../Button";
 import { Profile } from "./Profile";
+import { GitHubActionsList } from "./GithubActionsList";
 //#endregion
 
 const ProfilePage = () => {
@@ -18,6 +19,8 @@ const ProfilePage = () => {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
   };
+
+  GitHubActionsList();
 
   return (
     <div className="flex flex-col gap-y-8">
