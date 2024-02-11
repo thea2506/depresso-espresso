@@ -1,5 +1,5 @@
 import React from "react";
-import { twMerge } from "tailwind-merge";
+import { cn } from "../utils/cn";
 
 // interfaces
 export interface ButtonProps
@@ -16,9 +16,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (buttonType === "text") {
       return (
         <button
-          className={twMerge(
-            className,
-            "px-4 py-3 md:py-4 text-white rounded-lg bg-primary transition duration-75 ease-in-out hover:bg-secondary-light"
+          className={cn(
+            "px-4 py-3 md:py-4 text-white text-base rounded-lg bg-primary transition duration-75 ease-in-out hover:bg-secondary-light",
+            className
           )}
           ref={ref}
           {...props}
@@ -30,7 +30,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     else if (buttonType === "icon") {
       return (
         <button
-          className={twMerge(className, "text-primary  font-bold")}
+          className={cn("text-primary  font-bold", className)}
           ref={ref}
           {...props}
         >

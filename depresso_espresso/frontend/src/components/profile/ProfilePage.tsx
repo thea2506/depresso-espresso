@@ -36,7 +36,7 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
 
-  const [currentTopic, setCurrentTopic] = useState(topics[0].context);
+  const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
@@ -47,16 +47,18 @@ const ProfilePage = () => {
       <Profile />
       <ul className="flex items-center justify-between gap-x-4">
         {topics.map((topic, index) => (
-          <button
+          <Button
             key={index}
             onClick={handleClick}
-            // buttonType="text"
-            className={`w-1/2 py-3 text-base text-white rounded-lg md:text-lg md:py-4 bg-primary hover:bg-secondary-light ${
-              currentTopic === topic.context ? "bg-secondary-light" : ""
-            }`}
+            buttonType="text"
+            className={
+              currentTopic === topic.context
+                ? "w-1/2 md:text-lg bg-secondary-light"
+                : "w-1/2 md:text-lg"
+            }
           >
             {topic.context}
-          </button>
+          </Button>
         ))}
       </ul>
     </div>
