@@ -1,7 +1,16 @@
+import { Button } from "../Button";
+
 const Profile = () => {
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
-      <div className="w-48 h-48 rounded-full md:w-64 md:h-64 bg-accent-3"></div>
+      <div className="relative">
+        <div className="w-48 h-48 rounded-full md:w-64 md:h-64 bg-accent-3"></div>
+        <Button
+          className="absolute right-4 top-4"
+          buttonType="icon"
+          icon="src/assets/icons/edit.svg"
+        ></Button>
+      </div>
 
       <div className="flex flex-col">
         <p className="text-lg font-semibold md:text-xl opacity-95">
@@ -34,7 +43,7 @@ const ProfilePage = () => {
           <button
             key={index}
             onClick={handleClick}
-            className="w-1/2 py-3 text-base text-white rounded-lg md:text-lg md:py-4 bg-primary"
+            className="w-1/2 py-3 text-base text-white transition duration-75 ease-in-out rounded-lg md:text-lg md:py-4 bg-primary hover:bg-secondary-light"
           >
             {topic.context}
           </button>
