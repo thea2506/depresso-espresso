@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: regular_font;
+  src: url("src/assets/fonts/Nunito-Regular.ttf");
+}
+
+:root {
+  --primary: #52796f;
+  --secondary-light: #84a98c;
+  --secondary-dark: #354f52;
+  --accent-3: #e8eddf;
+  --accent-2: #bc4749;
+  --accent-1: #f5cb5c;
+  --black: #242423;
+  --white: #f9f9f9;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: regular_font;
+  color: var(--black);
+  background-color: var(--white);
+}
