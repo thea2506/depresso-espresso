@@ -1,33 +1,10 @@
 //#region imports
 import React, { useState } from "react";
-//#endregion
 
 // components
 import { Button } from "../Button";
-
-const Profile = () => {
-  return (
-    <div className="flex flex-col items-center justify-first-line:center gap-y-4">
-      <div className="relative">
-        <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3"></div>
-        <Button
-          className="absolute right-4 top-4"
-          buttonType="icon"
-          icon="src/assets/icons/edit.svg"
-        ></Button>
-      </div>
-
-      <div className="flex flex-col">
-        <p className="text-lg font-semibold md:text-xl opacity-95">
-          Thea Nguyen
-        </p>
-        <p className="text-sm md:text-base text-secondary-dark">
-          https://github.com/thea2506
-        </p>
-      </div>
-    </div>
-  );
-};
+import { Profile } from "./Profile";
+//#endregion
 
 const ProfilePage = () => {
   const topics = [
@@ -44,8 +21,12 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col gap-y-8">
-      <Profile />
-      <ul className="flex items-center justify-between gap-x-4">
+      <Profile
+        username="Taylor Adams"
+        avatarURL="src/assets/images/profile.jpg"
+        github="https://github.com/tayloradams"
+      />
+      <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
           <Button
             key={index}

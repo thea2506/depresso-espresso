@@ -37,7 +37,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           <img
             src={icon}
             alt="Icon"
-            className="w-7 h-7 md:w-9 md:h-9"
+            className="w-7 h-7 md:w-8 md:h-8"
           />
         </button>
       );
