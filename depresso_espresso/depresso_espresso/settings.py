@@ -150,3 +150,5 @@ STATICFILES_DIRS = [
 ]
 
 django_on_heroku.settings(locals())
+
+AUTH_USER_MODEL = 'user.Author' # User model to use in migration
