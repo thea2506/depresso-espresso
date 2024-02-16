@@ -39,9 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    
 
     # Our apps
     'corsheaders',
+    'authentication',
     'base.apps.BaseConfig',
 ]
 
@@ -157,4 +159,4 @@ STATICFILES_STORAGE = (
 
 django_on_heroku.settings(locals())
 
-AUTH_USER_MODEL = 'user.Author' # User model to use in migration
+AUTH_USER_MODEL = 'authentication.Author' # User model to use in migration

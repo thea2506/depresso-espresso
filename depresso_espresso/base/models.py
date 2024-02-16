@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from authentication.models import Author
+
 
 # Create your models here.
 #---------------------------------------------------------
@@ -39,8 +40,7 @@ from django.contrib.auth.models import AbstractUser
 # Reference:
 # https://www.youtube.com/watch?v=8jyyuBaZwVU
 
-class Author(AbstractUser):
-    github_link = models.URLField(null = True, blank = True)
+
 
 
 '''
