@@ -52,6 +52,7 @@ const UserInfo = ({
           <img
             src="src/assets/icons/public.svg"
             alt="Public Icon"
+            className="w-4 h-4 md:w-5 md:h-5"
           />
           <p className="text-sm">{formattedDate}</p>
         </div>

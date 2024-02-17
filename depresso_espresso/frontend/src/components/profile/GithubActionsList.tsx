@@ -145,7 +145,7 @@ const GitHubActionsList = ({
     <div className="flex flex-col gap-y-4">
       {events.map((event) => {
         return (
-          <div className="flex flex-col items-start px-6 py-6 gap-y-4 rounded-2xl bg-accent-3">
+          <div className="flex flex-col items-start px-6 py-6 text-sm text-left gap-y-4 rounded-2xl md:text-base bg-accent-3">
             <UserInfo
               username={displayName}
               avatarURL={event.actor.avatar_url}
