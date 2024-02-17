@@ -30,13 +30,17 @@ export interface GitHubEvent {
 
 interface GitHubActionsListProps {
   username: string;
+  displayName: string;
 }
 //#endregion
 
 /**
  * Renders a list of GitHub actions for a specific user.
  */
-const GitHubActionsList = ({ username }: GitHubActionsListProps) => {
+const GitHubActionsList = ({
+  username,
+  displayName,
+}: GitHubActionsListProps) => {
   const githubUrl = `https://api.github.com/users/${username}/events`;
   const [events, setEvents] = useState<GitHubEvent[]>([]);
 
@@ -143,7 +147,7 @@ const GitHubActionsList = ({ username }: GitHubActionsListProps) => {
         return (
           <div className="flex flex-col items-start px-6 py-6 gap-y-4 rounded-2xl bg-accent-3">
             <UserInfo
-              username="Thea Nguyen"
+              username={displayName}
               avatarURL={event.actor.avatar_url}
               time={event.created_at}
             />

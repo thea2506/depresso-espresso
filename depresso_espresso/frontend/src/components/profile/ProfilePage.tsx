@@ -26,10 +26,11 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col gap-y-8">
+      {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
         username="Taylor Adams"
         avatarURL="src/assets/images/profile.jpg"
-        github="https://github.com/tayloradams"
+        github="https://github.com/thea2506"
       />
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
@@ -47,7 +48,12 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && <GitHubActionsList username="thea2506" />}
+      {currentTopic === "GitHub" && (
+        <GitHubActionsList
+          username="thea2506"
+          displayName="Thea Nguyen"
+        />
+      )}
     </div>
   );
 };
