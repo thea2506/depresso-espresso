@@ -20,8 +20,6 @@ const ProfilePage = () => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
   };
 
-  GitHubActionsList();
-
   return (
     <div className="flex flex-col gap-y-8">
       <Profile
@@ -45,6 +43,7 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
+      {currentTopic === "GitHub" && <GitHubActionsList />}
     </div>
   );
 };
