@@ -7,6 +7,10 @@ import { Profile } from "./Profile";
 import { GitHubActionsList } from "./GithubActionsList";
 //#endregion
 
+/**
+ * Represents the profile page component.
+ * @component
+ */
 const ProfilePage = () => {
   const topics = [
     { context: "Posts" },

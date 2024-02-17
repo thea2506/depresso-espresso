@@ -1,13 +1,31 @@
+//#region imports
 import { twMerge } from "tailwind-merge";
+//#endregion
 
+//#region interfaces
 interface UserInfoProps {
   className?: string;
   username: string;
   avatarURL: string;
   time: string;
 }
+//#endregion
 
-const UserInfo = ({ username, avatarURL, time, className }: UserInfoProps) => {
+/**
+ * A component that displays user information.
+ * @param {string} username - The props for the UserInfo component.
+ * @param {string} avatarURL - The URL of the user's avatar.
+ * @param {string} time - The time when the event occurred.
+ * @param {string} className - The CSS class name for the UserInfo component.
+ * @returns {JSX.Element} The rendered UserInfo component.
+ */
+/** */
+const UserInfo = ({
+  username,
+  avatarURL,
+  time,
+  className,
+}: UserInfoProps): JSX.Element => {
   const date = new Date(time);
   const formattedDate = date.toLocaleString("en-US", {
     hour: "numeric",

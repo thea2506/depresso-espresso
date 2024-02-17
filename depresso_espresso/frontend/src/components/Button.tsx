@@ -1,18 +1,29 @@
+//#region imports
 import React from "react";
 import { cn } from "../utils/cn";
+//#endregion
 
-// interfaces
+//#region interfaces
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
   buttonType: "text" | "icon";
   icon?: string;
 }
+//#endregion
 
-// Button component
+/**
+ * Renders the Button component.
+ * @param {string} className - The CSS class name for the button.
+ * @param {string} buttonType - The type of button ("text" or "icon").
+ * @param {string} icon - The URL of the icon image (only applicable for "icon" button type).
+ * @param props - Additional props for the button element.
+ * @param ref - The ref object for the button element.
+ * @returns The rendered Button component.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, buttonType, icon, ...props }, ref) => {
-    // REGULAR BUTTON
+    // Regular Button
     if (buttonType === "text") {
       return (
         <button
@@ -26,7 +37,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       );
     }
 
-    // ICON BUTTON
+    // Icon Button
     else if (buttonType === "icon") {
       return (
         <button

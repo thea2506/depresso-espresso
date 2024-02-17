@@ -1,9 +1,12 @@
+//#region imports
 import { useState, useEffect } from "react";
 import axios from "axios";
 
 // components
 import { UserInfo } from "../UserInfo";
+//#endregion
 
+//#region interfaces
 export interface GitHubEvent {
   type: string;
   created_at: string;
@@ -25,6 +28,11 @@ export interface GitHubEvent {
   };
 }
 
+//#endregion
+
+/**
+ * Renders a list of GitHub actions for a specific user.
+ */
 const GitHubActionsList = () => {
   const username = "thea2506";
   const githubUrl = `https://api.github.com/users/${username}/events`;
