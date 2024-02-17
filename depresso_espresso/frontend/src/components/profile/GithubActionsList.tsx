@@ -28,13 +28,15 @@ export interface GitHubEvent {
   };
 }
 
+interface GitHubActionsListProps {
+  username: string;
+}
 //#endregion
 
 /**
  * Renders a list of GitHub actions for a specific user.
  */
-const GitHubActionsList = () => {
-  const username = "thea2506";
+const GitHubActionsList = ({ username }: GitHubActionsListProps) => {
   const githubUrl = `https://api.github.com/users/${username}/events`;
   const [events, setEvents] = useState<GitHubEvent[]>([]);
 

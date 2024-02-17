@@ -47,7 +47,7 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && <GitHubActionsList />}
+      {currentTopic === "GitHub" && <GitHubActionsList username="thea2506" />}
     </div>
   );
 };
