@@ -1,20 +1,22 @@
+// Test component for User sign up, to be replaced or updated
+
 import { useState } from "react";
 import axios from "axios";
 
-function Login() {
+function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
 
-  
+  console.log("help");
 
-  const handleSubmit = async (event: { preventDefault: () => void }) => {
+  const handleRegister = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      
-      const response = await axios.post("/api/login/", { username, password });
+      const response = await axios.post("/api/register/", { username, password, firstname, lastname});
       if (response.data.success) {
-        
-        console.log("Login successful");
+        console.log("User creation successful");
         // Redirect or update UI accordingly
 
         // Example of redirecting to the home page
@@ -41,12 +43,24 @@ function Login() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleRegister}>
         <input
           type="text"
           placeholder="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="firstname"
+          placeholder="firstname"
+          value={firstname}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+        <input
+          type="lastname"
+          placeholder="lastname"
+          value={lastname}
+          onChange={(e) => setLastName(e.target.value)}
         />
         <input
           type="password"
@@ -60,4 +74,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;

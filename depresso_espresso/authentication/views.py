@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect  
 from .register import Register
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 # Create your views here.  
 
 # https://www.techwithtim.net/tutorials/django/user-registration   
@@ -17,15 +17,26 @@ def register(request):
     else:
         form = Register()
 
+    return render(request, "dist/index.html")
+
+# https://stackoverflow.com/questions/75401759/how-to-set-up-login-view-in-python-django
+def loginview(request):
+    if request.method == 'POST':
+        user = authenticate(request, username=request.POST["username"], password=request.POST["password"])
+        if user:
+            login(request, user)
+            return redirect('/')
+
+    return render(request, 'dist/index.html')
+
+
+
+
 def index(request):
-    return render(request, "dist/register.html")
+    return render(request, "dist/index.html")
 
 '''
-    return render(
-        request=request, "dist/register_delete.html"
-        #template_name = "register_delete.html",
-        #ontext={"form: form"}
-    )
+    
 
     
 '''
