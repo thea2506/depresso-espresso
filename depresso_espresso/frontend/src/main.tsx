@@ -23,7 +23,7 @@ if (rootElement) {
           element={<Login />}
         />
         <Route
-          path="/authors"
+          path="/authors/:userid"
           element={<ProfilePage />}
         />
       </Routes>

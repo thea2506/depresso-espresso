@@ -5,6 +5,7 @@ import { ToastContainer, toast, ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
 import axios from "axios";
+import editIcon from "../../assets/icons/edit.svg";
 //#endregion
 
 //#region interfaces
@@ -136,7 +137,7 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
           trigger={
             <Button
               buttonType="icon"
-              icon="src/assets/icons/edit.svg"
+              icon={editIcon}
               className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
               onClick={() => console.log("Change avatar")}
             ></Button>

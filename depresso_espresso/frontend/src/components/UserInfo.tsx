@@ -1,5 +1,6 @@
 //#region imports
 import { twMerge } from "tailwind-merge";
+import publicIcon from "../assets/icons/public.svg";
 //#endregion
 
 //#region interfaces
@@ -50,7 +51,7 @@ const UserInfo = ({
         <p className="text-primary">{username}</p>
         <div className="flex items-center md:justify-center gap-x-1 opacity-90">
           <img
-            src="src/assets/icons/public.svg"
+            src={publicIcon}
             alt="Public Icon"
             className="w-4 h-4 md:w-5 md:h-5"
           />
