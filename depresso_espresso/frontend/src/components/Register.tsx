@@ -9,9 +9,7 @@ function Register() {
   const [firstname, setFirstName] = useState("");
   const [lastname, setLastName] = useState("");
 
-  console.log("help");
-
-  const handleRegister = async (event: { preventDefault: () => void }) => {
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
       const response = await axios.post("/api/register/", { username, password, firstname, lastname});
@@ -43,7 +41,7 @@ function Register() {
 
   return (
     <div>
-      <form onSubmit={handleRegister}>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="username"
@@ -51,13 +49,13 @@ function Register() {
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
-          type="firstname"
+          type="text"
           placeholder="firstname"
           value={firstname}
           onChange={(e) => setFirstName(e.target.value)}
         />
         <input
-          type="lastname"
+          type="text"
           placeholder="lastname"
           value={lastname}
           onChange={(e) => setLastName(e.target.value)}

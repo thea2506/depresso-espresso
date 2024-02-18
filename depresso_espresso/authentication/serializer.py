@@ -10,13 +10,13 @@ class AuthorSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         """
-        Create and return a new `Register` instance, given the validated data
+        Create and return a new `Author` instance, given the validated data
         """
         return Author.object.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
-        Update and return an existing `Register` instance, given the validated data
+        Update and return an existing `Author` instance, given the validated data
         """
         instance.github_link = validated_data.get('github_link', instance.github_link)
         instance.profile_image = validated_data.get('profile_image', instance.pub_date)
