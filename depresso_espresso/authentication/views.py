@@ -17,11 +17,15 @@ def register(request):
     else:
         form = Register()
 
+def index(request):
+    return render(request, "dist/register.html")
+
+'''
     return render(
-        request=request,
-        template_name = "test_register.html",
-        context={"form: form"}
+        request=request, "dist/register_delete.html"
+        #template_name = "register_delete.html",
+        #ontext={"form: form"}
     )
 
     
-
+'''

@@ -40,8 +40,10 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     
+    
 
     # Our apps
+    'rest_framework',
     'corsheaders',
     'authentication',
     'base.apps.BaseConfig',
@@ -64,7 +66,9 @@ ROOT_URLCONF = 'depresso_espresso.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['frontend/dist'],
+        #'DIRS': ['/frontend/dist'],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -160,3 +164,5 @@ STATICFILES_STORAGE = (
 django_on_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'authentication.Author' # User model to use in migration
+
+REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}

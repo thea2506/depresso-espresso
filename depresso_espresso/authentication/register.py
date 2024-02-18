@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 class Register(UserCreationForm):
     github_link = forms.URLField(label = "github URL", required = False)
     profile_image = forms.URLField(label = "profile picture", required= False)
+    template_name = "register_delete.html",
 
     class Meta:
         model = get_user_model()
