@@ -29,19 +29,18 @@ export interface GitHubEvent {
 }
 
 interface GitHubActionsListProps {
-  username: string;
   displayName: string;
+  github: string;
 }
 //#endregion
 
 /**
  * Renders a list of GitHub actions for a specific user.
  */
-const GitHubActionsList = ({
-  username,
-  displayName,
-}: GitHubActionsListProps) => {
-  const githubUrl = `https://api.github.com/users/${username}/events`;
+const GitHubActionsList = ({ github, displayName }: GitHubActionsListProps) => {
+  const match = github.match(/^https:\/\/github\.com\/([^/]+)\/?$/);
+  const tryUsername = match ? match[1] : null;
+  const githubUrl = `https://api.github.com/users/${tryUsername}/events`;
   const [events, setEvents] = useState<GitHubEvent[]>([]);
 
   //#region useEffect

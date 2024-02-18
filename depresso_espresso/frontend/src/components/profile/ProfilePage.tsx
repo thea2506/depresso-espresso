@@ -50,8 +50,8 @@ const ProfilePage = () => {
       </ul>
       {currentTopic === "GitHub" && (
         <GitHubActionsList
-          username="thea2506"
-          displayName="Thea Nguyen"
+          github="https://github.com/thea2506"
+          displayName="Taylor Adams"
         />
       )}
     </div>
