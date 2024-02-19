@@ -14,13 +14,15 @@ def register(request):
         if form.is_valid():  
             user = form.save()
             login(request, user)
+            print("uhhhh redirect here")
             #return redirect('/userself/profile') # should redirect to user's new profile on creation
             return redirect('/')    
         
         else:
         
             for error in list(form.errors.values()):
-                print(request, error)
+                
+                print(request, form.errors.items(), error)
                 
     else:
         form = Register()
@@ -33,13 +35,11 @@ def loginview(request):
         user = authenticate(request, username=request.POST["username"], password=request.POST["password"])
         if user:
             login(request, user)
+            print("uhhhh redirect here")
             return redirect('/')
         
 
     return render(request, 'dist/index.html')
-
-
-
 
 def index(request):
     return render(request, "dist/index.html")

@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'base.apps.BaseConfig',
+    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
