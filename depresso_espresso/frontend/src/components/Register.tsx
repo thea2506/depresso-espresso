@@ -1,4 +1,4 @@
-// Test component for User sign up, to be replaced or updated
+// Test component for User register, to be replaced or updated
 
 import { useState } from "react";
 import axios from "axios";
@@ -6,13 +6,25 @@ import axios from "axios";
 function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [firstname, setFirstName] = useState("");
-  const [lastname, setLastName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      const response = await axios.post("/api/register/", { username, password, firstname, lastname});
+
+
+      let formField = new FormData()
+      formField.append('username', username)
+      formField.append('password', password)
+      formField.append('first_name', first_name)
+      formField.append('last_name', last_name)
+
+      //const send_this = { username: username, password: password, first_name: first_name, last_name:last_name}
+
+
+      const response = await axios.post("register", formField);
+      console.log(formField);
       if (response.data.success) {
         console.log("User creation successful");
         // Redirect or update UI accordingly
@@ -25,7 +37,7 @@ function Register() {
 
         // Example of updating the UI to show an error message
         const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Login failed";
+        errorMessage.textContent = "Register failed";
         document.body.appendChild(errorMessage);
       }
     } catch (error) {
@@ -44,24 +56,24 @@ function Register() {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="username"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
         <input
           type="text"
-          placeholder="firstname"
-          value={firstname}
+          placeholder="First name"
+          value={first_name}
           onChange={(e) => setFirstName(e.target.value)}
         />
         <input
           type="text"
-          placeholder="lastname"
-          value={lastname}
+          placeholder="Last name"
+          value={last_name}
           onChange={(e) => setLastName(e.target.value)}
         />
         <input
-          type="password"
+          type="Password"
           placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

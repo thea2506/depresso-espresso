@@ -7,6 +7,8 @@ class AuthorSerializer(serializers.Serializer):
     profile_image = serializers.URLField()
     follows = serializers.CharField() # This may be the incorrect field type for a many to many field
     friends = serializers.CharField()
+    first_name = serializers.CharField() # This may be the incorrect field type for a many to many field
+    last_name = serializers.CharField()
 
     def create(self, validated_data):
         """
