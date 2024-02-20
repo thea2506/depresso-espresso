@@ -1,13 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast, ToastOptions } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast, ToastOptions } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const nav = useNavigate()
+  const nav = useNavigate();
 
   const myToast: ToastOptions<unknown> = {
     position: "top-center",
@@ -22,19 +22,20 @@ function Login() {
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
+      const formField = new FormData();
+      formField.append("username", username);
+      formField.append("password", password);
 
-      let formField = new FormData()
-      formField.append('username', username)
-      formField.append('password', password)
-      
-      const response = await axios.post("login", formField);
+      const response = await axios.post(
+        `${import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""}/login`,
+        formField
+      );
       if (response.data.success) {
         toast.success("Login Successful", myToast);
         console.log("Login successful");
-      
+
         // Redirect to user's profile
-        nav('/profile');
-        
+        nav("/profile");
       } else {
         console.log("Login failed");
         // Show error message

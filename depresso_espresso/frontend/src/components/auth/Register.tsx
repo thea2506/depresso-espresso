@@ -3,20 +3,20 @@
 // https://www.youtube.com/watch?v=xtQ74HKTOwY&t=1017s Django + React Part-3 | Add Product Form Data in React Using Axios POST Method to Django API by Great Adib 2/19/2024
 
 import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ToastContainer, toast, ToastOptions } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast, ToastOptions } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 /**
-* Submits a custom userCreationForm using POST request to register endpoint
-*/
+ * Submits a custom userCreationForm using POST request to register endpoint
+ */
 function Register() {
   const [username, setUsername] = useState("");
   const [display_name, setDisplayName] = useState("");
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
-  const nav = useNavigate()
+  const nav = useNavigate();
 
   const myToast: ToastOptions<unknown> = {
     position: "top-center",
@@ -28,31 +28,35 @@ function Register() {
     closeButton: false,
   };
   /**
-  * Sends POST request upon form submission
-  */
+   * Sends POST request upon form submission
+   */
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      let formField = new FormData()
-      formField.append('username', username)
-      formField.append('display_name', display_name)
-      formField.append('password1', password1)
-      formField.append('password2', password2)
-      const response = await axios.post("register", formField);
+      const formField = new FormData();
+      formField.append("username", username);
+      formField.append("display_name", display_name);
+      formField.append("password1", password1);
+      formField.append("password2", password2);
+      const response = await axios.post(
+        `${
+          import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""
+        }/register`,
+        formField
+      );
 
       if (response.data.success) {
         toast.success("User Created Successfully", myToast);
         console.log("User creation successful");
 
         // navigate to user's profile page on success
-        nav('/profile');
-
+        nav("/profile");
       } else {
         console.log("Register Failed");
-        
+
         // Show users why their registration failed
-        for (const error of response.data.errors){
-          toast.error("Register failed: " + error , myToast);
+        for (const error of response.data.errors) {
+          toast.error("Register failed: " + error, myToast);
         }
       }
     } catch (error) {
