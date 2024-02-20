@@ -15,25 +15,11 @@
 
 html,
 body {
-  @apply px-4;
   margin: 0;
+  padding: 0;
   box-sizing: border-box;
   font-family: "Nunito";
   color: var(--black);
   background-color: var(--white);
   height: 100%;
-}
-
-@screen md {
-  html,
-  body {
-    @apply px-20;
-  }
-}
-
-@screen sm {
-  html,
-  body {
-    @apply px-12;
-  }
 }

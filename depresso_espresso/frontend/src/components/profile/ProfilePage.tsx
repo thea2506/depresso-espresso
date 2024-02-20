@@ -25,7 +25,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-y-8">
+    <div className="flex flex-col px-4 gap-y-8 sm:px-12 md:px-20">
       {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
         username="Taylor Adams"
