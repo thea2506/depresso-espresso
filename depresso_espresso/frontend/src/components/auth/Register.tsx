@@ -5,59 +5,65 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
+/**
+* Submits a custom userCreationForm using POST request to register endpoint
+*/
 function Register() {
   const [username, setUsername] = useState("");
+  const [display_name, setDisplayName] = useState("");
   const [password1, setPassword1] = useState("");
   const [password2, setPassword2] = useState("");
-  const [first_name, setFirstName] = useState("");
-  const [last_name, setLastName] = useState("");
-
   const nav = useNavigate()
 
+  const myToast: ToastOptions<unknown> = {
+    position: "top-center",
+    autoClose: 7000,
+    hideProgressBar: false,
+    pauseOnHover: false,
+    closeOnClick: true,
+    theme: "light",
+    closeButton: false,
+  };
+  /**
+  * Sends POST request upon form submission
+  */
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-
       let formField = new FormData()
       formField.append('username', username)
+      formField.append('display_name', display_name)
       formField.append('password1', password1)
       formField.append('password2', password2)
-      formField.append('first_name', first_name)
-      formField.append('last_name', last_name)
-
       const response = await axios.post("register", formField);
-      console.log(formField);
+
       if (response.data.success) {
+        toast.success("User Created Successfully", myToast);
         console.log("User creation successful");
-        nav('/');
-        // Redirect or update UI accordingly
 
-        // Example of redirecting to the home page
-        window.location.href = "/";
+        // navigate to user's profile page on success
+        nav('/profile');
+
       } else {
-        console.log("Login failed");
-        // Show error message
-
-        // Example of updating the UI to show an error message
-        const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Register failed";
-
-        document.body.appendChild(errorMessage);
+        console.log("Register Failed");
+        
+        // Show users why their registration failed
+        for (const error of response.data.errors){
+          toast.error("Register failed: " + error , myToast);
+        }
       }
     } catch (error) {
       console.error("An error occurred", error);
-
-      // Handle error
-      // Example of updating the UI to show an error message
-      const errorMessage = document.createElement("p");
-      errorMessage.textContent = "An error occurred";
-      document.body.appendChild(errorMessage);
+      toast.error("An error occurred", myToast);
     }
   };
 
   return (
     <div>
+      <ToastContainer />
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -67,15 +73,9 @@ function Register() {
         />
         <input
           type="text"
-          placeholder="First name"
-          value={first_name}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Last name"
-          value={last_name}
-          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Display Name"
+          value={display_name}
+          onChange={(e) => setDisplayName(e.target.value)}
         />
         <input
           type="Password"

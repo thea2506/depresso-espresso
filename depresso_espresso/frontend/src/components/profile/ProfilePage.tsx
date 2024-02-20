@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 //#region imports
 import React, { useState } from "react";
 
@@ -18,19 +20,42 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
 
+  const [display_name, setDisplayName] = useState("");
+  const [github_link, setGithub] = useState("");
+  const [profile_image, setProfImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
   };
 
+  const getData = async () => {
+    try{
+        const response = await axios.get("user_data");
+        setDisplayName(response.data['display_name'])
+        setGithub(response.data['github_link'])
+        setProfImage(response.data['profile_image'])
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
+    // This could probably be combined into 1 request using render context
+
+    try{ 
+      await axios.get("profile");
+    } catch (error) {
+      console.error("An error occurred", error); 
+    } 
+  
+  }
+  getData(); // send request to profile endpoint to retrieve current user's info and render the component
+
   return (
     <div className="flex flex-col gap-y-8">
       {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
-        username="Taylor Adams"
-        imageURL="https://images.unsplash.com/photo-1626808642875-0aa545482dfb?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-        github="https://github.com/thea2506"
+        display_name= {display_name}
+        imageURL= {profile_image}
+        github={github_link}
       />
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
@@ -50,12 +75,13 @@ const ProfilePage = () => {
       </ul>
       {currentTopic === "GitHub" && (
         <GitHubActionsList
-          github="https://github.com/thea2506"
-          displayName="Taylor Adams"
+          github={github_link}
+          displayName={display_name}
         />
       )}
     </div>
   );
 };
+
 
 export default ProfilePage;

@@ -5,5 +5,6 @@ from django.contrib.auth.models import AbstractUser
 class Author(AbstractUser):
     github_link = models.URLField(null = True, blank = True)
     profile_image = models.URLField(null = True, blank = True)
-    follows = models.ManyToManyField("self", blank=True, null=True) #https://stackoverflow.com/questions/11721157/django-many-to-many-m2m-relation-to-same-model
-    friends = models.ManyToManyField("self", blank=True, null=True)
+    follows = models.ManyToManyField("self", blank=True) #https://stackoverflow.com/questions/11721157/django-many-to-many-m2m-relation-to-same-model
+    friends = models.ManyToManyField("self", blank=True)
+    display_name = models.CharField(null=False, blank=False, max_length=50)

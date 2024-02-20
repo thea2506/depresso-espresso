@@ -1,28 +1,43 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const nav = useNavigate()
 
-  
+  const myToast: ToastOptions<unknown> = {
+    position: "top-center",
+    autoClose: 7000,
+    hideProgressBar: false,
+    pauseOnHover: false,
+    closeOnClick: true,
+    theme: "light",
+    closeButton: false,
+  };
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      
-      const response = await axios.post("/api/login/", { username, password });
-      if (response.data.success) {
-        
-        console.log("Login successful");
-        // Redirect or update UI accordingly
 
-        // Example of redirecting to the home page
-        window.location.href = "/";
+      let formField = new FormData()
+      formField.append('username', username)
+      formField.append('password', password)
+      
+      const response = await axios.post("login", formField);
+      if (response.data.success) {
+        toast.success("Login Successful", myToast);
+        console.log("Login successful");
+      
+        // Redirect to user's profile
+        nav('/profile');
+        
       } else {
         console.log("Login failed");
         // Show error message
-
         // Example of updating the UI to show an error message
         const errorMessage = document.createElement("p");
         errorMessage.textContent = "Login failed";
@@ -30,7 +45,6 @@ function Login() {
       }
     } catch (error) {
       console.error("An error occurred", error);
-
       // Handle error
       // Example of updating the UI to show an error message
       const errorMessage = document.createElement("p");
@@ -41,6 +55,7 @@ function Login() {
 
   return (
     <div>
+      <ToastContainer />
       <form onSubmit={handleSubmit}>
         <input
           type="text"
