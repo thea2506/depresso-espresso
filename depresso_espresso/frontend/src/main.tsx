@@ -3,7 +3,8 @@ import "./index.css";
 
 // Pages
 import App from "./App";
-import Login from "./components/auth/Login.tsx";
+import Signin from "./components/auth/Signin.tsx";
+import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -19,8 +20,12 @@ if (rootElement) {
           element={<App />}
         />
         <Route
-          path="/login"
-          element={<Login />}
+          path="/signin"
+          element={<Signin />}
+        />
+        <Route
+          path="/signup"
+          element={<Signup />}
         />
         <Route
           path="/authors/:userid"
