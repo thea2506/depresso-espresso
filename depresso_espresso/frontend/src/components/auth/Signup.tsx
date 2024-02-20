@@ -1,11 +1,49 @@
 //#region imports
 import Circle_1 from "../../assets/images/circle_1.svg";
 import Circle_2 from "../../assets/images/circle_2.svg";
+import { useState } from "react";
+
+// components
 import { Button } from "../Button";
 //#endregion
 
+/**
+ * Renders a signup page.
+ * @returns The rendered signup page.
+ */
 const Signup = () => {
-  const inputs = ["Username", "Email", "Password", "Retype Password"];
+  const inputs: string[] = ["Username", "Email", "Password", "Retype Password"];
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [retypePassword, setRetypePassword] = useState<string>("");
+
+  //#region functions
+  /**
+   * Handles and saves the inputs from the user.
+   * @param e The event object to extract the value input by users
+   */
+  const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "Username") {
+      setUsername(value);
+    } else if (name === "Email") {
+      setEmail(value);
+    } else if (name === "Password") {
+      setPassword(value);
+    } else if (name === "Retype Password") {
+      setRetypePassword(value);
+    }
+  };
+
+  /**
+   * Posts the inputs to the backend.
+   */
+  const postInputs = () => {
+    //TODO: Post the inputs to the backend
+    console.log(username, email, password, retypePassword);
+  };
+  //#endregion
 
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-4 gap-y-12 lg:justify-between lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
@@ -45,6 +83,7 @@ const Signup = () => {
                 id={input}
                 name={input}
                 className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                onChange={handleInputs}
               />
             </div>
           );
@@ -52,6 +91,7 @@ const Signup = () => {
         <Button
           buttonType="text"
           className="max-w-3xl mt-4 rounded-full"
+          onClick={postInputs}
         >
           Sign Up
         </Button>
