@@ -4,23 +4,43 @@ import Circle_2 from "../../assets/images/circle_2.svg";
 import visibleOn from "../../assets/icons/visible_on.svg";
 import visibleOff from "../../assets/icons/visible_off.svg";
 import { useState } from "react";
+import { ToastContainer, ToastOptions, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // components
 import { Button } from "../Button";
-import { ToastContainer, ToastOptions, toast } from "react-toastify";
 //#endregion
+
+const myToast: ToastOptions = {
+  position: "top-center",
+  autoClose: 1000,
+  hideProgressBar: true,
+  closeOnClick: true,
+  pauseOnHover: false,
+  draggable: false,
+  progress: undefined,
+  closeButton: false,
+};
 
 /**
  * Renders a signup page.
  * @returns The rendered signup page.
  */
 const Signup = () => {
-  const inputs: string[] = ["Username", "Email", "Password", "Retype Password"];
+  const inputs: string[] = [
+    "Username",
+    "Display Name",
+    "Password",
+    "Retype Password",
+  ];
   const [username, setUsername] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [displayName, setDisplayName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [retypePassword, setRetypePassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
+  const nav = useNavigate();
 
   //#region functions
   /**
@@ -31,8 +51,8 @@ const Signup = () => {
     const { name, value } = e.target;
     if (name === "Username") {
       setUsername(value);
-    } else if (name === "Email") {
-      setEmail(value);
+    } else if (name === "Display Name") {
+      setDisplayName(value);
     } else if (name === "Password") {
       setPassword(value);
     } else if (name === "Retype Password") {
@@ -41,52 +61,44 @@ const Signup = () => {
   };
 
   /**
-   * Handles the visibility of the password.
-   */
-  const handleVisibility = () => {
-    setVisible(!visible);
-    const element = document.getElementsByName("Password")[0];
-    visible
-      ? element.setAttribute("type", "password")
-      : element.setAttribute("type", "text");
-  };
-
-  /**
    * Posts the inputs to the backend.
    */
-  const postInputs = () => {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const myToast: ToastOptions = {
-      position: "top-center",
-      autoClose: 1000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      closeButton: false,
-    };
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    try {
+      const formField = new FormData();
+      formField.append("username", username);
+      formField.append("display_name", displayName);
+      formField.append("password1", password);
+      formField.append("password2", retypePassword);
+      const response = await axios.post(
+        `${import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""}/signup`,
+        formField
+      );
 
-    if (!pattern.test(email)) {
-      toast.error("Invalid email", myToast);
-      return;
-    } else if (password !== retypePassword) {
-      toast.error("Password does not match", myToast);
-      return;
-    } else if (password.length < 8) {
-      toast.error("Password must be at least 4 characters", myToast);
-      return;
-    } else if (username.length < 4) {
-      toast.error("Username must be at least 4 characters", myToast);
-      return;
-    } else {
-      //TODO: post the inputs to the backend
+      if (response.data.success) {
+        toast.success("User Created Successfully", myToast);
+        console.log("User creation successful");
+
+        // navigate to user's profile page on success
+        nav("/profile");
+      } else {
+        console.log("Register Failed");
+
+        // Show users why their registration failed
+        for (const error of response.data.errors) {
+          toast.error("Register failed: " + error, myToast);
+        }
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+      toast.error("An error occurred", myToast);
     }
   };
   //#endregion
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-full px-4 gap-y-12 lg:justify-between lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
+    <div className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
       <ToastContainer />
       {/* Left - Text side */}
       <div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
@@ -106,7 +118,10 @@ const Signup = () => {
       </div>
 
       {/* Right - Input side */}
-      <div className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4">
+      <form
+        className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4"
+        onSubmit={handleSubmit}
+      >
         {inputs.map((input, index) => {
           return (
             <div
@@ -121,7 +136,7 @@ const Signup = () => {
               </label>
               {input.toLowerCase() !== "password" ? (
                 <input
-                  type={input.toLowerCase() === "email" ? "email" : "text"}
+                  type="text"
                   id={input}
                   name={input}
                   className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
@@ -138,9 +153,16 @@ const Signup = () => {
                   />
                   <Button
                     buttonType="icon"
+                    type="button"
                     icon={visible ? visibleOff : visibleOn}
                     className="absolute w-6 h-6 top-2 right-3"
-                    onClick={handleVisibility}
+                    onClick={() => {
+                      setVisible(!visible);
+                      const element = document.getElementsByName("Password")[0];
+                      visible
+                        ? element.setAttribute("type", "password")
+                        : element.setAttribute("type", "text");
+                    }}
                   ></Button>
                 </div>
               )}
@@ -150,11 +172,11 @@ const Signup = () => {
         <Button
           buttonType="text"
           className="max-w-3xl mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
-          onClick={postInputs}
+          type="submit"
         >
           Sign Up
         </Button>
-      </div>
+      </form>
 
       {/* Decorations */}
       <img

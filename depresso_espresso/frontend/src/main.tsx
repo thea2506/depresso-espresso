@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 
 // Pages
-import App from "./App";
+// import App from "./App";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
@@ -17,7 +17,7 @@ if (rootElement) {
       <Routes>
         <Route
           path="/"
-          element={<App />}
+          element={<ProfilePage />}
         />
         <Route
           path="/signin"
@@ -28,7 +28,7 @@ if (rootElement) {
           element={<Signup />}
         />
         <Route
-          path="/authors/:userid"
+          path="/profile"
           element={<ProfilePage />}
         />
       </Routes>

@@ -10,7 +10,7 @@ import editIcon from "../../assets/icons/edit.svg";
 
 //#region interfaces
 interface ProfileProps {
-  username: string;
+  display_name: string;
   github?: string;
   imageURL?: string;
 }
@@ -21,12 +21,12 @@ interface ProfileProps {
  *
  * @component
  * @param {Object} props - The component props.
- * @param {string} props.username - The username to display.
+ * @param {string} props.display_name - The username to display.
  * @param {string} props.github - The GitHub link to display.
  * @param {string} props.imageURL - The URL of the avatar image to display.
  * @returns {JSX.Element} The rendered profile component.
  */
-const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
+const Profile = ({ display_name, github, imageURL }: ProfileProps): JSX.Element => {
   //#region variables
   const myToast: ToastOptions<unknown> = {
     position: "top-center",
@@ -38,12 +38,12 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
     closeButton: false,
   };
   const editFields = [
-    { label: "Display Name", value: "username", placeholder: username },
+    { label: "Display Name", value: "display_name", placeholder: display_name },
     { label: "GitHub URL", value: "github", placeholder: github },
     { label: "Image URL", value: "image", placeholder: imageURL },
   ];
 
-  const [newUsername, setUsername] = useState<string>(username);
+  const [newDisplayName, setDisplayName] = useState<string>(display_name);
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
   //#endregion
@@ -56,8 +56,8 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
-      case "username":
-        setUsername(value);
+      case "display_name":
+        setDisplayName(value);
         break;
       case "github":
         setGithub(value);
@@ -103,8 +103,8 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
     checkGitHubProfile(newGithub)
       .then(() => checkImageURL(newImageURL))
       .then(() => {
-        if (newUsername.length <= 4) {
-          throw new Error("Username is too short");
+        if (newDisplayName.length <= 4) {
+          throw new Error("Display Name is too short");
         }
       })
       .then(() => {
@@ -145,7 +145,7 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
           modal
           lockScroll={true}
           onClose={() => {
-            setUsername(username);
+            setDisplayName(display_name);
             setGithub(github || "");
             setImageURL(imageURL || "");
           }}
@@ -168,7 +168,7 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
                 <input
                   type="text"
                   name={field.value}
-                  maxLength={field.value === "username" ? 30 : 200}
+                  maxLength={field.value === "display_name" ? 30 : 200}
                   id={field.value}
                   defaultValue={field.placeholder}
                   className="flex-grow px-4 py-4 bg-accent-3 rounded-xl"
@@ -189,7 +189,7 @@ const Profile = ({ username, github, imageURL }: ProfileProps): JSX.Element => {
       {/* Display profile info */}
       <div className="flex flex-col">
         <p className="text-xl font-semibold md:text-2xl opacity-95">
-          {username}
+          {display_name}
         </p>
         {github && (
           <a

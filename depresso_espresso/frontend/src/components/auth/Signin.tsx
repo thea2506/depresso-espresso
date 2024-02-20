@@ -4,81 +4,84 @@ import Circle_2 from "../../assets/images/circle_2.svg";
 import visibleOn from "../../assets/icons/visible_on.svg";
 import visibleOff from "../../assets/icons/visible_off.svg";
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // components
 import { Button } from "../Button";
 //#endregion
+
+const myToast: ToastOptions = {
+  position: "top-center",
+  autoClose: 1000,
+  hideProgressBar: true,
+  closeOnClick: true,
+  closeButton: false,
+  pauseOnHover: false,
+  draggable: false,
+  progress: undefined,
+};
 
 /**
  * Renders a signup page.
  * @returns The rendered signup page.
  */
 const Signin = () => {
-  const inputs: string[] = ["Email", "Password"];
-  const [email, setEmail] = useState<string>("");
+  const inputs: string[] = ["Username", "Password"];
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
+  const nav = useNavigate();
 
   //#region functions
-  /**
-   * Handles the visibility of the password.
-   */
-  const handleVisibility = () => {
-    setVisible(!visible);
-    const element = document.getElementsByName("Password")[0];
-    visible
-      ? element.setAttribute("type", "password")
-      : element.setAttribute("type", "text");
-  };
-
   /**
    * Handles and saves the inputs from the user.
    * @param e The event object to extract the value input by users
    */
   const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "Email") {
-      setEmail(value);
+    if (name === "Username") {
+      setUsername(value);
     } else if (name === "Password") {
       setPassword(value);
     }
   };
 
   /**
-   * Posts the inputs to the backend.
+   * Verifies the inputs from the user and sends a request to the server.
    */
-  const verifyInputs = () => {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const myToast: ToastOptions = {
-      position: "top-center",
-      autoClose: 1000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      closeButton: false,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-    };
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    try {
+      const formField = new FormData();
+      formField.append("username", username);
+      formField.append("password", password);
 
-    if (!pattern.test(email)) {
-      toast.error("Invalid email", myToast);
-      return;
-    } else if (password.length < 8) {
-      toast.error("Password must be at least 8 characters", myToast);
-      return;
+      const response = await axios.post(
+        `${import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""}/signin`,
+        formField
+      );
+
+      if (response.data.success) {
+        toast.success("Login Successful", myToast);
+        nav("/profile");
+      } else {
+        toast.error("Login failed", myToast);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+      toast.error("An error occurred", myToast);
     }
-
-    //TODO: verify the inputs to the backend + redirect to the home page
-    console.log(email, password);
   };
   //#endregion
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-full px-4 gap-y-12 lg:justify-between lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
+    <div className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
       <ToastContainer />
       {/* Left - Text side */}
-      <div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
+      <div className="z-10 flex flex-col justify-start text-center lg:text-start gap-y-3">
         <h1 className="text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
           Welcome back
         </h1>
@@ -95,7 +98,10 @@ const Signin = () => {
       </div>
 
       {/* Right - Input side */}
-      <div className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4">
+      <form
+        className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4"
+        onSubmit={handleSubmit}
+      >
         {inputs.map((input, index) => {
           return (
             <div
@@ -110,7 +116,7 @@ const Signin = () => {
               </label>
               {input.toLowerCase() !== "password" ? (
                 <input
-                  type={input.toLowerCase() === "email" ? "email" : "text"}
+                  type="text"
                   id={input}
                   name={input}
                   className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
@@ -129,7 +135,14 @@ const Signin = () => {
                     buttonType="icon"
                     icon={visible ? visibleOff : visibleOn}
                     className="absolute w-6 h-6 top-2 right-3"
-                    onClick={handleVisibility}
+                    onClick={() => {
+                      setVisible(!visible);
+                      const element = document.getElementsByName("Password")[0];
+                      visible
+                        ? element.setAttribute("type", "password")
+                        : element.setAttribute("type", "text");
+                    }}
+                    type="button"
                   ></Button>
                 </div>
               )}
@@ -139,11 +152,11 @@ const Signin = () => {
         <Button
           buttonType="text"
           className="max-w-3xl mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
-          onClick={verifyInputs}
+          type="submit"
         >
           Sign In
         </Button>
-      </div>
+      </form>
 
       {/* Decorations */}
       <img
