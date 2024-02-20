@@ -1,10 +1,13 @@
 //#region imports
 import Circle_1 from "../../assets/images/circle_1.svg";
 import Circle_2 from "../../assets/images/circle_2.svg";
+import visibleOn from "../../assets/icons/visible_on.svg";
+import visibleOff from "../../assets/icons/visible_off.svg";
 import { useState } from "react";
 
 // components
 import { Button } from "../Button";
+import { ToastContainer, ToastOptions, toast } from "react-toastify";
 //#endregion
 
 /**
@@ -17,6 +20,7 @@ const Signup = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [retypePassword, setRetypePassword] = useState<string>("");
+  const [visible, setVisible] = useState<boolean>(false);
 
   //#region functions
   /**
@@ -37,16 +41,53 @@ const Signup = () => {
   };
 
   /**
+   * Handles the visibility of the password.
+   */
+  const handleVisibility = () => {
+    setVisible(!visible);
+    const element = document.getElementsByName("Password")[0];
+    visible
+      ? element.setAttribute("type", "password")
+      : element.setAttribute("type", "text");
+  };
+
+  /**
    * Posts the inputs to the backend.
    */
   const postInputs = () => {
-    //TODO: Post the inputs to the backend
-    console.log(username, email, password, retypePassword);
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const myToast: ToastOptions = {
+      position: "top-center",
+      autoClose: 1000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      closeButton: false,
+    };
+
+    if (!pattern.test(email)) {
+      toast.error("Invalid email", myToast);
+      return;
+    } else if (password !== retypePassword) {
+      toast.error("Password does not match", myToast);
+      return;
+    } else if (password.length < 8) {
+      toast.error("Password must be at least 4 characters", myToast);
+      return;
+    } else if (username.length < 4) {
+      toast.error("Username must be at least 4 characters", myToast);
+      return;
+    } else {
+      //TODO: post the inputs to the backend
+    }
   };
   //#endregion
 
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-4 gap-y-12 lg:justify-between lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
+      <ToastContainer />
       {/* Left - Text side */}
       <div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
         <h1 className="text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
@@ -78,19 +119,37 @@ const Signup = () => {
               >
                 {input}
               </label>
-              <input
-                type="text"
-                id={input}
-                name={input}
-                className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
-                onChange={handleInputs}
-              />
+              {input.toLowerCase() !== "password" ? (
+                <input
+                  type={input.toLowerCase() === "email" ? "email" : "text"}
+                  id={input}
+                  name={input}
+                  className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                  onChange={handleInputs}
+                />
+              ) : (
+                <div className="relative">
+                  <input
+                    type="password"
+                    id={input}
+                    name={input}
+                    className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                    onChange={handleInputs}
+                  />
+                  <Button
+                    buttonType="icon"
+                    icon={visible ? visibleOff : visibleOn}
+                    className="absolute w-6 h-6 top-2 right-3"
+                    onClick={handleVisibility}
+                  ></Button>
+                </div>
+              )}
             </div>
           );
         })}
         <Button
           buttonType="text"
-          className="max-w-3xl mt-4 rounded-full"
+          className="max-w-3xl mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
           onClick={postInputs}
         >
           Sign Up
