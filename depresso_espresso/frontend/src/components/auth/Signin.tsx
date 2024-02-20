@@ -148,7 +148,7 @@ const Signin = () => {
       {/* Decorations */}
       <img
         src={Circle_1}
-        className="absolute bottom-0 left-0 object-cover"
+        className="absolute bottom-0 left-0 object-cover opacity-80"
       ></img>
       <img
         src={Circle_2}
