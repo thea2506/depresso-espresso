@@ -8,6 +8,7 @@ import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { animated, useSpring } from "@react-spring/web";
 
 // components
 import { Button } from "../Button";
@@ -41,6 +42,11 @@ const Signup = () => {
   const [retypePassword, setRetypePassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
   const nav = useNavigate();
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    config: { duration: 1000 },
+  });
 
   //#region functions
   /**
@@ -98,10 +104,13 @@ const Signup = () => {
   //#endregion
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20">
+    <animated.div
+      className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20"
+      style={springs}
+    >
       <ToastContainer />
       {/* Left - Text side */}
-      <div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
+      <animated.div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
         <h1 className="text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
           Create an Account
         </h1>
@@ -115,7 +124,7 @@ const Signup = () => {
             Sign In
           </a>
         </p>
-      </div>
+      </animated.div>
 
       {/* Right - Input side */}
       <form
@@ -187,7 +196,7 @@ const Signup = () => {
         src={Circle_2}
         className="absolute top-0 left-0 object-cover"
       ></img>
-    </div>
+    </animated.div>
   );
 };
 
