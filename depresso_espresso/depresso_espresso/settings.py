@@ -70,8 +70,8 @@ ROOT_URLCONF = 'depresso_espresso.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': ['/frontend/dist'],
-        'DIRS': [os.path.join(BASE_DIR, 'depresso_espresso/authentication')],
+        #'DIRS': ['/frontend/dist'],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
 
         'APP_DIRS': True,
         'OPTIONS': {
