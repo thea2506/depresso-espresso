@@ -132,7 +132,7 @@ const Signin = () => {
                   onChange={handleInputs}
                 />
               ) : (
-                <div className="relative">
+                <div className="relative max-w-3xl">
                   <input
                     type="password"
                     id={input}
