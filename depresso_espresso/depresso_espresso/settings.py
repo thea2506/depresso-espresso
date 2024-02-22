@@ -69,12 +69,13 @@ CORS_ALLOWED_ORIGINS = [
 
 ROOT_URLCONF = 'depresso_espresso.urls'
 
+BASE_TEMPLATES = os.path.join(BASE_DIR, 'templates')
+FRONTEND_TEMPLATES = os.path.join(BASE_DIR, 'frontend')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        #'DIRS': ['/frontend/dist'],
-        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
-        'DIRS': [os.path.join(BASE_DIR, 'home/templates/home')],
+        'DIRS': [BASE_TEMPLATES, FRONTEND_TEMPLATES],
 
         'APP_DIRS': True,
         'OPTIONS': {
