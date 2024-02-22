@@ -71,7 +71,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # 'DIRS': ['/frontend/dist'],
-        'DIRS': [os.path.join(BASE_DIR, 'authentication')],
+        'DIRS': [os.path.join(BASE_DIR, 'depresso_espresso/authentication')],
 
         'APP_DIRS': True,
         'OPTIONS': {
