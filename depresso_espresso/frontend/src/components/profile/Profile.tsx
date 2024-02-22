@@ -14,6 +14,8 @@ interface ProfileProps {
   display_name: string;
   github?: string;
   imageURL?: string;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 //#endregion
 
@@ -25,12 +27,16 @@ interface ProfileProps {
  * @param {string} props.display_name - The username to display.
  * @param {string} props.github - The GitHub link to display.
  * @param {string} props.imageURL - The URL of the avatar image to display.
+ * @oaram {boolean} props.loading - The loading state.
+ * @param {Function} props.setLoading - The function to set the loading state.
  * @returns {JSX.Element} The rendered profile component.
  */
 const Profile = ({
   display_name,
   github,
   imageURL,
+  loading,
+  setLoading,
 }: ProfileProps): JSX.Element => {
   //#region variables
   const myToast: ToastOptions<unknown> = {
@@ -94,6 +100,7 @@ const Profile = ({
    * @param {string} imageURL - The URL of the image to check.
    */
   async function checkImageURL(imageURL: string) {
+    if (imageURL === "") return;
     try {
       await axios(imageURL);
     } catch (error) {
@@ -104,11 +111,11 @@ const Profile = ({
   /**
    * Saves the new profile information to the database.
    */
-  const saveEdits = () => {
+  const saveEdits = async () => {
     checkGitHubProfile(newGithub)
       .then(() => checkImageURL(newImageURL))
       .then(() => {
-        if (newDisplayName.length <= 4) {
+        if (newDisplayName !== "" && newDisplayName.length <= 4) {
           throw new Error("Display Name is too short");
         }
       })
@@ -120,6 +127,19 @@ const Profile = ({
       });
 
     //TODO: Post newUsername, newGithub, and newImageURL to the backend
+    const formField = new FormData();
+    if (newDisplayName !== "") formField.append("display_name", newDisplayName);
+    if (newGithub != "") formField.append("github_link", newGithub);
+    if (newImageURL != "") formField.append("profile_image", newImageURL);
+    await axios.post(
+      `${
+        import.meta.env.VITE_ENVIRONMENT === "dev"
+          ? "http://127.0.0.1:8000"
+          : "https://espresso-a3b726fa7f99.herokuapp.com"
+      }/user_data`,
+      formField
+    );
+    setLoading(!loading);
   };
   //#endregion
 

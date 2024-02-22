@@ -25,6 +25,7 @@ const ProfilePage = () => {
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
+  const [loading, setLoading] = useState<boolean>(false);
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -48,7 +49,6 @@ const ProfilePage = () => {
       const data = await response.data;
       setDisplayName(data["display_name"]);
       setGithubLink(data["github_link"]);
-      console.log(githubLink, "github link");
       setProfileImage(data["profile_image"]);
     } catch (error) {
       console.error("An error occurred", error);
@@ -74,6 +74,8 @@ const ProfilePage = () => {
         display_name={displayName}
         imageURL={profileImage}
         github={githubLink}
+        loading={loading}
+        setLoading={setLoading}
       />
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
