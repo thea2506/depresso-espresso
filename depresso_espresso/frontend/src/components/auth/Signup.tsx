@@ -79,7 +79,7 @@ const Signup = () => {
       formField.append("password2", retypePassword);
       const response = await axios.post(
         `${
-          import.meta.env.DEV === true
+          import.meta.env.VITE_ENVIRONMENT === "dev"
             ? "http://127.0.0.1:8000"
             : "https://espresso-a3b726fa7f99.herokuapp.com"
         }/signup`,

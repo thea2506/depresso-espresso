@@ -48,6 +48,7 @@ const ProfilePage = () => {
       const data = await response.data;
       setDisplayName(data["display_name"]);
       setGithubLink(data["github_link"]);
+      console.log(githubLink, "github link");
       setProfileImage(data["profile_image"]);
     } catch (error) {
       console.error("An error occurred", error);
@@ -90,13 +91,13 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && githubLink !== undefined && (
+      {currentTopic === "GitHub" && githubLink !== null && (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
       )}
-      {currentTopic === "GitHub" && githubLink === undefined && (
+      {currentTopic === "GitHub" && githubLink === null && (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
