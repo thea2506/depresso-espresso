@@ -22,3 +22,17 @@ def user_data(request):
             #data['friends'] = getattr(user, 'friends')
             #data['username'] = getattr(user, 'username') May want to display this as well as display name 
         return JsonResponse(data)
+    
+    elif request.method == "POST":
+
+        user = request.user
+        if user:
+            if "display_name" in request.POST:
+                setattr(user, 'display_name', request.POST["display_name"])
+            if "github_link" in request.POST:
+                setattr(user, 'github_link', request.POST["github_link"])
+            if "profile_image" in request.POST:
+                setattr(user, 'profile_image', request.POST["profile_image"])
+            user.save()
+
+        return JsonResponse({"message": "Profile updated successfully!"})
