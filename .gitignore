@@ -12,7 +12,7 @@ main.min.js
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
