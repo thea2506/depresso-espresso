@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'home',
+    'author_profile',
     'base.apps.BaseConfig',
     'django.contrib.admin',
 ]
@@ -72,6 +74,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         #'DIRS': ['/frontend/dist'],
         'DIRS': [os.path.join(BASE_DIR, 'frontend')],
+        'DIRS': [os.path.join(BASE_DIR, 'home/templates/home')],
 
         'APP_DIRS': True,
         'OPTIONS': {
