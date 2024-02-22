@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useState } from "react";
 import axios from "axios";
 import editIcon from "../../assets/icons/edit.svg";
+import defaultPic from "../../assets/images/default_profile.jpg";
 //#endregion
 
 //#region interfaces
@@ -26,7 +27,11 @@ interface ProfileProps {
  * @param {string} props.imageURL - The URL of the avatar image to display.
  * @returns {JSX.Element} The rendered profile component.
  */
-const Profile = ({ display_name, github, imageURL }: ProfileProps): JSX.Element => {
+const Profile = ({
+  display_name,
+  github,
+  imageURL,
+}: ProfileProps): JSX.Element => {
   //#region variables
   const myToast: ToastOptions<unknown> = {
     position: "top-center",
@@ -126,7 +131,7 @@ const Profile = ({ display_name, github, imageURL }: ProfileProps): JSX.Element 
         <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3">
           <img
             className="object-cover w-full h-full rounded-full"
-            src={imageURL}
+            src={imageURL || defaultPic}
             alt="Profile Picture"
           />
         </div>

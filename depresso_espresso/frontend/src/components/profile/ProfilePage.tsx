@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 //#region imports
 import React, { useState } from "react";
@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
+import { animated, useSpring } from "@react-spring/web";
 //#endregion
 
 /**
@@ -20,42 +21,51 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
 
-  const [display_name, setDisplayName] = useState("");
-  const [github_link, setGithub] = useState("");
-  const [profile_image, setProfImage] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [githubLink, setGithubLink] = useState("");
+  const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    config: { duration: 1000 },
+  });
 
+  //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
   };
 
   const getData = async () => {
-    try{
-        const response = await axios.get("user_data");
-        setDisplayName(response.data['display_name'])
-        setGithub(response.data['github_link'])
-        setProfImage(response.data['profile_image'])
+    try {
+      const response = await axios.get("user_data");
+      setDisplayName(response.data["displayName"]);
+      setGithubLink(response.data["githubLink"]);
+      setProfileImage(response.data["profileImage"]);
     } catch (error) {
       console.error("An error occurred", error);
     }
     // This could probably be combined into 1 request using render context
 
-    try{ 
+    try {
       await axios.get("profile");
     } catch (error) {
-      console.error("An error occurred", error); 
-    } 
-  
-  }
+      console.error("An error occurred", error);
+    }
+  };
   getData(); // send request to profile endpoint to retrieve current user's info and render the component
+  //#endregion
 
   return (
-    <div className="flex flex-col gap-y-8">
+    <animated.div
+      className="flex flex-col px-4 gap-y-8 sm:px-12 md:px-20"
+      style={springs}
+    >
       {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
-        display_name= {display_name}
-        imageURL= {profile_image}
-        github={github_link}
+        display_name={displayName}
+        imageURL={profileImage}
+        github={githubLink}
       />
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
@@ -73,15 +83,19 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && (
+      {currentTopic === "GitHub" && githubLink !== undefined && (
         <GitHubActionsList
-          github={github_link}
-          displayName={display_name}
+          github={githubLink}
+          displayName={displayName}
         />
       )}
-    </div>
+      {currentTopic === "GitHub" && githubLink === undefined && (
+        <div className="flex items-center justify-center text-lg opacity-80">
+          Link your Github...
+        </div>
+      )}
+    </animated.div>
   );
 };
-
 
 export default ProfilePage;
