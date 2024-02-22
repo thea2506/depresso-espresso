@@ -192,7 +192,7 @@ const Profile = ({
         </Popup>
       </div>
       {/* Display profile info */}
-      <div className="flex flex-col">
+      <div className="flex flex-col items-center">
         <p className="text-xl font-semibold md:text-2xl opacity-95">
           {display_name}
         </p>

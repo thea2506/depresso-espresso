@@ -38,20 +38,27 @@ const ProfilePage = () => {
 
   const getData = async () => {
     try {
-      const response = await axios.get("user_data");
-      setDisplayName(response.data["displayName"]);
-      setGithubLink(response.data["githubLink"]);
-      setProfileImage(response.data["profileImage"]);
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_ENVIRONMENT === "dev"
+            ? "http://127.0.0.1:8000"
+            : "https://espresso-a3b726fa7f99.herokuapp.com"
+        }/user_data`
+      );
+      const data = await response.data;
+      setDisplayName(data["display_name"]);
+      setGithubLink(data["github_link"]);
+      setProfileImage(data["profile_image"]);
     } catch (error) {
       console.error("An error occurred", error);
     }
     // This could probably be combined into 1 request using render context
 
-    try {
-      await axios.get("profile");
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
+    // try {
+    //   await axios.get("profile");
+    // } catch (error) {
+    //   console.error("An error occurred", error);
+    // }
   };
   getData(); // send request to profile endpoint to retrieve current user's info and render the component
   //#endregion

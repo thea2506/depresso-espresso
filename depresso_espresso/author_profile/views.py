@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 def profile(request):
     return render(request, "dist/index.html")
     
-@login_required
+#@login_required
 def user_data(request):
     if request.method == "GET":
 
@@ -21,5 +21,4 @@ def user_data(request):
             #data['follows'] = getattr(user, 'follows')
             #data['friends'] = getattr(user, 'friends')
             #data['username'] = getattr(user, 'username') May want to display this as well as display name 
-
         return JsonResponse(data)

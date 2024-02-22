@@ -58,6 +58,7 @@ const Signin = () => {
   /**
    * Verifies the inputs from the user and sends a request to the server.
    */
+
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
@@ -67,7 +68,7 @@ const Signin = () => {
 
       const response = await axios.post(
         `${
-          import.meta.env.DEV === true
+          import.meta.env.VITE_ENVIRONMENT === "dev"
             ? "http://127.0.0.1:8000"
             : "https://espresso-a3b726fa7f99.herokuapp.com"
         }/signin`,
