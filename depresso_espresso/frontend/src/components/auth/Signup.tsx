@@ -143,7 +143,7 @@ const Signup = () => {
               >
                 {input}
               </label>
-              {input.toLowerCase() !== "password" ? (
+              {input.toLowerCase() !== "password" && input.toLowerCase() !== "retype password" ? (
                 <input
                   type="text"
                   id={input}
@@ -167,10 +167,14 @@ const Signup = () => {
                     className="absolute w-6 h-6 top-2 right-3"
                     onClick={() => {
                       setVisible(!visible);
-                      const element = document.getElementsByName("Password")[0];
+                      const element1 = document.getElementsByName("Password")[0];
+                      const element2 = document.getElementsByName("Retype Password")[0];
                       visible
-                        ? element.setAttribute("type", "password")
-                        : element.setAttribute("type", "text");
+                        ? element1.setAttribute("type", "password")
+                        : element1.setAttribute("type", "text");
+                      visible
+                        ? element2.setAttribute("type", "password")
+                        : element2.setAttribute("type", "text");
                     }}
                   ></Button>
                 </div>
