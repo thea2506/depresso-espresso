@@ -3,5 +3,5 @@ from django.urls import path
 
 
 urlpatterns = [
-    path('home', views.stream, name="home"),
+    path('home', views.StreamView.as_view(), name="home"),
 ]
