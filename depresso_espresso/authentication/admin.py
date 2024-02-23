@@ -17,7 +17,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = Author
-        fields = ('username', 'first_name', 'last_name', "github_link", "profile_image", "display_name")
+        fields = ('username', 'first_name', 'last_name', "github_link", "profile_image", "display_name", "friends")
 
     def clean_password2(self):
         # Check that the two password entries match

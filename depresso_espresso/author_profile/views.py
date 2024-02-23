@@ -22,6 +22,9 @@ def user_data(request):
             data['success'] = True
             #data['follows'] = getattr(user, 'follows')
             #data['friends'] = getattr(user, 'friends')
+            friends = getattr(user, 'friends')
+            print("username:", getattr(user, 'username'))
+            print("FRIENDS:", friends)
             #data['username'] = getattr(user, 'username') May want to display this as well as display name 
 
         else:

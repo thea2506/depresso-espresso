@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import { FC, useState } from "react";
+import MakePost from "../data/MakePost";
 
 const Logo = "https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
 
@@ -32,6 +33,7 @@ const Home: FC<{}> = () => {
       </div>
       <p>This component shows a cat.</p>
       <p>You must be signed in to view</p>
+      <MakePost/>
     </div>
   );
 };

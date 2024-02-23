@@ -8,6 +8,7 @@ import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
+import FollowList from "./FollowList";
 //#endregion
 
 /**
@@ -22,6 +23,7 @@ const ProfilePage = () => {
   ];
 
   const [displayName, setDisplayName] = useState("");
+  const [followers, setFollowers] = useState("");
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
@@ -45,6 +47,7 @@ const ProfilePage = () => {
       setDisplayName(data["display_name"]);
       setGithubLink(data["github_link"]);
       setProfileImage(data["profile_image"]);
+      setFollowers(data["followers"]);
     } catch (error) {
       console.error("An error occurred", error);
     }
@@ -91,6 +94,11 @@ const ProfilePage = () => {
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
+      )}
+      {currentTopic === "Followers" && (
+        <FollowList
+          followers = {followers}
+        />
       )}
     </animated.div>
   );
