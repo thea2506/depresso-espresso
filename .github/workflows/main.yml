@@ -17,12 +17,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '14'
+
+      - name: wd3d
+        run: ls
           
       - name: Change directory
         run: cd depresso_espresso
 
       - name: Change directory again
-        run: ls
+        run: cd depresso_espresso
+
+      - name: Change directory yet again
+        run: cd frontend
 
       - name: Install dependencies
         run: npm install
