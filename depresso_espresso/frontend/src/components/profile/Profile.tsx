@@ -102,21 +102,42 @@ const Profile = ({
    * Checks if the given URL is a valid image URL.
    * @param {string} imageURL - The URL of the image to check.
    */
-  async function checkImageURL(imageURL: string) {
-    if (imageURL === "") return;
-    try {
-      await axios(imageURL);
-    } catch (error) {
-      throw new Error("Invalid image URL");
+  // async function checkImageURL(imageURL: string) {
+  //   if (imageURL === "") return;
+  //   try {
+  //     const img = await axios(imageURL);
+  //     if (img.status !== 200) {
+  //       alert("Invalid image URL");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     throw new Error("Invalid image URL");
+  //   }
+  // }
+  const checkImageURL = (imageURL: string) => {
+    const img = new Image();
+    img.src = imageURL;
+    if (img.complete) {
+      return true;
+    } else {
+      img.onload = () => {
+        return true;
+      };
+      img.onerror = () => {
+        return false;
+      };
     }
-  }
+  };
 
   /**
    * Saves the new profile information to the database.
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
-      .then(() => checkImageURL(newImageURL))
+      .then(async () => {
+        const validImage = checkImageURL(newImageURL);
+        if (!validImage) throw new Error("Invalid image URL");
+      })
       .then(() => {
         if (newDisplayName !== "" && newDisplayName.length <= 4) {
           throw new Error("Display Name is too short");
@@ -130,11 +151,10 @@ const Profile = ({
         toast.error(error.message, myToast);
       });
 
-    //TODO: Post newUsername, newGithub, and newImageURL to the backend
     const formField = new FormData();
     if (newDisplayName !== "") formField.append("display_name", newDisplayName);
-    if (newGithub != "") formField.append("github_link", newGithub);
-    if (newImageURL != "") formField.append("profile_image", newImageURL);
+    formField.append("github_link", newGithub);
+    formField.append("profile_image", newImageURL);
     await axios.post("/user_data", formField);
     setLoading(!loading);
   };
@@ -149,7 +169,6 @@ const Profile = ({
           <img
             className="object-cover w-full h-full rounded-full"
             src={imageURL || defaultPic}
-            alt="Profile Picture"
           />
         </div>
 

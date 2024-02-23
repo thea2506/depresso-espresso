@@ -35,6 +35,7 @@ const ProfilePage = () => {
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
+    console.log(githubLink, "githubLink");
   };
 
   const getData = async () => {
@@ -80,13 +81,13 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && githubLink !== null && (
+      {currentTopic === "GitHub" && githubLink !== "" && (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
       )}
-      {currentTopic === "GitHub" && githubLink === null && (
+      {currentTopic === "GitHub" && githubLink === "" && (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
