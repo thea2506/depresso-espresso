@@ -1,0 +1,36 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - "2024"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        working-directory: depresso_espresso/frontend
+        run: npm install
+
+      - name: Build project
+        working-directory: depresso_espresso/frontend
+        run: npm run build
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.12
+        with:
+          heroku_api_key: $HEROKU_API_KEY
+          heroku_app_name: 'espresso'
+          heroku_email: 'afra.rahmanfard@gmail.com'
+          appdir: "depresso_espresso"
+          buildpack: "https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python"
