@@ -63,6 +63,7 @@ MIDDLEWARE = [
     "depresso_espresso.middleware.middleware.LoginRequiredMiddleware"
 ]
 
+# Add pages which shouldn't be redirected to signin page
 LOGIN_EXEMPT_URLS = (
     r"signup"
 )
