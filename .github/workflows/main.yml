@@ -18,26 +18,13 @@ jobs:
         with:
           node-version: '14'
 
-      - name: wd3d
-        run: ls
-          
-      - name: Change directory
-        run: cd depresso_espresso && ls
-
-      - name: Change directory again
-        run: cd depresso_espresso && ls
-
-      - name: Change directory yet again
-        run: cd frontend
-
       - name: Install dependencies
+        working-directory: depresso_espresso/frontend
         run: npm install
 
       - name: Build project
+        working-directory: depresso_espresso/frontend
         run: npm run build
-
-      - name: Start development server
-        run: npm run dev
 
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.12.12
