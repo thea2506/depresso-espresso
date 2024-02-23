@@ -13,6 +13,8 @@ import django_on_heroku
 from pathlib import Path
 import os
 
+LOGIN_URL = "/signin"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'home',
+    'author_profile',
     'posts',
     'base.apps.BaseConfig',
     'django.contrib.admin',

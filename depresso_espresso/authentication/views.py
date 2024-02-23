@@ -60,3 +60,12 @@ def loginview(request):
 def index(request):
     return render(request, "dist/index.html")
 
+def is_authenticated(request):
+    data = {}
+    if request.user.is_authenticated:
+        data['success'] = True
+    else:
+        data['success'] = False
+    return JsonResponse(data)
+
+
