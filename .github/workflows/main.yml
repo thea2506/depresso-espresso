@@ -22,10 +22,10 @@ jobs:
         run: ls
           
       - name: Change directory
-        run: cd depresso_espresso
+        run: cd depresso_espresso && ls
 
       - name: Change directory again
-        run: cd depresso_espresso
+        run: cd depresso_espresso && ls
 
       - name: Change directory yet again
         run: cd frontend
