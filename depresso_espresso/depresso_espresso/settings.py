@@ -60,7 +60,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "depresso_espresso.middleware.middleware.LoginRequiredMiddleware"
 ]
+
+LOGIN_EXEMPT_URLS = (
+    r"signup"
+)
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
