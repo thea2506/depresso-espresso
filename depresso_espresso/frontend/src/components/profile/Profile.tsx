@@ -14,6 +14,8 @@ interface ProfileProps {
   display_name: string;
   github?: string;
   imageURL?: string;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 //#endregion
 
@@ -25,12 +27,16 @@ interface ProfileProps {
  * @param {string} props.display_name - The username to display.
  * @param {string} props.github - The GitHub link to display.
  * @param {string} props.imageURL - The URL of the avatar image to display.
+ * @oaram {boolean} props.loading - The loading state.
+ * @param {Function} props.setLoading - The function to set the loading state.
  * @returns {JSX.Element} The rendered profile component.
  */
 const Profile = ({
   display_name,
   github,
   imageURL,
+  loading,
+  setLoading,
 }: ProfileProps): JSX.Element => {
   //#region variables
   const myToast: ToastOptions<unknown> = {
@@ -51,6 +57,9 @@ const Profile = ({
   const [newDisplayName, setDisplayName] = useState<string>(display_name);
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
+
+  const [open, setOpen] = useState<boolean>(false);
+  const closeModal = () => setOpen(false);
   //#endregion
 
   //#region Functions
@@ -93,33 +102,61 @@ const Profile = ({
    * Checks if the given URL is a valid image URL.
    * @param {string} imageURL - The URL of the image to check.
    */
-  async function checkImageURL(imageURL: string) {
-    try {
-      await axios(imageURL);
-    } catch (error) {
-      throw new Error("Invalid image URL");
+  // async function checkImageURL(imageURL: string) {
+  //   if (imageURL === "") return;
+  //   try {
+  //     const img = await axios(imageURL);
+  //     if (img.status !== 200) {
+  //       alert("Invalid image URL");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     throw new Error("Invalid image URL");
+  //   }
+  // }
+  const checkImageURL = (imageURL: string) => {
+    const img = new Image();
+    img.src = imageURL;
+    if (img.complete) {
+      return true;
+    } else {
+      img.onload = () => {
+        return true;
+      };
+      img.onerror = () => {
+        return false;
+      };
     }
-  }
+  };
 
   /**
    * Saves the new profile information to the database.
    */
-  const saveEdits = () => {
+  const saveEdits = async () => {
     checkGitHubProfile(newGithub)
-      .then(() => checkImageURL(newImageURL))
+      .then(async () => {
+        const validImage = checkImageURL(newImageURL);
+        if (!validImage) throw new Error("Invalid image URL");
+      })
       .then(() => {
-        if (newDisplayName.length <= 4) {
+        if (newDisplayName !== "" && newDisplayName.length <= 4) {
           throw new Error("Display Name is too short");
         }
       })
       .then(() => {
         toast.success("Profile updated successfully", myToast);
+        closeModal();
       })
       .catch((error) => {
         toast.error(error.message, myToast);
       });
 
-    //TODO: Post newUsername, newGithub, and newImageURL to the backend
+    const formField = new FormData();
+    if (newDisplayName !== "") formField.append("display_name", newDisplayName);
+    formField.append("github_link", newGithub);
+    formField.append("profile_image", newImageURL);
+    await axios.post("/user_data", formField);
+    setLoading(!loading);
   };
   //#endregion
 
@@ -132,24 +169,24 @@ const Profile = ({
           <img
             className="object-cover w-full h-full rounded-full"
             src={imageURL || defaultPic}
-            alt="Profile Picture"
           />
         </div>
+
+        <Button
+          buttonType="icon"
+          icon={editIcon}
+          className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
+          onClick={() => setOpen(true)}
+        ></Button>
 
         {/* Edit popup screen */}
         <Popup
           overlayStyle={{ background: "rgba(0, 0, 0, 0.5)" }}
-          trigger={
-            <Button
-              buttonType="icon"
-              icon={editIcon}
-              className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
-              onClick={() => console.log("Change avatar")}
-            ></Button>
-          }
+          open={open}
           modal
           lockScroll={true}
           onClose={() => {
+            setOpen(false);
             setDisplayName(display_name);
             setGithub(github || "");
             setImageURL(imageURL || "");
@@ -184,7 +221,9 @@ const Profile = ({
             <Button
               buttonType="text"
               className="flex items-center justify-center h-12 px-12 m-auto"
-              onClick={saveEdits}
+              onClick={() => {
+                saveEdits();
+              }}
             >
               Save
             </Button>
@@ -192,7 +231,7 @@ const Profile = ({
         </Popup>
       </div>
       {/* Display profile info */}
-      <div className="flex flex-col">
+      <div className="flex flex-col items-center">
         <p className="text-xl font-semibold md:text-2xl opacity-95">
           {display_name}
         </p>

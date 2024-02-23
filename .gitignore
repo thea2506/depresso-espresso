@@ -340,3 +340,5 @@ node_modules
 
 # staticfiles
 staticfiles
+*.env.*
+dist

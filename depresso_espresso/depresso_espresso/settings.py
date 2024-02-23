@@ -64,6 +64,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://localhost:8000',
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
