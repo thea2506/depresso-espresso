@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+
+    "heroku-prebuild": "echo This runs before Heroku installs dependencies.",
+    "heroku-postbuild": "npm run build",
+    "heroku-cleanup": "echo This runs after Heroku prunes and caches dependencies."
+
   },
   "dependencies": {
     "@react-spring/web": "^9.7.3",
