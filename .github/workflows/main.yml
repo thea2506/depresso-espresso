@@ -22,7 +22,7 @@ jobs:
         run: cd depresso_espresso
 
       - name: Change directory again
-        run: cd frontend
+        run: ls
 
       - name: Install dependencies
         run: npm install
