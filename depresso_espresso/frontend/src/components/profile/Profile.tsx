@@ -57,6 +57,9 @@ const Profile = ({
   const [newDisplayName, setDisplayName] = useState<string>(display_name);
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
+
+  const [open, setOpen] = useState<boolean>(false);
+  const closeModal = () => setOpen(false);
   //#endregion
 
   //#region Functions
@@ -121,6 +124,7 @@ const Profile = ({
       })
       .then(() => {
         toast.success("Profile updated successfully", myToast);
+        closeModal();
       })
       .catch((error) => {
         toast.error(error.message, myToast);
@@ -131,14 +135,7 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("display_name", newDisplayName);
     if (newGithub != "") formField.append("github_link", newGithub);
     if (newImageURL != "") formField.append("profile_image", newImageURL);
-    await axios.post(
-      `${
-        import.meta.env.VITE_ENVIRONMENT === "dev"
-          ? "http://127.0.0.1:8000"
-          : "https://espresso-a3b726fa7f99.herokuapp.com"
-      }/user_data`,
-      formField
-    );
+    await axios.post("/user_data", formField);
     setLoading(!loading);
   };
   //#endregion
@@ -156,20 +153,21 @@ const Profile = ({
           />
         </div>
 
+        <Button
+          buttonType="icon"
+          icon={editIcon}
+          className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
+          onClick={() => setOpen(true)}
+        ></Button>
+
         {/* Edit popup screen */}
         <Popup
           overlayStyle={{ background: "rgba(0, 0, 0, 0.5)" }}
-          trigger={
-            <Button
-              buttonType="icon"
-              icon={editIcon}
-              className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
-              onClick={() => console.log("Change avatar")}
-            ></Button>
-          }
+          open={open}
           modal
           lockScroll={true}
           onClose={() => {
+            setOpen(false);
             setDisplayName(display_name);
             setGithub(github || "");
             setImageURL(imageURL || "");
@@ -204,7 +202,9 @@ const Profile = ({
             <Button
               buttonType="text"
               className="flex items-center justify-center h-12 px-12 m-auto"
-              onClick={saveEdits}
+              onClick={() => {
+                saveEdits();
+              }}
             >
               Save
             </Button>

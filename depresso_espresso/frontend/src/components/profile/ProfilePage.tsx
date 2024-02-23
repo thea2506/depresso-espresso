@@ -39,13 +39,7 @@ const ProfilePage = () => {
 
   const getData = async () => {
     try {
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_ENVIRONMENT === "dev"
-            ? "http://127.0.0.1:8000"
-            : "https://espresso-a3b726fa7f99.herokuapp.com"
-        }/user_data`
-      );
+      const response = await axios.get("/user_data");
       const data = await response.data;
       setDisplayName(data["display_name"]);
       setGithubLink(data["github_link"]);

@@ -66,14 +66,7 @@ const Signin = () => {
       formField.append("username", username);
       formField.append("password", password);
 
-      const response = await axios.post(
-        `${
-          import.meta.env.VITE_ENVIRONMENT === "dev"
-            ? "http://127.0.0.1:8000"
-            : "https://espresso-a3b726fa7f99.herokuapp.com"
-        }/signin`,
-        formField
-      );
+      const response = await axios.post("/signin", formField);
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
