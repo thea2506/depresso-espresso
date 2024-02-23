@@ -1,12 +1,13 @@
 import React from 'react';
-import styles from './Post.module.css';
+import styles from '../../Post.module.css';
 
 interface PostProps {
   imageUrl?: string;
-  content: string;
+  content?: string;
 }
 
-const Post: React.FC<PostProps> = ({ imageUrl, content }) => {
+const Post: React.FC<PostProps> = ({ imageUrl, content}) => {
+
   return (
     <div className={styles.post}>
       {imageUrl && <img src={imageUrl} alt="Post" className={styles.image} />}
@@ -14,5 +15,6 @@ const Post: React.FC<PostProps> = ({ imageUrl, content }) => {
     </div>
   );
 }
+
 
 export default Post;
