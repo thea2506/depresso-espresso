@@ -48,14 +48,8 @@ const ProfilePage = () => {
       console.error("An error occurred", error);
     }
     // This could probably be combined into 1 request using render context
-
-    // try {
-    //   await axios.get("profile");
-    // } catch (error) {
-    //   console.error("An error occurred", error);
-    // }
   };
-  getData(); // send request to profile endpoint to retrieve current user's info and render the component
+  getData();
   //#endregion
 
   return (
@@ -63,7 +57,6 @@ const ProfilePage = () => {
       className="flex flex-col px-4 gap-y-8 sm:px-12 md:px-20"
       style={springs}
     >
-      {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
         display_name={displayName}
         imageURL={profileImage}
