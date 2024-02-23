@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'posts',
     'base.apps.BaseConfig',
     'django.contrib.admin',
 ]
