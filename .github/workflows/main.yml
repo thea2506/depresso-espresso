@@ -32,3 +32,5 @@ jobs:
           heroku_api_key: $HEROKU_API_KEY
           heroku_app_name: 'espresso'
           heroku_email: 'afra.rahmanfard@gmail.com'
+          appdir: depresso_espresso
+          buildpack: https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python
