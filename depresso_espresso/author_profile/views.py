@@ -18,9 +18,15 @@ def user_data(request):
             data['display_name'] = getattr(user, 'display_name')
             data['github_link'] = getattr(user, 'github_link')
             data['profile_image'] = getattr(user, 'profile_image')
+            data['username'] = getattr(user, 'username')
+            data['success'] = True
             #data['follows'] = getattr(user, 'follows')
             #data['friends'] = getattr(user, 'friends')
             #data['username'] = getattr(user, 'username') May want to display this as well as display name 
+
+        else:
+            data['success'] = False
+
         return JsonResponse(data)
     
     elif request.method == "POST":
