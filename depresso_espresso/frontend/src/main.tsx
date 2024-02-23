@@ -6,7 +6,7 @@ import "./index.css";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
-import Stream from "./components/stream/Stream.tsx";
+import Home from "./components/home/Home.tsx";
 import Post from "./components/data/Post.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -18,14 +18,17 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <BrowserRouter>
       <Routes>
-        
         <Route
           path="/home"
-          element={<AuthCheck><Stream /></AuthCheck>}
+          element={
+            <AuthCheck>
+              <Home />
+            </AuthCheck>
+          }
         />
         <Route
           path="/"
-          element={<Stream />}
+          element={<Home />}
         />
         <Route
           path="/signin"
