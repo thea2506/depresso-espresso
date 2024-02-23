@@ -12,7 +12,6 @@ main.min.js
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -60,7 +59,7 @@ cover/
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
+*.sqlite3
 db.sqlite3-journal
 
 # Flask stuff:
@@ -122,8 +121,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
-.venv
+*.env.*
 env/
 venv/
 ENV/
@@ -236,13 +234,6 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -253,7 +244,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -303,7 +293,6 @@ dist
 .tox/
 __pycache__
 MANIFEST
-dist/
 docs/_build/
 docs/locale/
 node_modules/
@@ -324,8 +313,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
-dist-ssr
 *.local
 
 # Editor directories and files
@@ -339,5 +326,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# staticfiles
 staticfiles
+dist

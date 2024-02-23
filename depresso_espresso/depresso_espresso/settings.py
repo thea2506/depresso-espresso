@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
+    'posts',
     'base.apps.BaseConfig',
     'django.contrib.admin',
 ]
@@ -59,19 +60,27 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "depresso_espresso.middleware.middleware.LoginRequiredMiddleware"
 ]
+
+LOGIN_EXEMPT_URLS = (
+    r"signup"
+)
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://localhost:8000',
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
 
+BASE_TEMPLATES = os.path.join(BASE_DIR, 'templates')
+FRONTEND_TEMPLATES = os.path.join(BASE_DIR, 'frontend')
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        #'DIRS': ['/frontend/dist'],
-        'DIRS': [os.path.join(BASE_DIR, 'frontend')],
+        'DIRS': [BASE_TEMPLATES, FRONTEND_TEMPLATES],
 
         'APP_DIRS': True,
         'OPTIONS': {

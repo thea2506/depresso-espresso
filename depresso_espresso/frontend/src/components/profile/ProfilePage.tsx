@@ -25,6 +25,7 @@ const ProfilePage = () => {
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
+  const [loading, setLoading] = useState<boolean>(false);
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -34,26 +35,22 @@ const ProfilePage = () => {
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
+    console.log(githubLink, "githubLink");
   };
 
   const getData = async () => {
     try {
-      const response = await axios.get("user_data");
-      setDisplayName(response.data["displayName"]);
-      setGithubLink(response.data["githubLink"]);
-      setProfileImage(response.data["profileImage"]);
+      const response = await axios.get("/user_data");
+      const data = await response.data;
+      setDisplayName(data["display_name"]);
+      setGithubLink(data["github_link"]);
+      setProfileImage(data["profile_image"]);
     } catch (error) {
       console.error("An error occurred", error);
     }
     // This could probably be combined into 1 request using render context
-
-    try {
-      await axios.get("profile");
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
   };
-  getData(); // send request to profile endpoint to retrieve current user's info and render the component
+  getData();
   //#endregion
 
   return (
@@ -61,11 +58,12 @@ const ProfilePage = () => {
       className="flex flex-col px-4 gap-y-8 sm:px-12 md:px-20"
       style={springs}
     >
-      {/* TODO: Pull profile picture, username and github (optional) from the db */}
       <Profile
         display_name={displayName}
         imageURL={profileImage}
         github={githubLink}
+        loading={loading}
+        setLoading={setLoading}
       />
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
@@ -83,13 +81,13 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && githubLink !== undefined && (
+      {currentTopic === "GitHub" && githubLink !== "" && (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
       )}
-      {currentTopic === "GitHub" && githubLink === undefined && (
+      {currentTopic === "GitHub" && githubLink === "" && (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>

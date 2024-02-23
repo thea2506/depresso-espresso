@@ -6,6 +6,7 @@ import "./index.css";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
+import Post from "./components/data/Post.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -30,6 +31,10 @@ if (rootElement) {
         <Route
           path="/profile"
           element={<ProfilePage />}
+        />
+        <Route
+          path="/posts"
+          element={<Post />}
         />
       </Routes>
     </BrowserRouter>

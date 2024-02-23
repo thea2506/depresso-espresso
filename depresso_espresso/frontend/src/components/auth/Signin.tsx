@@ -58,6 +58,7 @@ const Signin = () => {
   /**
    * Verifies the inputs from the user and sends a request to the server.
    */
+
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
@@ -65,10 +66,7 @@ const Signin = () => {
       formField.append("username", username);
       formField.append("password", password);
 
-      const response = await axios.post(
-        `${import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""}/signin`,
-        formField
-      );
+      const response = await axios.post("/signin", formField);
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
@@ -132,7 +130,7 @@ const Signin = () => {
                   onChange={handleInputs}
                 />
               ) : (
-                <div className="relative">
+                <div className="relative max-w-3xl">
                   <input
                     type="password"
                     id={input}
