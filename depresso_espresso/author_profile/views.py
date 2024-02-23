@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 def profile(request):
     return render(request, "dist/index.html")
     
-@login_required
+#@login_required
 def user_data(request):
     if request.method == "GET":
 
@@ -27,10 +27,18 @@ def user_data(request):
         else:
             data['success'] = False
 
-
         return JsonResponse(data)
+    
+    elif request.method == "POST":
 
+        user = request.user
+        if user:
+            if "display_name" in request.POST:
+                setattr(user, 'display_name', request.POST["display_name"])
+            if "github_link" in request.POST:
+                setattr(user, 'github_link', request.POST["github_link"])
+            if "profile_image" in request.POST:
+                setattr(user, 'profile_image', request.POST["profile_image"])
+            user.save()
 
-
-        
-
+        return JsonResponse({"message": "Profile updated successfully!"})

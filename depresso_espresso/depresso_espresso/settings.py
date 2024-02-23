@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'authentication',
     'home',
     'author_profile',
+    'posts',
     'base.apps.BaseConfig',
     'django.contrib.admin',
 ]
@@ -63,11 +64,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "depresso_espresso.middleware.middleware.LoginRequiredMiddleware"
 ]
-
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
+    'http://localhost:8000',
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'

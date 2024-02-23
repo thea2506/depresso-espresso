@@ -77,10 +77,7 @@ const Signup = () => {
       formField.append("display_name", displayName);
       formField.append("password1", password);
       formField.append("password2", retypePassword);
-      const response = await axios.post(
-        `${import.meta.env.DEV === true ? "http://127.0.0.1:8000" : ""}/signup`,
-        formField
-      );
+      const response = await axios.post("/signup", formField);
 
       if (response.data.success) {
         toast.success("User Created Successfully", myToast);
@@ -139,11 +136,12 @@ const Signup = () => {
             >
               <label
                 htmlFor={input}
-                className="font-bold "
+                className="font-bold"
               >
                 {input}
               </label>
-              {input.toLowerCase() !== "password" && input.toLowerCase() !== "retype password" ? (
+              {input.toLowerCase() !== "password" &&
+              input.toLowerCase() !== "retype password" ? (
                 <input
                   type="text"
                   id={input}
@@ -152,12 +150,12 @@ const Signup = () => {
                   onChange={handleInputs}
                 />
               ) : (
-                <div className="relative">
+                <div className="relative max-w-3xl">
                   <input
                     type="password"
                     id={input}
                     name={input}
-                    className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                    className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
                     onChange={handleInputs}
                   />
                   <Button
@@ -167,8 +165,10 @@ const Signup = () => {
                     className="absolute w-6 h-6 top-2 right-3"
                     onClick={() => {
                       setVisible(!visible);
-                      const element1 = document.getElementsByName("Password")[0];
-                      const element2 = document.getElementsByName("Retype Password")[0];
+                      const element1 =
+                        document.getElementsByName("Password")[0];
+                      const element2 =
+                        document.getElementsByName("Retype Password")[0];
                       visible
                         ? element1.setAttribute("type", "password")
                         : element1.setAttribute("type", "text");

@@ -7,6 +7,7 @@ import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Stream from "./components/stream/Stream.tsx";
+import Post from "./components/data/Post.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AuthCheck from "./components/auth/Auth.tsx";
@@ -37,6 +38,10 @@ if (rootElement) {
         <Route
           path="/profile"
           element={<ProfilePage />}
+        />
+        <Route
+          path="/posts"
+          element={<Post />}
         />
       </Routes>
     </BrowserRouter>

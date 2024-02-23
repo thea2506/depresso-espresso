@@ -1,5 +1,6 @@
 from django.db import models
 from authentication.models import Author
+from posts.models import Posts
 
 
 # Create your models here.
@@ -58,53 +59,35 @@ class Author(models.Model):
         managed = False
         db_table = 'author'
 '''
-class Comments(models.Model):
-    postid = models.ForeignKey('Posts', models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
-    commentid = models.TextField(db_column='commentID', primary_key=True)  # Field name made lowercase.
-    contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
-    content = models.TextField()
-    authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
-    comment = models.TextField()
-    publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
+# class Comments(models.Model):
+#     postid = models.ForeignKey('Posts', models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
+#     commentid = models.TextField(db_column='commentID', primary_key=True)  # Field name made lowercase.
+#     contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
+#     content = models.TextField()
+#     authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
+#     comment = models.TextField()
+#     publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
 
-    class Meta:
-        managed = False
-        db_table = 'comments'
-
-
-class Following(models.Model):
-    authorid = models.TextField(db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, followerID) found, that is not supported. The first column is selected.
-    followerid = models.TextField(db_column='followerID')  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'following'
-        unique_together = (('authorid', 'followerid'),)
+#     class Meta:
+#         managed = False
+#         db_table = 'comments'
 
 
-class Likes(models.Model):
-    postid = models.ForeignKey('Posts', models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
-    authorid = models.OneToOneField(Author, models.DO_NOTHING, db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, postID) found, that is not supported. The first column is selected.
+# class Following(models.Model):
+#     authorid = models.TextField(db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, followerID) found, that is not supported. The first column is selected.
+#     followerid = models.TextField(db_column='followerID')  # Field name made lowercase.
 
-    class Meta:
-        managed = False
-        db_table = 'likes'
-        unique_together = (('authorid', 'postid'),)
+#     class Meta:
+#         managed = False
+#         db_table = 'following'
+#         unique_together = (('authorid', 'followerid'),)
 
 
-class Posts(models.Model):
-    title = models.TextField()
-    postid = models.TextField(db_column='postID', primary_key=True)  # Field name made lowercase.
-    source = models.TextField()
-    origin = models.TextField()
-    description = models.TextField()
-    contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
-    content = models.TextField()
-    authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
-    commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)  # Field name made lowercase.
-    publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
-    visibility = models.TextField()
+# class Likes(models.Model):
+#     postid = models.ForeignKey('Posts', models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
+#     authorid = models.OneToOneField(Author, models.DO_NOTHING, db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, postID) found, that is not supported. The first column is selected.
 
-    class Meta:
-        managed = False
-        db_table = 'posts'
+#     class Meta:
+#         managed = False
+#         db_table = 'likes'
+#         unique_together = (('authorid', 'postid'),)
