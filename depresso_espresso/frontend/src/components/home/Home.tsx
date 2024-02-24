@@ -27,7 +27,7 @@ const Home = () => {
    */
   const retrieveData = async () => {
     try {
-      const response = await axios.get("/user");
+      const response = await axios.get("/user_data");
       setDisplayName(response.data.display_name);
     } catch (error) {
       toast.error("Please Sign in to go further", myToast);
@@ -40,11 +40,13 @@ const Home = () => {
   //#endregion
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center">
       <ToastContainer />
-      <h3>{display_name} home page</h3>
-      <p>This component shows a cat.</p>
-      <p>You must be signed in to view</p>
+      <p>Current user: {display_name}</p>
+      <h1>
+        POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
+        design)
+      </h1>
     </div>
   );
 };

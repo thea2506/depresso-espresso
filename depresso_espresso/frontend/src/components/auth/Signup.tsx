@@ -84,7 +84,7 @@ const Signup = () => {
         console.log("User creation successful");
 
         // navigate to user's profile page on success
-        nav("/profile");
+        nav("/signin");
       } else {
         console.log("Register Failed");
 

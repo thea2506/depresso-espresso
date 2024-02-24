@@ -70,7 +70,7 @@ const Signin = () => {
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
-        nav("/home");
+        nav("/");
       } else {
         toast.error("Login failed", myToast);
       }
