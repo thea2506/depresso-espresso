@@ -34,7 +34,7 @@ const Home = () => {
       const response = await axios.get("/user_data");
       setDisplayName(response.data.display_name);
       setUsername(response.data.username);
-      setImage(response.data.image_url);
+      setImage(response.data.profile_image);
     } catch (error) {
       toast.error("Please Sign in to go further", myToast);
       navigate("/signin");
@@ -52,8 +52,11 @@ const Home = () => {
       <h1>
         POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
         design)
-        <div className="flex flex-col items-center justify-center">
-            <Post username={username} img_url={image_url} />
+        <div>
+            <Post username={username} user_img_url={image_url} />
+        </div>
+        <div style={{ height: '200px', overflow: 'scroll' }}>
+            {/* Your content here */}
         </div>
         
       </h1>

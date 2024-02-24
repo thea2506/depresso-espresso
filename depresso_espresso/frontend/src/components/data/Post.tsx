@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import styles from '../../Post.module.css';
 import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
+//import { useNavigate } from "react-router-dom";
 
 const publicIconUrl = "https://cdn-icons-png.flaticon.com/512/2889/2889676.png";
 const imageiconUrl = "data:image/png;base64,..."; // Your base64 image
-const usericonUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+//const usericonUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 interface CreatePostProps {
   username?: string; // Assuming username is passed as a prop to this component
   display_name?: string;
-  img_url?: string;
+  user_img_url?: string;
 }
 
 const myToast: ToastOptions = {
@@ -24,16 +25,14 @@ const myToast: ToastOptions = {
   progress: undefined,
 };
 
-const Post: React.FC<CreatePostProps> = ({ username }) => {
+const Post: React.FC<CreatePostProps> = ({ username, user_img_url }) => {
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState('public');
   const [isMarkdownEnabled, setMarkdownEnabled] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageUploadUrl, setImageUploadUrl] = useState('');
   const [imagePostId, setImagePostId] = useState('');
-
-
-
+  //const nav = useNavigate();
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -59,8 +58,12 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
       const response = await axios.post("/make_post", formField);
 
       if (response.data.success) {
-        toast.success("Post Created Successfully", myToast);
+        
         console.log("Post Created Successfully");
+        window. location. reload()
+        toast.success("Post Created Successfully", myToast);
+        //nav('/'); // refresh?
+        
 
       } else {
         console.log("Failed to create post");
@@ -101,7 +104,7 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
     <div className={styles.createPostContainer}>
       <ToastContainer />
       <div className={styles.userInput}>
-        <img src={usericonUrl} alt="User" className={styles.userIcon} />
+        <img src={user_img_url} alt="https://cdn-icons-png.flaticon.com/512/149/149071.png" className={styles.userIcon} />
         <span>{username}</span>
         <textarea
           className={styles.textarea}
