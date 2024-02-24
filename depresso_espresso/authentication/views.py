@@ -9,6 +9,8 @@ from .register import Register
 from .login import Login
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
 
 def register(request):
@@ -70,4 +72,12 @@ def get_auth(request):
         data['success'] = False
     return JsonResponse(data)
 
-
+def logoutUser(request):
+    data = {}
+    logout(request)
+    
+    if request.user.is_authenticated:
+        data['success'] = False
+    else:
+        data['success'] = True
+    return JsonResponse(data)
