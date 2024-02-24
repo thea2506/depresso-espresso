@@ -1,87 +1,126 @@
 .createPostContainer {
-  background-color: #bcf9c1; /* Light green background */
-  border-radius: 10px;
-  padding: 16px;
+  background-color: #c2d9b2; /* Light green background */
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-family: Arial, sans-serif; /* Replace with your font choice */
+  gap: 16px;
 }
 
-.userAvatar {
-  /* Style your user avatar here */
-
-  /* Example styling */
-  width: 4px;
-  height: 4px;
+.userInput {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.textarea {
+.userIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-image: url('https://cdn-icons-png.flaticon.com/512/149/149071.png');
+  background-size: cover;
+  margin-bottom: 10px;
+}
+
+.textarea,
+.textInput {
   width: 100%;
-  border: 1px solid #ccc;
+  border: 2px solid #ccc;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
+  font-size: 14px;
   resize: none;
-  min-height: 90px; /* Adjust based on design */
+  background: #fff;
 }
 
 .options {
   display: flex;
   align-items: center;
-  gap: 8px; /* Adjust based on design */
+  justify-content: space-between;
+  margin-top: 12px;
 }
 
-.visibilityIcon, .imageIcon {
-  /* Style your icons here */
-
-  /* Example styling */
-  width: 4px;
-  height: 4px;
-  cursor: pointer;
-  
+.icon {
+  width: 24px;
+  height: 24px;
 }
 
-.visibilitySelect, .fileInput, .postButton {
+.visibilitySelect,
+.uploadButton,
+.postButton {
+  border: none;
+  border-radius: 20px;
   padding: 8px 16px;
-  margin-left: auto;
-  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.visibilitySelect {
+  background-color: #fff;
   border: 1px solid #ccc;
 }
 
 .markdownToggle {
   display: flex;
   align-items: center;
+  gap: 5px;
 }
 
-.markdownLabel {
-  margin-right: 5px;
-}
-
-.fileInputContainer {
-  position: relative;
-}
-
-.fileInput {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  cursor: pointer;
+.uploadButton {
+  background-color: #3b8a3e;
+  color: white;
+  margin-left: 12px;
 }
 
 .postButton {
-  background-color: #164118; /* Adjust the button color */
+  background-color: #3b8a3e;
   color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.imagePreviewContainer {
-  margin-top: 10px;
 }
 
 .imagePreview {
   width: 100%;
   border-radius: 10px;
+  margin-top: 12px;
 }
 
-/* Add additional styling as needed to match the design */
+/* Styles for the markdown URL input and upload button */
+.markdownUrlInputContainer {
+  display: none; /* hidden by default, make it 'flex' when markdown is enabled */
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Styles when markdown is enabled */
+.markdownEnabled .markdownUrlInputContainer {
+  display: flex; /* Show the markdown URL input */
+}
+
+/* Adjustments for mobile responsiveness */
+@media (max-width: 768px) {
+  .createPostContainer {
+    padding: 15px;
+  }
+
+  .textarea,
+  .textInput {
+    padding: 8px;
+  }
+
+  .visibilitySelect,
+  .uploadButton,
+  .postButton {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+
+  .userIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
