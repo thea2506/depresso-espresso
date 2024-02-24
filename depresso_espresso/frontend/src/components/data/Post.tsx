@@ -49,6 +49,8 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
       const formField = new FormData();
       formField.append("content", content);
       formField.append("attached_img_post", imagePostId)
+      formField.append("visibility", visibility)
+      
       const response = await axios.post("/make_post", formField);
 
       if (response.data.success) {
@@ -89,10 +91,6 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
     }
     setImageUrl(imageUploadUrl);
   }
-
-
-    
- 
 
   return (
     
