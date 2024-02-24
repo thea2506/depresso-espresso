@@ -60,10 +60,11 @@ const Post: React.FC<CreatePostProps> = ({ username, user_img_url }) => {
       if (response.data.success) {
         
         console.log("Post Created Successfully");
-        window. location. reload()
-        toast.success("Post Created Successfully", myToast);
-        //nav('/'); // refresh?
         
+        toast.success("Post Created Successfully", myToast);
+        setTimeout(() => { // Reference: https://stackoverflow.com/questions/75920012/react-toast-when-navigate by inkredusk 2024-02-24
+          window. location. reload();
+        }, 1000); 
 
       } else {
         console.log("Failed to create post");
