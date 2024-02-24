@@ -6,7 +6,7 @@ from .models import Posts
 
 
 class PostsAdmin(admin.ModelAdmin):
-    fields = ["postid", "authorid", "content", "image_url"]
+    fields = ["postid", "authorid", "content", "image_url", "publishdate"]
 
 
 admin.site.register(Posts, PostsAdmin)

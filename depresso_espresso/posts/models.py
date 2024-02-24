@@ -1,10 +1,11 @@
 from django.db import models
+import uuid
 from authentication.models import Author
 
 # Create your models here.
 class Posts(models.Model):
     title = models.TextField(null = True)
-    postid = models.TextField(db_column='postID', primary_key=True)  # Field name made lowercase.
+    postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     source = models.TextField(null = True)
     origin = models.TextField(null = True)
     image_url = models.URLField(blank=True, null=True)

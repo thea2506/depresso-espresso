@@ -38,9 +38,10 @@ def make_post(request):
 
 
             form.save(commit = True)
-            data["post_id"] = post.postid
             data['success'] = True  
             print("great success")
+            Posts.objects.all().delete()
+            post.save()
             return JsonResponse(data) 
         else:
             data['success'] = False  

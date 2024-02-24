@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from posts.models import Posts
 
 # Potentially edit this to only use 1 function
 
@@ -45,3 +46,7 @@ def user_data(request):
             user.save()
 
         return JsonResponse({"message": "Profile updated successfully!"})
+
+def user_posts(request, username):
+    user_posts = Posts.objects.filter(authorid__username=username)
+    return render(request, 'author_profile/user_posts.html', {'user_posts': user_posts})
