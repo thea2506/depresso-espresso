@@ -53,9 +53,12 @@ const NavBar = () => {
   return (
     <nav className="z-50 flex items-center justify-between w-full px-8 my-8 sm:px-12 md:px-20">
       {/* Logo */}
-      <p className="hidden w-1/4 text-2xl lg:block">
+      <a
+        className="hidden w-1/4 text-2xl transition duration-150 ease-in-out lg:block hover:text-primary"
+        href="/"
+      >
         <span className="text-primary">E</span>spresso
-      </p>
+      </a>
       {/* Nav Links */}
       <ul className="flex items-center justify-center w-full gap-x-20 lg:gap-x-36">
         {navContents.map((item, index) => (
