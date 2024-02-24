@@ -31,9 +31,22 @@ const NavBar = () => {
   ];
 
   //#region functions
+  /**
+   * Changes the current page and navigates to the new page
+   * @param name The name of the page
+   * @param link The link to the page
+   */
   const changePage = (name: string, link: string) => {
     setCurrentPage(name);
     nav(link);
+  };
+
+  /**
+   * Logs the user out
+   */
+  const handleLogout = () => {
+    // TODO: implement logout
+    console.log("Logging out");
   };
   //#endregion
 
@@ -66,6 +79,7 @@ const NavBar = () => {
           iconStyling,
           "hidden w-1/4 lg:flex items-end justify-end"
         )}
+        onClick={handleLogout}
       />
     </nav>
   );
