@@ -10,7 +10,6 @@ import Stream from "./components/stream/Stream.tsx";
 import Post from "./components/data/Post.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AuthCheck from "./components/auth/Auth.tsx";
 
 const rootElement = document.getElementById("root") as Element;
 
@@ -21,7 +20,7 @@ if (rootElement) {
         
         <Route
           path="/home"
-          element={<AuthCheck><Stream /></AuthCheck>}
+          element={<Stream />}
         />
         <Route
           path="/"

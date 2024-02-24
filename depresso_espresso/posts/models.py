@@ -7,7 +7,7 @@ class Posts(models.Model):
     postid = models.TextField(db_column='postID', primary_key=True)  # Field name made lowercase.
     source = models.TextField()
     origin = models.TextField()
-    image_url = models.URLField()
+    image_url = models.URLField(blank=True, null=True)
     description = models.TextField()
     contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
     content = models.TextField()
@@ -17,5 +17,4 @@ class Posts(models.Model):
     visibility = models.TextField()
 
     class Meta:
-        managed = False
-        db_table = 'posts'
+        managed = True

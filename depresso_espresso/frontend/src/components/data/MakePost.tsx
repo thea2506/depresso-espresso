@@ -1,3 +1,5 @@
+
+
 //#region imports
 
 import { useState } from "react";
@@ -14,47 +16,64 @@ import { Button } from "../Button";
 
 const MakePost = () => {
 
-    const inputs: string[] = [
-        "Post Body",
-        "Add Image"
-      ];
+  const inputs: string[] = [
+      "Post Body",
+      "Add Image"
+    ];
 
-    const [content, setContent] = useState<string>("");
-    const [image_url, setImage] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [image_url, setImage] = useState<string>("");
+ // const [isvalid, setValid] = useState<boolean>(true)
 
-    const myToast: ToastOptions = {
-        position: "top-center",
-        autoClose: 1000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
-        closeButton: false,
-      };
+  const myToast: ToastOptions = {
+      position: "top-center",
+      autoClose: 1000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      closeButton: false,
+    };
 
+  const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      if (name === "Post Body") {
+        setContent(value);
+      } else if (name === "Add Image") {
+        setImage(value);
+      } 
+    };
 
-
-
-    const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        if (name === "Post Body") {
-          setContent(value);
-        } else if (name === "Add Image") {
-          setImage(value);
-        } 
-      };
+    /** 
+    const checkImageURL = (imageURL: string) => {
+      const img = new Image();
+      img.src = imageURL;
+      if (img.complete) {
+        return true;
+      } else {
+        img.onload = () => {
+          return true;
+        };
+        img.onerror = () => {
+          return false;
+        };
+      }
+    };
+    */
 
     /**
    * Posts the inputs to the backend.
    */
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    try {
+    try {     
+
+      toast.success("Here now", myToast);
       const formField = new FormData();
       formField.append("content", content);
       formField.append("image_url", image_url);
-      const response = await axios.post("/post", formField);
+      const response = await axios.post("/make_post", formField);
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);
@@ -62,13 +81,17 @@ const MakePost = () => {
 
       } else {
         console.log("Failed to create post");
+        toast.error("Failed to create post", myToast);
       }
-    } catch (error) {
-      console.error("An error occurred", error);
-      toast.error("An error occurred", myToast);
-    }
-  };
+      
+
+      } catch (error) {
+        console.error("An error occurred", error);
+        toast.error("An error occurred", myToast);
+      }
+    };
   //#endregion
+
 
     return (
         

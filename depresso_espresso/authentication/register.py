@@ -20,7 +20,7 @@ class Register(UserCreationForm):
         user = super(Register, self).save(commit=False) # call save from parent UserCreationForm
 
         user.display_name = self.cleaned_data["display_name"]
-        user = authenticate(self.cleaned_data["username"], self.cleaned_data["password1"])
+        #user = authenticate(self.cleaned_data["username"], self.cleaned_data["password1"])
         if commit:
             user.save()
         return user
