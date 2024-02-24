@@ -27,8 +27,10 @@ def make_post(request):
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.authorid = request.user
+            post.
 
             form.save(commit = True)
+            data["post_id"] = post.postid
             data['success'] = True  
             print("great success")
             return JsonResponse(data) 
