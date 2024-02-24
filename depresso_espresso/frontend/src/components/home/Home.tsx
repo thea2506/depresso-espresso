@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Post from "../data/Post";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -19,6 +20,9 @@ const myToast: ToastOptions = {
 
 const Home = () => {
   const [display_name, setDisplayName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [image_url, setImage] = useState<string>("");
+
   const navigate = useNavigate();
 
   //#region funtions
@@ -29,6 +33,8 @@ const Home = () => {
     try {
       const response = await axios.get("/user_data");
       setDisplayName(response.data.display_name);
+      setUsername(response.data.username);
+      setImage(response.data.profile_image);
     } catch (error) {
       toast.error("Please Sign in to go further", myToast);
       navigate("/signin");
@@ -46,8 +52,16 @@ const Home = () => {
       <h1>
         POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
         design)
+        <div>
+            <Post username={username} user_img_url={image_url} />
+        </div>
+        <div style={{ height: '200px', overflow: 'scroll' }}>
+            {/* Your content here */}
+        </div>
+        
       </h1>
     </div>
+    
   );
 };
 

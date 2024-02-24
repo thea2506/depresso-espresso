@@ -9,9 +9,9 @@ import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
 import Post from "./components/data/Post.tsx";
 import { NavBar } from "./components/NavBar.tsx";
+import AuthCheck from "./components/auth/Authcheck.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AuthCheck from "./components/auth/Auth.tsx";
 
 const rootElement = document.getElementById("root") as Element;
 
