@@ -9,7 +9,6 @@ from .register import Register
 from .login import Login
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
-from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
 

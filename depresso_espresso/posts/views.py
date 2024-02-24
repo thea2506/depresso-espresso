@@ -19,6 +19,7 @@ class PostView(forms.ModelForm):
   
 def make_post(request):
     data ={}
+    print(request)
     if request.method == 'POST':
         form = PostView(request.POST)
         
@@ -27,7 +28,7 @@ def make_post(request):
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.authorid = request.user
-            post.
+            #post.
 
             form.save(commit = True)
             data["post_id"] = post.postid

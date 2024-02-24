@@ -9,6 +9,8 @@ const usericonUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
 interface CreatePostProps {
   username?: string; // Assuming username is passed as a prop to this component
+  display_name?: string;
+  img_url?: string;
 }
 
 const myToast: ToastOptions = {
@@ -30,6 +32,9 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
   const [imageUploadUrl, setImageUploadUrl] = useState('');
   const [imagePostId, setImagePostId] = useState('');
 
+
+
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
   };
@@ -48,18 +53,17 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
 
       const formField = new FormData();
       formField.append("content", content);
-      formField.append("attached_img_post", imagePostId)
+      formField.append("attached_img_post", imagePostId) // if an image was added link to it in the 
       const response = await axios.post("/make_post", formField);
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);
-        console.log("User creation successful");
+        console.log("Post Created Successfully");
 
       } else {
         console.log("Failed to create post");
         toast.error("Failed to create post", myToast);
       }
-      
 
       } catch (error) {
         console.error("An error occurred", error);
@@ -89,8 +93,6 @@ const Post: React.FC<CreatePostProps> = ({ username }) => {
     }
     setImageUrl(imageUploadUrl);
   }
-
-
     
  
 
