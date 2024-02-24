@@ -30,7 +30,7 @@ def make_post(request):
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.authorid = request.user
-            #post.publishdate = datetime.datetime.now()
+            post.publishdate = datetime.datetime.now()
             post.visibility = form.cleaned_data["visibility"]
             
 
