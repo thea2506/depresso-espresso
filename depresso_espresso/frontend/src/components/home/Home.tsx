@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MakePost from "../data/MakePost";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -46,6 +47,7 @@ const Home = () => {
       <h1>
         POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
         design)
+        <MakePost/>
       </h1>
     </div>
   );
