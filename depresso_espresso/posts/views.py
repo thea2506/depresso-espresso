@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from .models import Posts
 from django.http import JsonResponse
 from django import forms
+import datetime
 # Create your views here.
 
 
@@ -15,9 +16,10 @@ class PostView(forms.ModelForm):
         return render(request, "dist/index.html")
     class Meta:
         model = Posts
-        fields = ("content", "image_url")
+        fields = ("content", "image_url", "visibility")
   
 def make_post(request):
+    print(request)
     data ={}
     print(request)
     if request.method == 'POST':
@@ -28,7 +30,9 @@ def make_post(request):
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.authorid = request.user
-            #post.
+            #post.publishdate = datetime.datetime.now()
+            post.visibility = form.cleaned_data["visibility"]
+            
 
             form.save(commit = True)
             data["post_id"] = post.postid

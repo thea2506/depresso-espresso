@@ -6,16 +6,16 @@ class Posts(models.Model):
     title = models.TextField(null = True)
     postid = models.TextField(db_column='postID', primary_key=True)  # Field name made lowercase.
     source = models.TextField(null = True)
-    origin = models.TextField()
+    origin = models.TextField(null = True)
     image_url = models.URLField(blank=True, null=True)
-    description = models.TextField(null= True)
-    contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
+    description = models.TextField(null = True)
+    contenttype = models.TextField(db_column='contentType', null = True)  # Field name made lowercase.
     content = models.TextField(null = True)
     authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
     commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)  # Field name made lowercase.
     publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
     visibility = models.TextField(null = True)
-    linked_img_post = models.TextField("self", blank = True)
+    linked_img_post = models.TextField("self", blank = True, null = True)
 
     class Meta:
         managed = True
