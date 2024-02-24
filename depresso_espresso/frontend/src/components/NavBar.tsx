@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ToastOptions, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // components
 import { Button } from "./Button";
@@ -11,6 +14,17 @@ import { GoHome, GoPerson, GoInbox } from "react-icons/go";
 import { PiNewspaperClipping } from "react-icons/pi";
 import { LiaSignOutAltSolid } from "react-icons/lia";
 //#endregion
+
+const myToast: ToastOptions = {
+  position: "top-center",
+  autoClose: 1000,
+  hideProgressBar: true,
+  closeOnClick: true,
+  closeButton: false,
+  pauseOnHover: false,
+  draggable: false,
+  progress: undefined,
+};
 
 const NavBar = () => {
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
@@ -44,10 +58,22 @@ const NavBar = () => {
   /**
    * Logs the user out
    */
-  const handleLogout = () => {
-    // TODO: implement logout
-    console.log("Logging out");
-  };
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post("/logoutUser");
+
+      if (response.data.success) {
+        toast.success("You have been logged out", myToast);
+        nav("/signin");
+      } else {
+        toast.error("Logout failed", myToast);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+      toast.error("An error occurred", myToast);
+    }
+    }
+
   //#endregion
 
   return (
