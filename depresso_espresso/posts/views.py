@@ -6,6 +6,7 @@ from .models import Posts
 from django.http import JsonResponse
 from django import forms
 import datetime
+from django.utils.timezone import make_aware
 # Create your views here.
 
 
@@ -30,9 +31,11 @@ def make_post(request):
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.authorid = request.user
-            post.publishdate = datetime.datetime.now()
-            post.visibility = form.cleaned_data["visibility"]
+            naive_datetime = datetime.datetime.now()
+            post.publishdate = make_aware(naive_datetime)
             
+            post.visibility = form.cleaned_data["visibility"]
+
 
             form.save(commit = True)
             data["post_id"] = post.postid
