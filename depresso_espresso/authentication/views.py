@@ -62,7 +62,7 @@ def loginview(request):
 def index(request):
     return render(request, "dist/index.html")
 
-def is_authenticated(request):
+def get_auth(request):
     data = {}
     if request.user.is_authenticated:
         data['success'] = True
