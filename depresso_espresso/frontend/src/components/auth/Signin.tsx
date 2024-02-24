@@ -70,7 +70,7 @@ const Signin = () => {
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
-        nav("/profile");
+        nav("/");
       } else {
         toast.error("Login failed", myToast);
       }
@@ -83,13 +83,13 @@ const Signin = () => {
 
   return (
     <animated.div
-      className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20"
+      className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:flex-row lg:gap-x-20 sm:px-12 md:px-20"
       style={springs}
     >
       <ToastContainer />
       {/* Left - Text side */}
-      <div className="z-10 flex flex-col justify-start text-center lg:text-start gap-y-3">
-        <h1 className="text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
+      <div className="z-10 flex flex-col w-full text-center gap-y-3 lg:text-start">
+        <h1 className="text-4xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
           Welcome back
         </h1>
         <p className="text-base sm:text-lg md:text-xl">
@@ -106,14 +106,14 @@ const Signin = () => {
 
       {/* Right - Input side */}
       <form
-        className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4"
+        className="z-10 flex flex-col items-center justify-center w-full max-w-3xl px-4 gap-y-4 md:px-0"
         onSubmit={handleSubmit}
       >
         {inputs.map((input, index) => {
           return (
             <div
               key={index}
-              className="flex flex-col gap-y-1 text-start"
+              className="flex flex-col justify-center w-full gap-y-1 text-start"
             >
               <label
                 htmlFor={input}
@@ -126,16 +126,16 @@ const Signin = () => {
                   type="text"
                   id={input}
                   name={input}
-                  className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                  className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
                   onChange={handleInputs}
                 />
               ) : (
-                <div className="relative max-w-3xl">
+                <div className="relative">
                   <input
                     type="password"
                     id={input}
                     name={input}
-                    className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                    className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
                     onChange={handleInputs}
                   />
                   <Button
@@ -158,7 +158,7 @@ const Signin = () => {
         })}
         <Button
           buttonType="text"
-          className="max-w-3xl mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
+          className="w-full mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
           type="submit"
         >
           Sign In

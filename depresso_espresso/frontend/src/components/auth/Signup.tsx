@@ -84,7 +84,7 @@ const Signup = () => {
         console.log("User creation successful");
 
         // navigate to user's profile page on success
-        nav("/profile");
+        nav("/signin");
       } else {
         console.log("Register Failed");
 
@@ -107,8 +107,8 @@ const Signup = () => {
     >
       <ToastContainer />
       {/* Left - Text side */}
-      <animated.div className="z-10 flex flex-col text-center lg:text-start gap-y-3">
-        <h1 className="text-3xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
+      <animated.div className="z-10 flex flex-col w-full text-center lg:text-start gap-y-3">
+        <h1 className="text-4xl font-medium sm:text-4xl md:text-5xl lg:text-6xl text-secondary-dark whitespace-nowrap">
           Create an Account
         </h1>
         <p className="text-base sm:text-lg md:text-xl">
@@ -125,14 +125,14 @@ const Signup = () => {
 
       {/* Right - Input side */}
       <form
-        className="z-10 flex flex-col w-3/4 lg:w-1/2 gap-y-4"
+        className="z-10 flex flex-col items-center justify-center w-full max-w-2xl px-4 gap-y-4 md:px-0"
         onSubmit={handleSubmit}
       >
         {inputs.map((input, index) => {
           return (
             <div
               key={index}
-              className="flex flex-col gap-y-1 text-start"
+              className="flex flex-col w-full gap-y-1 text-start"
             >
               <label
                 htmlFor={input}
@@ -146,11 +146,11 @@ const Signup = () => {
                   type="text"
                   id={input}
                   name={input}
-                  className="w-full h-12 max-w-3xl px-4 py-2 bg-white border-2 rounded-xl border-primary"
+                  className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
                   onChange={handleInputs}
                 />
               ) : (
-                <div className="relative max-w-3xl">
+                <div className="relative w-full">
                   <input
                     type="password"
                     id={input}
@@ -184,7 +184,7 @@ const Signup = () => {
         })}
         <Button
           buttonType="text"
-          className="max-w-3xl mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
+          className="w-full mt-4 rounded-full hover:bg-primary md:hover:bg-secondary-light hover:text-white"
           type="submit"
         >
           Sign Up
