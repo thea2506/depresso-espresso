@@ -15,4 +15,5 @@ export interface PostModel {
   publishdate?: string;
   visibility?: string;
   linked_img_post?: string;
+  likes?: number;
 }

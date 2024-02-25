@@ -27,10 +27,11 @@ interface CreatePostViewProps {
 const PostView = ({post}: CreatePostViewProps) => {
 
   const handleLikeToggle = () => {
-    console.log("Like Post");
+    console.log("toggle_like");
 
-    axios.post("/like_post", { postid: post.postid }).then((response) => {
-      console.log(response.data);
+    axios.post("/toggle_like", { postid: post.postid }).then((response) => {
+      console.log('like response', response.data);
+      window.location.reload(); // Refresh the page - TODO should be replaced with a more elegant solution in future
     });
 
   };
@@ -45,7 +46,6 @@ const PostView = ({post}: CreatePostViewProps) => {
   
 
   return (
-
 
     <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
       <ToastContainer />
@@ -72,9 +72,16 @@ const PostView = ({post}: CreatePostViewProps) => {
           <div className="flex gap-x-4">
             <div className="flex items-center justify-between gap-x-4">
               <div className="flex gap-x-4">
-                <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle} />
-                <FaComment className="w-6 h-7 text-primary click-icon" onClick={handleCommentClick} />
-                <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />
+                <span>
+                  <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle}></FaHeart>
+                  {post.likes}
+                </span>
+                <span>
+                  <FaComment className="w-6 h-7 text-primary click-icon" onClick={handleCommentClick} />
+                </span>
+                <span>
+                  <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />
+                </span>
               </div>
             </div>    
           </div>

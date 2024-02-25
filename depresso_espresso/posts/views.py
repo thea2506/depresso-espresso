@@ -8,6 +8,7 @@ from django import forms
 import datetime
 from django.utils.timezone import make_aware
 from django.core import serializers
+import json
 # Create your views here.
 
 
@@ -59,9 +60,16 @@ def get_all_posts(request):
   return HttpResponse(data, content_type='application/json')
 
 
-def like_post(request):
-  postid = request.POST.get('postid')
-  post = Posts.objects.get(postid = postid)
-  post.liked_by.add(request.user)
+def toggle_like(request):
+  data = json.loads(request.body)
+  postid = data.get('postid')
+  
+  post = Posts.objects.get(pk=postid)
+ 
+  if request.user in post.liked_by.all():
+    post.liked_by.remove(request.user)
+  else:
+    post.liked_by.add(request.user)
+
   post.save()
   return HttpResponse("Success")
