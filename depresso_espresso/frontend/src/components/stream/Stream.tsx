@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import MakePost from "../home/MakePost";
+import MakePost from "../data/MakePost";
 
 const Logo =
   "https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
