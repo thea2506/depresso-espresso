@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django import forms
 import datetime
 from django.utils.timezone import make_aware
+from django.core import serializers
 # Create your views here.
 
 
@@ -40,7 +41,7 @@ def make_post(request):
             form.save(commit = True)
             data['success'] = True  
             print("great success")
-            Posts.objects.all().delete()
+            # Posts.objects.all().delete()
             post.save()
             return JsonResponse(data) 
         else:
@@ -50,4 +51,11 @@ def make_post(request):
     rend = PostView().get(request)
     return rend
 
+
+
+
+def get_all_posts(request):
+  posts = Posts.objects.all()
+  data = serializers.serialize('json', posts)
+  return HttpResponse(data, content_type='application/json')
 

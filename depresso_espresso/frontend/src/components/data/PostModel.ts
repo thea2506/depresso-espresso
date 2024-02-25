@@ -1,10 +1,18 @@
 export interface PostModel { 
   username: string;
-  content: string;
-  display_name?: string;
-  attached_img_post?: string;
-  imagePostId?: string;
-  visibility?: string;
-  imageUrl?: string;
   user_img_url?: string;
+
+  title?: string;
+  postid?: string;
+  source?: string;
+  origin?: string;
+  image_url?: string;
+  description?: string;
+  contenttype?: string;
+  content: string;
+  authorid?: string;
+  commentcount?: number;
+  publishdate?: string;
+  visibility?: string;
+  linked_img_post?: string;
 }

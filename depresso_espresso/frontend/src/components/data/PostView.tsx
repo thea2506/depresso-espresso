@@ -4,8 +4,8 @@
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer} from "react-toastify";
-// import { FaLock } from "react-icons/fa6";
-import { animated, useSpring } from "@react-spring/web";
+import { FaHeart, FaComment, FaShare } from "react-icons/fa6";
+import { animated } from "@react-spring/web";
 
 // components
 import { PostModel } from "./PostModel";
@@ -26,23 +26,28 @@ interface CreatePostViewProps {
  */
 const PostView = ({post}: CreatePostViewProps) => {
 
-  const [springs] = useSpring(() => ({
-    from: { opacity: 100, y: 100 },
-  }));
+  const handleLikeToggle = () => {
+    console.log("Heart clicked");
+  };
+
+  const handleCommentClick = () => {
+    console.log("Comment clicked");
+  };
+
+  const handleShareClick = () => {
+    console.log("Share clicked");
+  };
   
 
   return (
+
+
     <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
       <ToastContainer />
   
-      {/* Long version */}
-      {/* <h1>{post.content}</h1> */}
-
       <animated.form
-        style={{ ...springs }}
         className={'w-full p-8 lg:w-1/2 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6 block' }    >
         <div className="flex items-center justify-between">
-          {/* User info  */}
           <div className="flex items-center justify-center gap-x-4">
             <img
               className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
@@ -53,18 +58,23 @@ const PostView = ({post}: CreatePostViewProps) => {
           </div>
        
         </div>
-        {/* Input Box */}
-        <textarea
-          name="post-content"
-          id="post-content"
-          readOnly
-          cols={30}
-          rows={10}
-          maxLength={850}
-          placeholder="Say something..."
-          className="resize-none focus:outline-none w-full p-4 bg-white rounded-[1.4rem] overflow-none"
-          value={post.content}
-        ></textarea>
+        <p>{post.content}</p>
+
+        {/* Image */}
+
+        {/* { Like, Comment, Share} */}
+        <div className="flex items-center justify-between gap-x-4">
+          <div className="flex gap-x-4">
+            <div className="flex items-center justify-between gap-x-4">
+              <div className="flex gap-x-4">
+                <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle} />
+                <FaComment className="w-6 h-7 text-primary click-icon" onClick={handleCommentClick} />
+                <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />
+              </div>
+            </div>    
+          </div>
+        </div>
+       
 
         {/* Options */}
         {/* <div className="flex items-center justify-between gap-x-4">

@@ -44,8 +44,18 @@ const Home = () => {
     }
   };
 
+  const getPosts = async () => {
+    try {
+      const response = await axios.get("/get_all_posts");
+      console.log("posts", response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const posts: PostModel[] = [{ username: "test4", content: "testtttttttttttttt" }, { username: "scott", content: "this is some text" }];
 
+  getPosts();
   retrieveData();
   //#endregion
 
