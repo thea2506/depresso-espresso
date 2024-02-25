@@ -78,7 +78,7 @@ const PostView = ({post}: CreatePostViewProps) => {
         <div className="flex items-center justify-between gap-x-4">
           <div className="flex gap-x-4">
             <div className="flex items-center justify-between gap-x-4">
-              <span className="flex gap-x-4">
+              <div className="flex gap-x-4 w-full">
                 <span className="flex items-center gap-x-1">
                   <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle} />
                   <span>{post.likes}</span>
@@ -89,12 +89,13 @@ const PostView = ({post}: CreatePostViewProps) => {
                 <span>
                   <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />
                 </span>
-              </span>
-              <span>
-                {showComments && <CommentList post={post} />} 
-              </span>
+              </div>
             </div>    
           </div>
+        </div>
+
+        <div className="w-full">
+            {showComments && <CommentList post={post} />} 
         </div>
        
 
