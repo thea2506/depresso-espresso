@@ -4,9 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Post from "../data/Post";
-import PostList from "../profile/PostList";
-import { PostModel } from "../data/PostModel";
+import { PostForm } from "../data/PostForm";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -21,7 +19,7 @@ const myToast: ToastOptions = {
 };
 
 const Home = () => {
-  const [display_name, setDisplayName] = useState<string>("");
+  //   const [display_name, setDisplayName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [image_url, setImage] = useState<string>("");
 
@@ -34,7 +32,7 @@ const Home = () => {
   const retrieveData = async () => {
     try {
       const response = await axios.get("/user_data");
-      setDisplayName(response.data.display_name);
+      // setDisplayName(response.data.display_name);
       setUsername(response.data.username);
       setImage(response.data.profile_image);
     } catch (error) {
@@ -50,22 +48,13 @@ const Home = () => {
   //#endregion
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center w-full">
       <ToastContainer />
-      <p>Current user: {display_name}</p>
-      <h1>
-        <PostList posts={posts}>
-        </PostList>
-        <div>
-            <Post username={username} user_img_url={image_url} />
-        </div>
-        <div style={{ height: '200px', overflow: 'scroll' }}>
-            {/* Your content here */}
-        </div>
-        
-      </h1>
+      <PostForm
+        username={username}
+        user_img_url={image_url}
+      />
     </div>
-    
   );
 };
 
