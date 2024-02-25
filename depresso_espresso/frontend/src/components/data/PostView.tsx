@@ -6,9 +6,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer} from "react-toastify";
 import { FaHeart, FaComment, FaShare } from "react-icons/fa6";
 import { animated } from "@react-spring/web";
+import { useState } from 'react';
+
 
 // components
 import { PostModel } from "./PostModel";
+import CommentList from "../profile/CommentList";
 //#endregion
 
 //#region interfaces
@@ -25,6 +28,7 @@ interface CreatePostViewProps {
  * @returns
  */
 const PostView = ({post}: CreatePostViewProps) => {
+  const [showComments, setShowComments] = useState(false);
 
   const handleLikeToggle = () => {
     console.log("toggle_like");
@@ -38,6 +42,7 @@ const PostView = ({post}: CreatePostViewProps) => {
 
   const handleCommentClick = () => {
     console.log("Comment clicked");
+    setShowComments(!showComments);
   };
 
   const handleShareClick = () => {
@@ -65,16 +70,18 @@ const PostView = ({post}: CreatePostViewProps) => {
         </div>
         <p>{post.content}</p>
 
-        {/* Image */}
+        {/* Image - need to display currently not saved I think*/}
+
+        
 
         {/* { Like, Comment, Share} */}
         <div className="flex items-center justify-between gap-x-4">
           <div className="flex gap-x-4">
             <div className="flex items-center justify-between gap-x-4">
-              <div className="flex gap-x-4">
-                <span>
-                  <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle}></FaHeart>
-                  {post.likes}
+              <span className="flex gap-x-4">
+                <span className="flex items-center gap-x-1">
+                  <FaHeart className="w-6 h-7 text-primary click-icon" onClick={handleLikeToggle} />
+                  <span>{post.likes}</span>
                 </span>
                 <span>
                   <FaComment className="w-6 h-7 text-primary click-icon" onClick={handleCommentClick} />
@@ -82,7 +89,10 @@ const PostView = ({post}: CreatePostViewProps) => {
                 <span>
                   <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />
                 </span>
-              </div>
+              </span>
+              <span>
+                {showComments && <CommentList post={post} />} 
+              </span>
             </div>    
           </div>
         </div>
