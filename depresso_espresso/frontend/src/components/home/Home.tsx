@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
+import { PostModel } from "../data/PostModel";
+import PostList from "../profile/PostList";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -54,6 +56,8 @@ const Home = () => {
         username={username}
         user_img_url={image_url}
       />
+
+      <PostList posts={posts} />
     </div>
   );
 };

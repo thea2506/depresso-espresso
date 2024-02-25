@@ -6,4 +6,5 @@ export interface PostModel {
   imagePostId?: string;
   visibility?: string;
   imageUrl?: string;
+  user_img_url?: string;
 }
