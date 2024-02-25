@@ -35,7 +35,7 @@ const myToast: ToastOptions = {
  * @param {string} user_img_url - The URL of the user's avatar
  * @returns
  */
-const Post = ({ username, user_img_url }: CreatePostProps) => {
+const PostForm = ({ username, user_img_url }: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs, api] = useSpring(() => ({
     from: { opacity: 0, y: -100 },
@@ -44,7 +44,7 @@ const Post = ({ username, user_img_url }: CreatePostProps) => {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageUploadUrl, setImageUploadUrl] = useState<File | null>();
-  const [imagePostId, setImagePostId] = useState<number | null>(null);
+  // const [imagePostId, setImagePostId] = useState<number | null>(null);
   const [isMarkdownEnabled, setMarkdownEnabled] = useState(false);
   const [visibility, setVisibility] = useState("public");
 
@@ -82,16 +82,16 @@ const Post = ({ username, user_img_url }: CreatePostProps) => {
       const formField = new FormData();
       formField.append("content", content);
       formField.append("markdown_enabled", isMarkdownEnabled.toString());
-      formField.append("image_post_id", imagePostId?.toString() || "");
+      // formField.append("image_post_id", imagePostId?.toString() || "");
       formField.append("attached_img_post", imageUrl || "");
       formField.append("visibility", visibility);
 
       const response = await axios.post("/make_post", formField);
 
       if (response.data.success) {
-        console.log("Post Created Successfully");
+        console.log("PostForm Created Successfully");
 
-        toast.success("Post Created Successfully", myToast);
+        toast.success("PostForm Created Successfully", myToast);
         setTimeout(() => {
           // Reference: https://stackoverflow.com/questions/75920012/react-toast-when-navigate by inkredusk 2024-02-24
           window.location.reload();
@@ -106,27 +106,27 @@ const Post = ({ username, user_img_url }: CreatePostProps) => {
     }
   };
 
-  const handleImageUpload = async () => {
-    try {
-      // Here you would handle the uploading of the image using the provided URL
-      const formField = new FormData();
-      formField.append("image_url", imageUploadUrl ? imageUploadUrl : "");
-      const response = await axios.post("/make_post", formField);
-      if (response.data.success) {
-        setImagePostId(response.data["post_id"]);
-        toast.success("Image uploaded Successfully", myToast);
-        console.log("Image uploaded Successfully");
-      } else {
-        console.log("Failed to upload Image");
-        toast.error("Failed to upload Image", myToast);
-      }
-    } catch (error) {
-      console.error("An error occurred", error);
-      toast.error("An error occurred", myToast);
-    }
-    // imageUploadUrl is actually a file object, I keep the name as imageUrl for consistency
-    // setImageUrl(imageUploadUrl);
-  };
+  // const handleImageUpload = async () => {
+  //   try {
+  //     // Here you would handle the uploading of the image using the provided URL
+  //     const formField = new FormData();
+  //     formField.append("image_url", imageUploadUrl ? imageUploadUrl : "");
+  //     const response = await axios.post("/make_post", formField);
+  //     if (response.data.success) {
+  //       setImagePostId(response.data["post_id"]);
+  //       toast.success("Image uploaded Successfully", myToast);
+  //       console.log("Image uploaded Successfully");
+  //     } else {
+  //       console.log("Failed to upload Image");
+  //       toast.error("Failed to upload Image", myToast);
+  //     }
+  //   } catch (error) {
+  //     console.error("An error occurred", error);
+  //     toast.error("An error occurred", myToast);
+  //   }
+  //   // imageUploadUrl is actually a file object, I keep the name as imageUrl for consistency
+  //   // setImageUrl(imageUploadUrl);
+  // };
   //#endregion
 
   return (
@@ -241,4 +241,4 @@ const Post = ({ username, user_img_url }: CreatePostProps) => {
   );
 };
 
-export default Post;
+export { PostForm };

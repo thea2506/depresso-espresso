@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Post from "../data/PostForm";
+import { PostForm } from "../data/PostForm";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -48,7 +48,7 @@ const Home = () => {
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <ToastContainer />
-      <Post
+      <PostForm
         username={username}
         user_img_url={image_url}
       />
