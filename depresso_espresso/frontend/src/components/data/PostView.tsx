@@ -29,8 +29,7 @@ const PostView: React.FC<CreatePostViewProps> = ({ username, content, user_img_u
       <div className={styles.userInput}>
         <img src={user_img_url} alt="https://cdn-icons-png.flaticon.com/512/149/149071.png" className={styles.userIcon} />
         <span>{username}</span>
-        <span>{content}</span>
-      
+        <textarea  className={styles.textarea} readOnly>{content}</textarea>
       </div>
       <div className={styles.options}>
         <img src={publicIconUrl} alt="Public" className={styles.icon} />

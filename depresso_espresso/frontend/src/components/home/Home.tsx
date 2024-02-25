@@ -44,7 +44,7 @@ const Home = () => {
     }
   };
 
-  const posts: PostModel[] = [{ username: "test4", content: "testtttttttttttttt" }];
+  const posts: PostModel[] = [{ username: "test4", content: "testtttttttttttttt" }, { username: "scott", content: "this is some text" }];
 
   retrieveData();
   //#endregion
