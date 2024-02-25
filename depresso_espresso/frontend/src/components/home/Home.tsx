@@ -1,6 +1,6 @@
 //#region imports
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,6 +24,7 @@ const Home = () => {
   //   const [display_name, setDisplayName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [image_url, setImage] = useState<string>("");
+  const [posts, setPosts] = useState<PostModel[]>([]);
 
   const navigate = useNavigate();
 
@@ -44,18 +45,32 @@ const Home = () => {
     }
   };
 
-  const getPosts = async () => {
+
+  /**
+   * Retrieves the posts from the backend
+   */
+  const retrievePosts = async () => {
     try {
       const response = await axios.get("/get_all_posts");
-      console.log("posts", response.data);
+      const postData = response.data;
+      const postModels = postData.map((rawpost: any) => {
+        return {
+          username: rawpost.fields.authorid,
+          content: rawpost.fields.content,
+          postid: rawpost.pk,
+          user_img_url: rawpost.fields.user_img_url,
+        };
+      });
+      setPosts(postModels);
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
-  const posts: PostModel[] = [{ username: "test4", content: "testtttttttttttttt" }, { username: "scott", content: "this is some text" }];
+  useEffect(() => {
+    retrievePosts();
+  }, []);
 
-  getPosts();
   retrieveData();
   //#endregion
 
@@ -73,3 +88,41 @@ const Home = () => {
 };
 
 export default Home;
+
+
+
+
+
+
+
+
+
+// const getPosts = async () => {
+//   const postsarray: PostModel[] = [];
+
+//   try {
+//     const response = await axios.get("/get_all_posts");
+//     response.data.forEach((rawpost: any) => {
+//       const post: PostModel = {
+//         username: rawpost.fields.authorid,
+//         content: rawpost.fields.content,
+//         postid: rawpost.pk,
+//         user_img_url: rawpost.fields.user_img_url,
+//       };
+//       postsarray.push(post);
+//     });
+//   } catch (error) {
+//     console.error(error);
+//   }
+//   console.log('post arr', postsarray)
+//   setPosts(postsarray);
+//   // return postsarray
+// }
+
+// // const posts: PostModel[] = [{ postid:'1', username: "test4", content: "testtttttttttttttt" }, { postid:'2', username: "scott", content: "this is some text" }];
+
+// useEffect(() => {
+//   getPosts();
+// }, []);
+
+// getPosts();

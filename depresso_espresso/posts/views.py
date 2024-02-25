@@ -52,10 +52,16 @@ def make_post(request):
     return rend
 
 
-
-
 def get_all_posts(request):
   posts = Posts.objects.all()
   data = serializers.serialize('json', posts)
+  print('data', data)
   return HttpResponse(data, content_type='application/json')
 
+
+def like_post(request):
+  postid = request.POST.get('postid')
+  post = Posts.objects.get(postid = postid)
+  post.liked_by.add(request.user)
+  post.save()
+  return HttpResponse("Success")

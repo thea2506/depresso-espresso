@@ -1,6 +1,6 @@
 //#region imports
 // import { useState } from "react";
-// import axios from "axios";
+import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer} from "react-toastify";
@@ -27,7 +27,12 @@ interface CreatePostViewProps {
 const PostView = ({post}: CreatePostViewProps) => {
 
   const handleLikeToggle = () => {
-    console.log("Heart clicked");
+    console.log("Like Post");
+
+    axios.post("/like_post", { postid: post.postid }).then((response) => {
+      console.log(response.data);
+    });
+
   };
 
   const handleCommentClick = () => {

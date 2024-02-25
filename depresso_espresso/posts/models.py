@@ -17,6 +17,7 @@ class Posts(models.Model):
     publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
     visibility = models.TextField(null = True)
     linked_img_post = models.TextField("self", blank = True, null = True)
+    liked_by = models.ManyToManyField(Author, related_name='liked_posts')
 
     class Meta:
         managed = True
