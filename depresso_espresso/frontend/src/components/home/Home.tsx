@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Post from "../data/Post";
+import PostList from "../profile/PostList";
+import { PostModel } from "../data/PostModel";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -42,6 +44,8 @@ const Home = () => {
     }
   };
 
+  const posts: PostModel[] = [{ username: "test4", content: "testtttttttttttttt" }];
+
   retrieveData();
   //#endregion
 
@@ -50,8 +54,8 @@ const Home = () => {
       <ToastContainer />
       <p>Current user: {display_name}</p>
       <h1>
-        POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
-        design)
+        <PostList posts={posts}>
+        </PostList>
         <div>
             <Post username={username} user_img_url={image_url} />
         </div>

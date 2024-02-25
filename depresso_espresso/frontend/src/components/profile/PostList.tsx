@@ -1,14 +1,16 @@
-
-
-
+import PostView from "../data/PostView";
 
 
 const PostList = ({ posts }:{posts:any}) => {
   return (
-    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+    <div style={{ overflowY: 'auto' }}>
+
       <ul>
-        {posts.map((post:any, index: any) => (
-          <li key={index}>{post}</li>
+        {posts.map((post:any) => (
+          <li> 
+           <PostView username={post.username} content={post.content} user_img_url={post.post} />
+          </li>
+        
         ))}
       </ul>
     </div>
