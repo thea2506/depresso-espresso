@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('posts', '0002_posts_linked_img_post_alter_posts_content_and_more'),
+        ('posts', '0001_initial'),
     ]
 
     operations = [
