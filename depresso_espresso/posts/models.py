@@ -13,6 +13,7 @@ class Posts(models.Model):
     contenttype = models.TextField(db_column='contentType', null = True)  # Field name made lowercase.
     content = models.TextField(null = True)
     authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
+    authorname = models.TextField(null = True)
     commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)  # Field name made lowercase.
     publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
     visibility = models.TextField(null = True)

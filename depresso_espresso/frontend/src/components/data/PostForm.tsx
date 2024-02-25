@@ -85,6 +85,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
       // formField.append("image_post_id", imagePostId?.toString() || "");
       formField.append("attached_img_post", imageUrl || "");
       formField.append("visibility", visibility);
+      formField.append("username", username);
 
       const response = await axios.post("/make_post", formField);
 

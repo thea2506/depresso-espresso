@@ -55,11 +55,12 @@ const Home = () => {
       const postData = response.data;
       const postModels = postData.map((rawpost: any) => {
         return {
-          username: rawpost.fields.authorid,
+          authorid: rawpost.fields.authorid,
           content: rawpost.fields.content,
           postid: rawpost.pk,
           user_img_url: rawpost.fields.user_img_url,
           likes: rawpost.fields.liked_by.length,
+          username: rawpost.fields.authorname
         };
       });
       console.log('postmodels', postModels)

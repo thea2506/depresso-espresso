@@ -35,7 +35,8 @@ def make_post(request):
             post.authorid = request.user
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
-            
+           
+            post.authorname = request.user.display_name
             post.visibility = form.cleaned_data["visibility"]
 
 
