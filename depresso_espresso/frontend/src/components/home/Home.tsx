@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Post from "../data/Post";
+import Post from "./Post";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -53,15 +53,16 @@ const Home = () => {
         POST COMPONENTS WILL APPEAR HERE AS A PUBLIC NEWSFEED (same as in
         design)
         <div>
-            <Post username={username} user_img_url={image_url} />
+          <Post
+            username={username}
+            user_img_url={image_url}
+          />
         </div>
-        <div style={{ height: '200px', overflow: 'scroll' }}>
-            {/* Your content here */}
+        <div style={{ height: "200px", overflow: "scroll" }}>
+          {/* Your content here */}
         </div>
-        
       </h1>
     </div>
-    
   );
 };
 

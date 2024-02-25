@@ -7,7 +7,7 @@ import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
-import Post from "./components/data/Post.tsx";
+import Post from "./components/home/Post.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 import AuthCheck from "./components/auth/Authcheck.tsx";
 
