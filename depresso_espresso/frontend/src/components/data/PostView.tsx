@@ -68,7 +68,7 @@ const PostView = ({post}: CreatePostViewProps) => {
           </div>
 
           <span>
-            {post.publishdate?.substring(0, 18)}
+            {post.publishdate?.substring(0, 16)}
           </span>
        
         </div>
