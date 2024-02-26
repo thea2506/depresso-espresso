@@ -66,6 +66,10 @@ const PostView = ({post}: CreatePostViewProps) => {
             />
             <p className="text-primary">{post.username}</p>
           </div>
+
+          <span>
+            {post.publishdate?.substring(0, 18)}
+          </span>
        
         </div>
         <p>{post.content}</p>

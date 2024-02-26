@@ -68,7 +68,8 @@ const ProfilePage = () => {
           postid: rawpost.pk,
           user_img_url: rawpost.fields.user_img_url,
           likes: rawpost.fields.liked_by.length,
-          username: rawpost.fields.authorname
+          username: rawpost.fields.authorname,
+          publishdate: rawpost.fields.publishdate
         };
       });
       console.log('postmodels', postModels)
