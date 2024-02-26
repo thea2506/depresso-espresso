@@ -60,6 +60,15 @@ def get_all_posts(request):
   print('data', data)
   return HttpResponse(data, content_type='application/json')
 
+def get_author_posts(request):
+  print('request')
+  print('request', request.user)
+  posts = Posts.objects.filter(authorid=request.user)
+  print(posts)
+  data = serializers.serialize('json', posts)
+  print('data', data)
+  return HttpResponse(data, content_type='application/json')
+
 
 def toggle_like(request):
   data = json.loads(request.body)
