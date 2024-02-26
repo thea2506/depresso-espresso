@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //#region imports
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // components
 import { Button } from "../Button";
@@ -9,6 +9,8 @@ import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
 import FollowList from "./FollowList";
+import PostList from "./PostList";
+import { PostModel } from "../data/PostModel";
 //#endregion
 
 /**
@@ -28,6 +30,7 @@ const ProfilePage = () => {
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
   const [loading, setLoading] = useState<boolean>(false);
+  const [posts, setPosts] = useState<PostModel[]>([]);
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -53,6 +56,33 @@ const ProfilePage = () => {
     }
     // This could probably be combined into 1 request using render context
   };
+
+  const retrievePosts = async () => {
+    try {
+      const response = await axios.get('/get_author_posts');
+      const postData = response.data;
+      const postModels = postData.map((rawpost: any) => {
+        return {
+          authorid: rawpost.fields.authorid,
+          content: rawpost.fields.content,
+          postid: rawpost.pk,
+          user_img_url: rawpost.fields.user_img_url,
+          likes: rawpost.fields.liked_by.length,
+          username: rawpost.fields.authorname,
+          publishdate: rawpost.fields.publishdate
+        };
+      });
+      console.log('postmodels', postModels)
+      setPosts(postModels);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    retrievePosts();
+  }, []);
+
   getData();
   //#endregion
 
@@ -98,6 +128,11 @@ const ProfilePage = () => {
       {currentTopic === "Followers" && (
         <FollowList
           followers = {followers}
+        />
+      )}
+      {currentTopic === "Posts" && (
+        <PostList
+          posts = {posts}
         />
       )}
     </animated.div>

@@ -1,10 +1,12 @@
 //#region imports
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
+import { PostModel } from "../data/PostModel";
+import PostList from "../profile/PostList";
 //#endregion
 
 const myToast: ToastOptions = {
@@ -22,6 +24,7 @@ const Home = () => {
   //   const [display_name, setDisplayName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [image_url, setImage] = useState<string>("");
+  const [posts, setPosts] = useState<PostModel[]>([]);
 
   const navigate = useNavigate();
 
@@ -42,6 +45,36 @@ const Home = () => {
     }
   };
 
+
+  /**
+   * Retrieves the posts from the backend
+   */
+  const retrievePosts = async () => {
+    try {
+      const response = await axios.get("/get_all_posts");
+      const postData = response.data;
+      const postModels = postData.map((rawpost: any) => {
+        return {
+          authorid: rawpost.fields.authorid,
+          content: rawpost.fields.content,
+          postid: rawpost.pk,
+          user_img_url: rawpost.fields.user_img_url,
+          likes: rawpost.fields.liked_by.length,
+          username: rawpost.fields.authorname,
+          publishdate: rawpost.fields.publishdate
+        };
+      });
+      console.log('postmodels', postModels)
+      setPosts(postModels);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    retrievePosts();
+  }, []);
+
   retrieveData();
   //#endregion
 
@@ -52,8 +85,11 @@ const Home = () => {
         username={username}
         user_img_url={image_url}
       />
+
+      <PostList posts={posts} />
     </div>
   );
 };
 
 export default Home;
+

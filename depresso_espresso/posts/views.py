@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django import forms
 import datetime
 from django.utils.timezone import make_aware
+from django.core import serializers
+import json
 # Create your views here.
 
 
@@ -33,14 +35,15 @@ def make_post(request):
             post.authorid = request.user
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
-            
+           
+            post.authorname = request.user.display_name
             post.visibility = form.cleaned_data["visibility"]
 
 
             form.save(commit = True)
             data['success'] = True  
             print("great success")
-            Posts.objects.all().delete()
+            # Posts.objects.all().delete()
             post.save()
             return JsonResponse(data) 
         else:
@@ -51,3 +54,32 @@ def make_post(request):
     return rend
 
 
+def get_all_posts(request):
+  posts = Posts.objects.all()
+  data = serializers.serialize('json', posts)
+  print('data', data)
+  return HttpResponse(data, content_type='application/json')
+
+def get_author_posts(request):
+  print('request')
+  print('request', request.user)
+  posts = Posts.objects.filter(authorid=request.user)
+  print(posts)
+  data = serializers.serialize('json', posts)
+  print('data', data)
+  return HttpResponse(data, content_type='application/json')
+
+
+def toggle_like(request):
+  data = json.loads(request.body)
+  postid = data.get('postid')
+  
+  post = Posts.objects.get(pk=postid)
+ 
+  if request.user in post.liked_by.all():
+    post.liked_by.remove(request.user)
+  else:
+    post.liked_by.add(request.user)
+
+  post.save()
+  return HttpResponse("Success")
