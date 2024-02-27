@@ -94,7 +94,7 @@ def toggle_like(request):
 
 def make_comment(request):
     data ={}
-    print("Comment request", request)
+    print("Comment request", request, dir(request))
     if request.method == 'POST':
         form = CommentView(request.POST)
         
@@ -102,7 +102,7 @@ def make_comment(request):
             comment = form.save(commit=False)
             comment.comment = form.cleaned_data["comment"]
             comment.authorid = request.user
-            comment.postid = request.postid
+            comment.postid = form.cleaned_data["postid"]
             naive_datetime = datetime.datetime.now()
             comment.publishdate = make_aware(naive_datetime)
            

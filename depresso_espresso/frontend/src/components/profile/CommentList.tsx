@@ -4,8 +4,10 @@ import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
 
-const CommentList = ({ post }: { post: PostModel }) => {
+const CommentList = ({ post}: { post: PostModel}) => {
   const [comment, setComment] = useState("");
+
+  console.log("PostID " + post.postid)
 
   const myToast: ToastOptions = {
     position: "top-center",
@@ -23,6 +25,8 @@ const CommentList = ({ post }: { post: PostModel }) => {
       toast.success("Here now", myToast);
       const formField = new FormData();
       formField.append("comment", comment);
+      formField.append("postid", post.postid);
+
       const response = await axios.post("/make_comment", formField);
 
       if (response.data.success) {
