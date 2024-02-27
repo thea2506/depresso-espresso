@@ -2,7 +2,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.generic import TemplateView
-from .models import Posts
+from .models import Post
+from .models import Comment
 from django.http import JsonResponse
 from django import forms
 import datetime
@@ -18,11 +19,19 @@ class PostView(forms.ModelForm):
     def get(self, request):
         return render(request, "dist/index.html")
     class Meta:
-        model = Posts
+        model = Post
         fields = ("content", "image_url", "visibility")
+
+class CommentView(forms.ModelForm):
+    template_name = "comments/comments.html"
+
+    def get(self, request):
+        return render(request, "dist/index.html")
+    class Meta:
+        model = Comment
+        fields = ("comment",)
   
 def make_post(request):
-    print(request)
     data ={}
     print(request)
     if request.method == 'POST':
@@ -43,7 +52,6 @@ def make_post(request):
             form.save(commit = True)
             data['success'] = True  
             print("great success")
-            # Posts.objects.all().delete()
             post.save()
             return JsonResponse(data) 
         else:
@@ -55,7 +63,7 @@ def make_post(request):
 
 
 def get_all_posts(request):
-  posts = Posts.objects.all()
+  posts = Post.objects.all()
   data = serializers.serialize('json', posts)
   print('data', data)
   return HttpResponse(data, content_type='application/json')
@@ -63,7 +71,7 @@ def get_all_posts(request):
 def get_author_posts(request):
   print('request')
   print('request', request.user)
-  posts = Posts.objects.filter(authorid=request.user)
+  posts = Post.objects.filter(authorid=request.user)
   print(posts)
   data = serializers.serialize('json', posts)
   print('data', data)
@@ -74,7 +82,7 @@ def toggle_like(request):
   data = json.loads(request.body)
   postid = data.get('postid')
   
-  post = Posts.objects.get(pk=postid)
+  post = Post.objects.get(pk=postid)
  
   if request.user in post.liked_by.all():
     post.liked_by.remove(request.user)
@@ -83,3 +91,31 @@ def toggle_like(request):
 
   post.save()
   return HttpResponse("Success")
+
+def make_comment(request):
+    data ={}
+    print("Comment request", request)
+    if request.method == 'POST':
+        form = CommentView(request.POST)
+        
+        if form.is_valid():  
+            comment = form.save(commit=False)
+            comment.comment = form.cleaned_data["comment"]
+            comment.authorid = request.user
+            comment.postid = request.postid
+            naive_datetime = datetime.datetime.now()
+            comment.publishdate = make_aware(naive_datetime)
+           
+            comment.authorname = request.user.display_name
+
+            form.save(commit = True)
+            data['success'] = True  
+            print("great success")
+            comment.save()
+            return JsonResponse(data) 
+        else:
+            data['success'] = False  
+            return JsonResponse(data) 
+
+    rend = CommentView().get(request)
+    return rend

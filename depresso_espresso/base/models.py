@@ -1,6 +1,6 @@
 from django.db import models
 from authentication.models import Author
-from posts.models import Posts
+from posts.models import Post
 
 
 # Create your models here.
@@ -59,19 +59,6 @@ class Author(models.Model):
         managed = False
         db_table = 'author'
 '''
-class Comments(models.Model):
-    postid = models.ForeignKey(Posts, models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
-    commentid = models.TextField(db_column='commentID', primary_key=True)  # Field name made lowercase.
-    contenttype = models.TextField(db_column='contentType')  # Field name made lowercase.
-    content = models.TextField()
-    authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')  # Field name made lowercase.
-    comment = models.TextField()
-    publishdate = models.DateTimeField(db_column='publishDate')  # Field name made lowercase.
-
-    class Meta:
-        managed = False
-        db_table = 'comments'
-
 
 class Following(models.Model):
     authorid = models.TextField(db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, followerID) found, that is not supported. The first column is selected.
@@ -84,7 +71,7 @@ class Following(models.Model):
 
 
 class Likes(models.Model):
-    postid = models.ForeignKey(Posts, models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
+    postid = models.ForeignKey(Post, models.DO_NOTHING, db_column='postID')  # Field name made lowercase.
     authorid = models.OneToOneField(Author, models.DO_NOTHING, db_column='authorID', primary_key=True)  # Field name made lowercase. The composite primary key (authorID, postID) found, that is not supported. The first column is selected.
 
     class Meta:

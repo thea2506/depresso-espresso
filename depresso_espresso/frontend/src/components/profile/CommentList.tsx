@@ -1,17 +1,40 @@
 import { useState } from "react";
 import axios from "axios";
+import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
 
 const CommentList = ({ post }: { post: PostModel }) => {
   const [comment, setComment] = useState("");
 
+  const myToast: ToastOptions = {
+    position: "top-center",
+    autoClose: 1000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    pauseOnHover: false,
+    draggable: false,
+    progress: undefined,
+    closeButton: false,
+  };
+
   const handleCommentSubmit = async () => {
     try {
-      await axios.post("/create_comment", { comment });
-      // Handle success or any other logic here
+      toast.success("Here now", myToast);
+      const formField = new FormData();
+      formField.append("comment", comment);
+      const response = await axios.post("/make_comment", formField);
+
+      if (response.data.success) {
+        toast.success("Comment Created Successfully", myToast);
+        console.log("Comment creation successful");
+      } else {
+        console.log("Failed to create comment");
+        toast.error("Failed to create comment", myToast);
+      }
     } catch (error) {
-      // Handle error here
+      console.error("An error occurred", error);
+      toast.error("An error occurred", myToast);
     }
   };
 

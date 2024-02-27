@@ -70,7 +70,7 @@ const MakePost = () => {
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);
-        console.log("User creation successful");
+        console.log("Post creation successful");
       } else {
         console.log("Failed to create post");
         toast.error("Failed to create post", myToast);
