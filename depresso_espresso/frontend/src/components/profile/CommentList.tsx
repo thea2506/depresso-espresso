@@ -7,8 +7,6 @@ import { FaPaperPlane } from "react-icons/fa6";
 const CommentList = ({ post}: { post: PostModel}) => {
   const [comment, setComment] = useState("");
 
-  console.log("PostID " + post.postid)
-
   const myToast: ToastOptions = {
     position: "top-center",
     autoClose: 1000,

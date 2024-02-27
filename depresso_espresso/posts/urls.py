@@ -6,5 +6,6 @@ urlpatterns = [
     path("get_all_posts", views.get_all_posts, name="get_all_posts"),
     path("toggle_like", views.toggle_like, name="toggle_like"),
     path("get_author_posts", views.get_author_posts, name="get_author_posts"),
-    path("make_comment", views.make_comment, name="make_comment")
+    path("make_comment", views.make_comment, name="make_comment"),
+    path("get_post_comments", views.get_post_comments, name="get_post_comments")
 ]

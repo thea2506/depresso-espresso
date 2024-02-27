@@ -81,7 +81,12 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
     try {
       const formField = new FormData();
       formField.append("content", content);
-      formField.append("markdown_enabled", isMarkdownEnabled.toString());
+      if (isMarkdownEnabled) {
+        formField.append("contenttype", "markdown");
+      }
+      else {
+        formField.append("contenttype", "plaintext");
+      }
       // formField.append("image_post_id", imagePostId?.toString() || "");
       formField.append("attached_img_post", imageUrl || "");
       formField.append("visibility", visibility);

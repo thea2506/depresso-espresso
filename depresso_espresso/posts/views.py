@@ -7,6 +7,7 @@ from .models import Comment
 from django.http import JsonResponse
 from django import forms
 import datetime
+from django.db.models import F
 from django.utils.timezone import make_aware
 from django.core import serializers
 import json
@@ -20,7 +21,7 @@ class PostView(forms.ModelForm):
         return render(request, "dist/index.html")
     class Meta:
         model = Post
-        fields = ("content", "image_url", "visibility")
+        fields = ("content", "image_url", "visibility", "contenttype")
 
 class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
@@ -29,7 +30,7 @@ class CommentView(forms.ModelForm):
         return render(request, "dist/index.html")
     class Meta:
         model = Comment
-        fields = ("comment",)
+        fields = ("comment", "postid")
   
 def make_post(request):
     data ={}
@@ -41,13 +42,14 @@ def make_post(request):
             post = form.save(commit=False)
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
+            post.contenttype = form.cleaned_data["contenttype"]
             post.authorid = request.user
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
+            post.commentcount = 0
            
             post.authorname = request.user.display_name
             post.visibility = form.cleaned_data["visibility"]
-
 
             form.save(commit = True)
             data['success'] = True  
@@ -94,7 +96,7 @@ def toggle_like(request):
 
 def make_comment(request):
     data ={}
-    print("Comment request", request, dir(request))
+    print("Comment request", request)
     if request.method == 'POST':
         form = CommentView(request.POST)
         
@@ -102,11 +104,14 @@ def make_comment(request):
             comment = form.save(commit=False)
             comment.comment = form.cleaned_data["comment"]
             comment.authorid = request.user
-            comment.postid = form.cleaned_data["postid"]
             naive_datetime = datetime.datetime.now()
             comment.publishdate = make_aware(naive_datetime)
-           
             comment.authorname = request.user.display_name
+
+            post = form.cleaned_data.get("postid")
+            comment.postid = post
+            post.commentcount = F('commentcount') + 1
+            post.save()
 
             form.save(commit = True)
             data['success'] = True  
@@ -119,3 +124,15 @@ def make_comment(request):
 
     rend = CommentView().get(request)
     return rend
+
+def get_post_comments(request):
+  print('request', request.user)
+
+  data = json.loads(request.body)
+  postid = data.get('postid')
+  comments = Comment.objects.filter(postid=postid)
+  print(comments)
+  data = serializers.serialize('json', comments)
+  print('data', data)
+
+  return HttpResponse(data, content_type='application/json')

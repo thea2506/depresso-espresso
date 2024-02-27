@@ -89,6 +89,7 @@ const PostView = ({post}: CreatePostViewProps) => {
                 </span>
                 <span>
                   <FaComment className="w-6 h-7 text-primary click-icon" onClick={handleCommentClick} />
+                  <span>{post.commentcount}</span>
                 </span>
                 <span>
                   <FaShare className="w-6 h-7 text-primary click-icon" onClick={handleShareClick} />

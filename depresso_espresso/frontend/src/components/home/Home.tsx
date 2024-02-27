@@ -60,6 +60,7 @@ const Home = () => {
           postid: rawpost.pk,
           user_img_url: rawpost.fields.user_img_url,
           likes: rawpost.fields.liked_by.length,
+          commentcount: rawpost.fields.commentcount,
           username: rawpost.fields.authorname,
           publishdate: rawpost.fields.publishdate
         };
