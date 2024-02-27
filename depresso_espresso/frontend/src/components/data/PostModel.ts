@@ -3,7 +3,7 @@ export interface PostModel {
   user_img_url?: string;
 
   title?: string;
-  postid?: string;
+  postid: string;
   source?: string;
   origin?: string;
   image_url?: string;
