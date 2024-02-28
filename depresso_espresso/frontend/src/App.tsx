@@ -7,25 +7,38 @@ import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 import AuthCheck from "./components/auth/Authcheck.tsx";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import axios from "axios";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-function App() {
-  const General = ({
-    authorId,
-    children,
-  }: {
-    authorId: string;
-    children: React.ReactNode;
-  }) => (
-    <div className="w-full">
-      <NavBar authorId={authorId} />
-      {children}
-    </div>
-  );
+export const AuthContext = createContext({
+  authorid: "",
+  setAuthorID: (authorid: string) => {
+    console.log(authorid);
+  },
+});
 
+const General = ({
+  children,
+  authorid,
+  setAuthorID,
+}: {
+  children: React.ReactNode;
+  authorid: string;
+  setAuthorID: (authorid: string) => void;
+}) => {
+  return (
+    <AuthContext.Provider value={{ authorid, setAuthorID }}>
+      <div className="w-full">
+        <NavBar />
+        {children}
+      </div>
+    </AuthContext.Provider>
+  );
+};
+
+function App() {
   /**
    * Retrieves the authorid from the backend
    */
@@ -40,7 +53,6 @@ function App() {
         console.error(error);
       }
     };
-
     retrieveAuthorID();
   }, []);
 
@@ -61,7 +73,10 @@ function App() {
           path="/"
           element={
             <AuthCheck>
-              <General authorId={authorid}>
+              <General
+                authorid={authorid}
+                setAuthorID={setAuthorID}
+              >
                 <Home />
               </General>
             </AuthCheck>
@@ -70,7 +85,10 @@ function App() {
         <Route
           path={authorIDPath} // This is a dynamic route + project requirements
           element={
-            <General authorId={authorid}>
+            <General
+              authorid={authorid}
+              setAuthorID={setAuthorID}
+            >
               <ProfilePage />
             </General>
           }
