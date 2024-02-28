@@ -79,7 +79,7 @@ const Home = () => {
     console.log("Please");
     retrievePosts();
     retrieveData();
-  });
+  }, []);
 
   // retrieveData();
   //#endregion
