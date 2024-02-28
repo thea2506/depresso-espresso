@@ -57,6 +57,7 @@ def make_post(request):
             post.save()
             return JsonResponse(data) 
         else:
+            print(form.errors)
             data['success'] = False  
             return JsonResponse(data) 
 
@@ -126,13 +127,74 @@ def make_comment(request):
     return rend
 
 def get_post_comments(request):
+  '''Get all comments for a post'''
   print('request', request.user)
 
   data = json.loads(request.body)
-  postid = data.get('postid')
+  postid = data.get('postId')
   comments = Comment.objects.filter(postid=postid)
   print(comments)
   data = serializers.serialize('json', comments)
   print('data', data)
 
   return HttpResponse(data, content_type='application/json')
+
+def delete_post(request):
+  '''Delete a post'''
+  data = {}
+
+  data = json.loads(request.body)
+  postid = data.get('postid')
+  post = Post.objects.filter(postid=postid)
+  print('request', request.user, 'post', post)
+
+  if request.user == post.authorid.user:
+    post.delete()
+    data['success'] = True  
+    print("great deletion success")
+    return JsonResponse(data) 
+  
+  else:
+    data['success'] = False
+    print("horrible deletion failure")
+    return JsonResponse(data)
+
+def delete_comment(request):
+  '''Delete a comment'''
+  data = {}
+
+  data = json.loads(request.body)
+  commentid = data.get('commentid')
+  comment = Comment.objects.filter(commentid=commentid)
+  print('request', request.user, 'comment', comment)
+
+  if request.user == comment.authorid.user:
+    comment.delete()
+    data['success'] = True  
+    print("great deletion success")
+    return JsonResponse(data) 
+  
+  else:
+    data['success'] = False
+    print("horrible deletion failure")
+    return JsonResponse(data)
+  
+# def edit_post(request):
+#   '''Edit a post'''
+#   data = {}
+
+#   data = json.loads(request.body)
+#   postid = data.get('postid')
+#   post = Post.objects.filter(postid=postid)
+#   print('request', request.user, 'post', post)
+
+#   if request.user == post.authorid.user:
+#     post.delete()
+#     data['success'] = True  
+#     print("great editing success")
+#     return JsonResponse(data) 
+  
+#   else:
+#     data['success'] = False
+#     print("horrible editing failure")
+#     return JsonResponse(data)

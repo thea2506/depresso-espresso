@@ -9,6 +9,8 @@ import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 import AuthCheck from "./components/auth/Authcheck.tsx";
+import React, { useState } from "react";
+import axios from "axios";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -21,8 +23,26 @@ const General = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
+const Main = () => {
+  /**
+   * Retrieves the authorid from the backend
+   */
+  const [authorid, setAuthorID] = useState<string>("");
+  const retrieveAuthorID = async () => {
+    try {
+      const response = await axios.get("/user_data");
+      setAuthorID(response.data.authorid);
+      console.log(response.data.authorid);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  retrieveAuthorID();
+
+  const authorIDPath = `/authors/${authorid}`;
+
+  return (
     <BrowserRouter>
       <Routes>
         <Route
@@ -44,7 +64,7 @@ if (rootElement) {
           }
         />
         <Route
-          path="/authors" // This is a dynamic route + project requirements
+          path={authorIDPath} // This is a dynamic route + project requirements
           element={
             <General>
               <ProfilePage />
@@ -54,6 +74,7 @@ if (rootElement) {
       </Routes>
     </BrowserRouter>
   );
+};
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(<Main />);
 }
-
-export { General };
