@@ -29,12 +29,17 @@ function App() {
   /**
    * Retrieves the authorid from the backend
    */
-  const [authorid, setAuthorID] = useState<string>("");
+  const [authorid, setAuthorID] = useState<string>(
+    localStorage.getItem("authorid") !== null
+      ? (localStorage.getItem("authorid") as string)
+      : ""
+  );
   useEffect(() => {
     const retrieveAuthorID = async () => {
       try {
         const response = await axios.get("/user_data");
         setAuthorID(response.data.authorid);
+        localStorage.setItem("authorid", response.data.authorid);
         console.log(response.data.authorid);
       } catch (error) {
         console.error(error);
