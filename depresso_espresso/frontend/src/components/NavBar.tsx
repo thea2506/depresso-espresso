@@ -1,10 +1,11 @@
 //#region imports
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AuthContext } from "../App";
 
 // components
 import { Button } from "./Button";
@@ -26,15 +27,18 @@ const myToast: ToastOptions = {
   progress: undefined,
 };
 
-const NavBar = ({ authorId }: { authorId: string }) => {
+const NavBar = () => {
+  const { authorid } = useContext(AuthContext);
+  console.log("authorid", authorid);
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
   console.log(window.location.pathname);
   console.log("I ammmm", window.location.pathname.split("/")[1]);
   const [currentPage, setCurrentPage] = useState<string>(
     window.location.pathname.split("/")[1]
   );
+
   const nav = useNavigate();
-  const authorIDPath = `/authors/${authorId}`;
+  const authorIDPath = `/authors/${authorid}`;
 
   // TODO: add the correct authorID to the link (dynamic route)
   // Inbox and Discover are not implemented yet
@@ -65,6 +69,7 @@ const NavBar = ({ authorId }: { authorId: string }) => {
 
       if (response.data.success) {
         toast.success("You have been logged out", myToast);
+        localStorage.clear();
         nav("/signin");
       } else {
         toast.error("Logout failed", myToast);
