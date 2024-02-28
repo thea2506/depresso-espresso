@@ -81,7 +81,7 @@ CORS_ALLOWED_ORIGINS = [
 ROOT_URLCONF = 'depresso_espresso.urls'
 
 BASE_TEMPLATES = os.path.join(BASE_DIR, 'templates')
-FRONTEND_TEMPLATES = os.path.join(BASE_DIR, 'frontend')
+FRONTEND_TEMPLATES = os.path.join(BASE_DIR, 'frontend/dist')
 
 TEMPLATES = [
     {

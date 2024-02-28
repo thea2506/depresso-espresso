@@ -4,9 +4,10 @@ import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { FaHeart, FaComment, FaShare } from "react-icons/fa6";
-import { animated } from "@react-spring/web";
+import { GoComment, GoHeart, GoShare } from "react-icons/go";
 import { useState } from "react";
+import { MdOutlinePublic } from "react-icons/md";
+import { animated, useSpring } from "@react-spring/web";
 
 // components
 import { PostModel } from "./PostModel";
@@ -27,13 +28,28 @@ interface CreatePostViewProps {
  */
 const PostView = ({ post }: CreatePostViewProps) => {
   const [showComments, setShowComments] = useState(false);
+  const [like, setLike] = useState<number | undefined>(post.likes || 0);
+  const date = new Date(post.publishdate);
+  const formattedDate = date
+    .toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+    })
+    .replace(",", "");
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    config: { duration: 1000 },
+  });
 
-  const handleLikeToggle = () => {
-    console.log("toggle_like");
-
-    axios.post("/toggle_like", { postid: post.postid }).then((response) => {
-      console.log("like response", response.data);
-      window.location.reload(); // Refresh the page - TODO should be replaced with a more elegant solution in future
+  //#region functions
+  const handleLikeToggle = async () => {
+    console.log(post.likes);
+    axios.post("/toggle_like", { postid: post.postid }).then(() => {
+      setLike(like == 0 ? 1 : 0);
     });
   };
 
@@ -45,14 +61,27 @@ const PostView = ({ post }: CreatePostViewProps) => {
   const handleShareClick = () => {
     console.log("Share clicked");
   };
+  //#endregion
+
+  const interactSection = [
+    { icon: <GoHeart />, count: like, onClick: handleLikeToggle },
+    {
+      icon: <GoComment />,
+      count: post.commentcount,
+      onClick: handleCommentClick,
+    },
+    { icon: <GoShare />, onClick: handleShareClick },
+  ];
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
+    <animated.div
+      style={springs}
+      className="flex flex-col w-full px-6 md:px-8 lg:px-0 gap-y-4"
+    >
       <ToastContainer />
-
-      <animated.form
+      <div
         className={
-          "w-full p-8 lg:w-1/2 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
+          "w-full p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
         }
       >
         <div className="flex items-center justify-between">
@@ -69,107 +98,44 @@ const PostView = ({ post }: CreatePostViewProps) => {
             <p className="text-primary">{post.username}</p>
           </div>
 
-          <span>{post.publishdate?.substring(0, 16)}</span>
+          <div className="flex items-center md:justify-center gap-x-1 opacity-80">
+            <MdOutlinePublic className="w-4 h-4" />
+            <p className="text-sm">{formattedDate}</p>
+          </div>
         </div>
-        <p>{post.content}</p>
+        <p className="text-start">{post.content}</p>
 
         {/* Image - need to display currently not saved I think*/}
+        {post.image_url && (
+          <img
+            src={post.image_url}
+            alt="post"
+            className="w-full h-96 object-cover rounded-[1.4rem]"
+          />
+        )}
 
-        {/* { Like, Comment, Share} */}
-        <div className="flex items-center justify-between gap-x-4">
-          <div className="flex gap-x-4">
-            <div className="flex items-center justify-between gap-x-4">
-              <div className="flex w-full gap-x-4">
-                <span className="flex items-center gap-x-1">
-                  <FaHeart
-                    className="w-6 h-7 text-primary click-icon"
-                    onClick={handleLikeToggle}
-                  />
-                  <span>{post.likes}</span>
-                </span>
-                <span className="flex items-center gap-x-1">
-                  <FaComment
-                    className="w-6 h-7 text-primary click-icon"
-                    onClick={handleCommentClick}
-                  />
-                  <span>{post.commentcount}</span>
-                </span>
-                <span>
-                  <FaShare
-                    className="w-6 h-7 text-primary click-icon"
-                    onClick={handleShareClick}
-                  />
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full">
-          {showComments && <CommentList post={post} />}
-        </div>
-
-        {/* Options */}
-        {/* <div className="flex items-center justify-between gap-x-4">
-          <div className="flex gap-x-4">
-            <FaLock className="w-6 h-7 text-primary" />
-            <select
-              name="privacy"
-              id="privacy"
-              className="px-4 py-1 bg-white rounded-xl"
+        {/* Like, Comment, Share Section */}
+        <div className="flex items-center justify-between w-full">
+          {interactSection.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center text-lg lg:text-xl gap-x-4 text-primary"
             >
-              {["Public", "Private"].map((option, index) => (
-                <option
-                  key={index}
-                  value={option.toLowerCase()}
-                  onClick={() => setVisibility(option.toLowerCase())}
-                >
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center align-baseline gap-x-4 text-primary">
-            <p className="leading-8">Enable Markdown</p>
-            <input
-              onChange={(e) => {
-                setMarkdownEnabled(e.target.checked);
-              }}
-              type="checkbox"
-              name="markdown"
-              id="markdown"
-              className={`w-6 h-6 transition ease-out duration-150 bg-white rounded-md appearance-none cursor-pointer checked:bg-primary ${
-                isOpen ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          </div>
-          <div className="flex gap-x-2 text-primary">
-            <p>{!imageUploadUrl && "No uploaded image"}</p>
-            <p>{imageUploadUrl && imageUploadUrl?.name}</p>
-          </div>
+              <p
+                className="text-xl cursor-pointer hover:text-secondary-light lg:text-2xl"
+                onClick={item.onClick}
+              >
+                {item.icon}
+              </p>
+              <p>{item.count}</p>
+            </div>
+          ))}
         </div>
-        <input
-          className="w-full p-4 bg-white rounded-2xl focus:outline-none"
-          placeholder="Image URL"
-          type="text"
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-        <form onSubmit={(e) => console.log(e)}>
-          <label className="flex items-center justify-center py-4 text-white cursor-pointer bg-primary rounded-2xl">
-            <input
-              type="file"
-              id="file"
-              name="file"
-              onChange={(e) => {
-                const file = e.target.files?.[0] || null;
-                setImageUploadUrl(file);
-              }}
-            />
-            Upload Image
-          </label>
-        </form> */}
-      </animated.form>
-    </div>
+      </div>
+      <div className="w-full">
+        {showComments && <CommentList post={post} />}
+      </div>
+    </animated.div>
   );
 };
 

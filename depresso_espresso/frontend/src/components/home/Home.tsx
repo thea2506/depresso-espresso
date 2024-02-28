@@ -45,7 +45,6 @@ const Home = () => {
     }
   };
 
-
   /**
    * Retrieves the posts from the backend
    */
@@ -53,6 +52,7 @@ const Home = () => {
     try {
       const response = await axios.get("/get_all_posts");
       const postData = response.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const postModels = postData.map((rawpost: any) => {
         return {
           authorid: rawpost.fields.authorid,
@@ -62,10 +62,10 @@ const Home = () => {
           likes: rawpost.fields.liked_by.length,
           commentcount: rawpost.fields.commentcount,
           username: rawpost.fields.authorname,
-          publishdate: rawpost.fields.publishdate
+          publishdate: rawpost.fields.publishdate,
         };
       });
-      console.log('postmodels', postModels)
+      console.log("postmodels", postModels);
       setPosts(postModels);
     } catch (error) {
       console.error(error);
@@ -87,10 +87,12 @@ const Home = () => {
         user_img_url={image_url}
       />
 
-      <PostList posts={posts} />
+      <PostList
+        posts={posts}
+        className="w-full mt-4 lg:w-1/2"
+      />
     </div>
   );
 };
 
 export default Home;
-

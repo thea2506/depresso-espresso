@@ -26,7 +26,7 @@ const myToast: ToastOptions = {
   progress: undefined,
 };
 
-const NavBar = () => {
+const NavBar = ({ authorId }: { authorId: string }) => {
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
   console.log(window.location.pathname);
   console.log("I ammmm", window.location.pathname.split("/")[1]);
@@ -34,22 +34,7 @@ const NavBar = () => {
     window.location.pathname.split("/")[1]
   );
   const nav = useNavigate();
-
-  /**
-   * Retrieves the authorid from the backend
-   */
-  const [authorid, setAuthorID] = useState<string>("");
-  const retrieveAuthorID = async () => {
-    try {
-      const response = await axios.get("/user_data");
-      setAuthorID(response.data.authorid);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  retrieveAuthorID();
-  const authorIDPath = `/authors/${authorid}`;
+  const authorIDPath = `/authors/${authorId}`;
 
   // TODO: add the correct authorID to the link (dynamic route)
   // Inbox and Discover are not implemented yet
@@ -88,7 +73,7 @@ const NavBar = () => {
       console.error("An error occurred", error);
       toast.error("An error occurred", myToast);
     }
-    }
+  };
 
   //#endregion
 

@@ -9,7 +9,7 @@ class StreamView(TemplateView):
     template_name = 'home/home.html'
 
     def get(self, request):
-        return render(request, "dist/index.html")
+        return render(request, "index.html")
 
 # Create your views here.
 
@@ -26,7 +26,7 @@ def stream(request):
 def search(request):
     '''Shows the user their search results for other users'''
     SearchView()
-    return render(request, "dist/index.html")
+    return render(request, "index.html")
     
 
     

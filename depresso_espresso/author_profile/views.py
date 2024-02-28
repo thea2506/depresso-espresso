@@ -9,10 +9,11 @@ import json
 
 @login_required
 def profile(request):
-    return render(request, "dist/index.html")
+    return render(request, "index.html")
     
 #@login_required
 def user_data(request):
+    print("user_data??")
     if request.method == "GET":
 
         data = {}
