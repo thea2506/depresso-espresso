@@ -103,7 +103,7 @@ const CommentList = ({ post }: { post: PostModel }) => {
             <b>
               {" "}
               <h2>{comment.authorname} </h2>
-              <h3>{comment.publishdate.substring(0, 15)} </h3>{" "}
+              <h3>{comment.publishdate.substring(0, 16)} </h3>{" "}
             </b>
             <p>{comment.comment}</p>
           </div>
