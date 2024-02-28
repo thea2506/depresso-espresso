@@ -5,9 +5,9 @@ import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoShare } from "react-icons/go";
-import { animated } from "@react-spring/web";
 import { useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
+import { animated, useSpring } from "@react-spring/web";
 
 // components
 import { PostModel } from "./PostModel";
@@ -39,6 +39,11 @@ const PostView = ({ post }: CreatePostViewProps) => {
       year: "numeric",
     })
     .replace(",", "");
+  const springs = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+    config: { duration: 1000 },
+  });
 
   //#region functions
   const handleLikeToggle = async () => {
@@ -69,7 +74,10 @@ const PostView = ({ post }: CreatePostViewProps) => {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
+    <animated.div
+      style={springs}
+      className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4"
+    >
       <ToastContainer />
       <div
         className={
@@ -120,7 +128,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
       <div className="w-full">
         {showComments && <CommentList post={post} />}
       </div>
-    </div>
+    </animated.div>
   );
 };
 
