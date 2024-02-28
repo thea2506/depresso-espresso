@@ -14,7 +14,6 @@ class Post(models.Model):
     description = models.TextField(null = True)
     contenttype = models.TextField(db_column='contentType')
     content = models.TextField(null = True)
-    editedcontent = models.TextField(db_column='editedContent', null = True, blank=True)
 
     image_url = models.URLField(blank=True, null=True)
     linked_img_post = models.TextField("self", blank = True, null = True)
@@ -37,7 +36,6 @@ class Comment(models.Model):
 
     contenttype = models.TextField(db_column='contentType', null = True, blank=True)
     comment = models.TextField()
-    editedcomment = models.TextField(db_column='editedComment', null = True, blank=True)
     publishdate = models.DateTimeField(db_column='publishDate')
     editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)
 

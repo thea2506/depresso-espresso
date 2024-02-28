@@ -24,7 +24,6 @@ const CommentList = ({ post}: { post: PostModel}) => {
                 commentlikecount: rawcomment.fields.commentlikecount,
                 contenttype: rawcomment.fields.contenttype,
                 editdate: rawcomment.fields.editdate,
-                editedcomment: rawcomment.fields.editedcomment,
                 liked_by: rawcomment.fields.liked_by,
                 postid: rawcomment.fields.postid,
                 publishdate: rawcomment.fields.publishdate,   
