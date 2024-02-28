@@ -44,7 +44,7 @@ if (rootElement) {
           }
         />
         <Route
-          path="/authors/:authorId" // This is a dynamic route + project requirements
+          path="/authors" // This is a dynamic route + project requirements
           element={
             <General>
               <ProfilePage />
