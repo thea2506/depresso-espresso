@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from posts.models import Post
 
 # Potentially edit this to only use 1 function
 
@@ -22,6 +23,9 @@ def user_data(request):
             data['success'] = True
             #data['follows'] = getattr(user, 'follows')
             #data['friends'] = getattr(user, 'friends')
+            friends = getattr(user, 'friends')
+            print("username:", getattr(user, 'username'))
+            print("FRIENDS:", friends)
             #data['username'] = getattr(user, 'username') May want to display this as well as display name 
 
         else:
@@ -42,3 +46,7 @@ def user_data(request):
             user.save()
 
         return JsonResponse({"message": "Profile updated successfully!"})
+
+def user_posts(request, username):
+    user_posts = Post.objects.filter(authorid__username=username)
+    return render(request, 'author_profile/user_posts.html', {'user_posts': user_posts})

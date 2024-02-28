@@ -8,7 +8,7 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
   buttonType: "text" | "icon";
-  icon?: string;
+  icon?: React.ReactNode | string;
 }
 //#endregion
 
@@ -45,11 +45,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           {...props}
         >
-          <img
-            src={icon}
-            alt="Icon"
-            className="w-7 h-7 md:w-8 md:h-8"
-          />
+          {typeof icon == "string" ? (
+            <img
+              src={icon}
+              alt="Icon"
+              className="w-7 h-7 md:w-8 md:h-8"
+            />
+          ) : (
+            icon
+          )}
         </button>
       );
     }

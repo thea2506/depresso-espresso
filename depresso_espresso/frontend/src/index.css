@@ -24,6 +24,15 @@ body {
   height: 100%;
 }
 
-::-ms-reveal {
-  display: none !important;
+.round {
+  border: 2rem solid var(--accent-3);
+  border-radius: 2rem;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.click-icon {
+  cursor: pointer;
 }

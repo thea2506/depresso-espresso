@@ -7,8 +7,10 @@
 from django.shortcuts import render
 from .register import Register
 from .login import Login
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.contrib.auth import get_user_model
 
 def register(request):
     '''Handles a form submission POST request to register
@@ -20,6 +22,7 @@ def register(request):
         
         if form.is_valid():  
             user = form.save()
+            
             login(request, user)
             data['success'] = True  
             return JsonResponse(data)  
@@ -40,18 +43,18 @@ def register(request):
 def loginview(request):
     '''Handles a form submission POST request to login
        returns: JSON data including success status + errors if applicable'''  
+    
+
     if request.method == 'POST':
+        
         data ={}
         user = Login.post(request)
+
         if user:
             login(request, user)
             data['success'] = True  
             return JsonResponse(data)  
         else:
-            errors = []
-            for error in list(user.errors.values()):              # Remove this maybe
-                print(request, user.errors.items(), error)
-            data['errors'] = errors   
             data['success'] = False
             return JsonResponse(data)  
         
@@ -60,7 +63,7 @@ def loginview(request):
 def index(request):
     return render(request, "dist/index.html")
 
-def is_authenticated(request):
+def get_auth(request):
     data = {}
     if request.user.is_authenticated:
         data['success'] = True
@@ -68,4 +71,12 @@ def is_authenticated(request):
         data['success'] = False
     return JsonResponse(data)
 
-
+def logoutUser(request):
+    data = {}
+    logout(request)
+    
+    if request.user.is_authenticated:
+        data['success'] = False
+    else:
+        data['success'] = True
+    return JsonResponse(data)

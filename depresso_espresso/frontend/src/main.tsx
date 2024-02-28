@@ -6,44 +6,54 @@ import "./index.css";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
-import Stream from "./components/stream/Stream.tsx";
-import Post from "./components/data/Post.tsx";
+import Home from "./components/home/Home.tsx";
+import { NavBar } from "./components/NavBar.tsx";
+import AuthCheck from "./components/auth/Authcheck.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AuthCheck from "./components/auth/Auth.tsx";
 
 const rootElement = document.getElementById("root") as Element;
+
+const General = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full">
+    <NavBar />
+    {children}
+  </div>
+);
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <BrowserRouter>
       <Routes>
-        
         <Route
-          path="/home"
-          element={<AuthCheck><Stream /></AuthCheck>}
-        />
-        <Route
-          path="/"
-          element={<Stream />}
+          path="/signup"
+          element={<Signup />}
         />
         <Route
           path="/signin"
           element={<Signin />}
         />
         <Route
-          path="/signup"
-          element={<Signup />}
+          path="/"
+          element={
+            <AuthCheck>
+              <General>
+                <Home />
+              </General>
+            </AuthCheck>
+          }
         />
         <Route
-          path="/profile"
-          element={<ProfilePage />}
-        />
-        <Route
-          path="/posts"
-          element={<Post />}
+          path="/authors/:authorId" // This is a dynamic route + project requirements
+          element={
+            <General>
+              <ProfilePage />
+            </General>
+          }
         />
       </Routes>
     </BrowserRouter>
   );
 }
+
+export { General };
