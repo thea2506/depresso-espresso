@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from posts.models import Post
+from .models import Author
+import json
 
 # Potentially edit this to only use 1 function
 
@@ -50,3 +52,53 @@ def user_data(request):
 def user_posts(request, username):
     user_posts = Post.objects.filter(authorid__username=username)
     return render(request, 'author_profile/user_posts.html', {'user_posts': user_posts})
+
+def author_profile(request, author_id):
+    if request.method == "GET":
+        author = get_object_or_404(Author, pk=author_id)
+        data={
+            type: "author",
+            "id": f"http://(request.get_host())/authors/{author.id}",
+            "host": f"http://(request.get_host())/",
+            "displayName": author.display_name,
+            "url": f"http://(request.get_host())/authors/{author.id}",
+            "github": author.github_link,
+            "profile_image": author.profile_image
+        }
+        return JsonResponse(data)
+    elif request.method == "PUT":
+#         Single Author
+# URL: ://service/authors/{AUTHOR_ID}/
+# GET [local, remote]: retrieve AUTHOR_ID's profile
+# PUT [local]: update AUTHOR_ID's profile
+# Example Format:
+# {
+#     "type":"author",
+#     // ID of the Author
+#     "id":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+#     // the home host of the author
+#     "host":"http://127.0.0.1:5454/",
+#     // the display name of the author
+#     "displayName":"Lara Croft",
+#     // url to the authors profile
+#     "url":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
+#     // HATEOS url for Github API
+#     "github": "http://github.com/laracroft",
+#     // Image from a public domain
+#     "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
+# }
+        try:
+            data = json.loads(request.body)
+            author = get_object_or_404(Author, pk=author_id)
+            author.display_name = data.get('displayName', author.display_name)
+            author.github_link = data.get('github', author.github_link)
+            author.profile_image = data.get('profileImage', author.profile_image)
+            author.save()
+            return JsonResponse({"message": "Profile updated successfully!"})
+        except Exception as e:
+            return JsonResponse({"message": str(e)}, status=400)
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+    
