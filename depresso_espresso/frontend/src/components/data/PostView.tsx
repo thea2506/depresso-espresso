@@ -87,7 +87,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
                   />
                   <span>{post.likes}</span>
                 </span>
-                <span>
+                <span className="flex items-center gap-x-1">
                   <FaComment
                     className="w-6 h-7 text-primary click-icon"
                     onClick={handleCommentClick}
