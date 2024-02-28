@@ -42,7 +42,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
   }));
 
   const [content, setContent] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [imageUploadUrl, setImageUploadUrl] = useState<File | null>();
   // const [imagePostId, setImagePostId] = useState<number | null>(null);
   const [isMarkdownEnabled, setMarkdownEnabled] = useState(false);
@@ -87,7 +87,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
         formField.append("contenttype", "plaintext");
       }
       // formField.append("image_post_id", imagePostId?.toString() || "");
-      formField.append("attached_img_post", imageUrl || "");
+      if (imageUrl != "") formField.append("attached_img_post", imageUrl);
       formField.append("visibility", visibility);
       formField.append("username", username);
 

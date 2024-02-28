@@ -6,5 +6,5 @@ from django.views.generic import TemplateView
 
 #https://medium.com/@taohidulii/serving-react-and-django-together-2089645046e4
 def index(request):
-    return render(request, "dist/index.html")
+    return render(request, "index.html")
 

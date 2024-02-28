@@ -89,7 +89,7 @@ const Home = () => {
 
       <PostList
         posts={posts}
-        className="w-full lg:w-1/2"
+        className="w-full mt-4 lg:w-1/2"
       />
     </div>
   );

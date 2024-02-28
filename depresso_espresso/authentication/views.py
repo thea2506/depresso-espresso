@@ -38,7 +38,7 @@ def register(request):
     else:
         form = Register()
 
-    return render(request, "dist/index.html")
+    return render(request, "index.html")
     
 def loginview(request):
     '''Handles a form submission POST request to login
@@ -58,10 +58,10 @@ def loginview(request):
             data['success'] = False
             return JsonResponse(data)  
         
-    return render(request, 'dist/index.html')
+    return render(request, 'index.html')
 
 def index(request):
-    return render(request, "dist/index.html")
+    return render(request, "index.html")
 
 def get_auth(request):
     data = {}

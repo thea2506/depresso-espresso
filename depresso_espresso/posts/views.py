@@ -18,7 +18,7 @@ class PostView(forms.ModelForm):
     template_name = "posts/posts.html"
 
     def get(self, request):
-        return render(request, "dist/index.html")
+        return render(request, "index.html")
     class Meta:
         model = Post
         fields = ("content", "image_url", "visibility", "contenttype")
@@ -27,7 +27,7 @@ class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
 
     def get(self, request):
-        return render(request, "dist/index.html")
+        return render(request, "index.html")
     class Meta:
         model = Comment
         fields = ("comment", "postid")

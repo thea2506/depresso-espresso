@@ -15,12 +15,12 @@ const PostList = ({ posts, className }: PostListProps) => {
   return (
     <ul
       className={twMerge(
-        "flex flex-col items-center justify-center w-full gap-y-4",
+        "flex flex-col items-center justify-center w-full",
         className
       )}
     >
       {posts.map((post: PostModel) => (
-        <li className="flex flex-col items-center justify-center w-full gap-y-4">
+        <li className="flex flex-col items-center justify-center w-full">
           <PostView post={post} />
         </li>
       ))}
