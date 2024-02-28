@@ -137,3 +137,63 @@ def get_post_comments(request):
   print('data', data)
 
   return HttpResponse(data, content_type='application/json')
+
+def delete_post(request):
+  '''Delete a post'''
+  data = {}
+
+  data = json.loads(request.body)
+  postid = data.get('postid')
+  post = Post.objects.filter(postid=postid)
+  print('request', request.user, 'post', post)
+
+  if request.user == post.authorid.user:
+    post.delete()
+    data['success'] = True  
+    print("great deletion success")
+    return JsonResponse(data) 
+  
+  else:
+    data['success'] = False
+    print("horrible deletion failure")
+    return JsonResponse(data)
+
+def delete_comment(request):
+  '''Delete a comment'''
+  data = {}
+
+  data = json.loads(request.body)
+  commentid = data.get('commentid')
+  comment = Comment.objects.filter(commentid=commentid)
+  print('request', request.user, 'comment', comment)
+
+  if request.user == comment.authorid.user:
+    comment.delete()
+    data['success'] = True  
+    print("great deletion success")
+    return JsonResponse(data) 
+  
+  else:
+    data['success'] = False
+    print("horrible deletion failure")
+    return JsonResponse(data)
+  
+# def edit_post(request):
+#   '''Edit a post'''
+#   data = {}
+
+#   data = json.loads(request.body)
+#   postid = data.get('postid')
+#   post = Post.objects.filter(postid=postid)
+#   print('request', request.user, 'post', post)
+
+#   if request.user == post.authorid.user:
+#     post.delete()
+#     data['success'] = True  
+#     print("great editing success")
+#     return JsonResponse(data) 
+  
+#   else:
+#     data['success'] = False
+#     print("horrible editing failure")
+#     return JsonResponse(data)

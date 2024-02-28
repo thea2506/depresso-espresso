@@ -4,7 +4,7 @@ from authentication.models import Author
 
 # Create your models here.
 class Post(models.Model):
-    authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')
+    authorid = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     authorname = models.TextField(null = True)
 
@@ -30,9 +30,9 @@ class Post(models.Model):
         managed = True
 
 class Comment(models.Model):
-    postid = models.ForeignKey(Post, models.DO_NOTHING, db_column='postID') 
+    postid = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='postID') 
     commentid = models.UUIDField(db_column='commentID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
-    authorid = models.ForeignKey(Author, models.DO_NOTHING, db_column='authorID')
+    authorid = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     authorname = models.TextField(null = True)
 
     contenttype = models.TextField(db_column='contentType', null = True, blank=True)
