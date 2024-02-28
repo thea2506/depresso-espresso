@@ -80,15 +80,21 @@ const CommentList = ({ post}: { post: PostModel}) => {
 
       return (
        
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <input className="w-full p-4 bg-white rounded-2xl focus:outline-none" type="text" placeholder="Say Something" value={comment} onChange={(e) => setComment(e.target.value)} />
-                  <button onClick={handleCommentSubmit}>
-                    <FaPaperPlane />
-                  </button>
+                <div >
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <input className="w-full p-4 bg-white rounded-2xl focus:outline-none" type="text" placeholder="Say Something" value={comment} onChange={(e) => setComment(e.target.value)} />
+                    <button onClick={handleCommentSubmit}>
+                      <FaPaperPlane />
+                    </button>
+                  </div>
 
                   <div>
                     {comments.map((comment: CommentModel, index: number) => (
-                      <div key={index}>{comment.comment}</div>
+                      <div className="w-full p-4 bg-white rounded-2xl focus:outline-none" style={{ marginTop: "10px" }} key={index}>
+                       <b> <h2>{comment.authorname} </h2>
+                        <h3>{comment.publishdate.substring(0,15)} </h3> </b>
+                        <p>{comment.comment}</p>
+                      </div>
                     ))}
                   </div>
 
