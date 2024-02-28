@@ -3,9 +3,47 @@ import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
+import { useEffect } from "react";
+import { CommentModel } from "../data/CommentModel";
 
 const CommentList = ({ post}: { post: PostModel}) => {
-  const [comment, setComment] = useState("");
+    const [comment, setComment] = useState("");
+    const [comments, setComments] = useState<CommentModel[]>([]);
+
+    useEffect(() => {
+      const fetchComments = async () => {
+        try {
+          const response = await axios.post("/get_post_comments", { postId: post.postid });
+          console.log('comments resp', response.data)
+          if (response.status === 200) {
+            const commentModels = response.data.map((rawcomment: any) => {
+              return {
+                authorid: rawcomment.fields.authorid,
+                authorname: rawcomment.fields.authorname,
+                comment: rawcomment.fields.comment,
+                commentlikecount: rawcomment.fields.commentlikecount,
+                contenttype: rawcomment.fields.contenttype,
+                editdate: rawcomment.fields.editdate,
+                editedcomment: rawcomment.fields.editedcomment,
+                liked_by: rawcomment.fields.liked_by,
+                postid: rawcomment.fields.postid,
+                publishdate: rawcomment.fields.publishdate,   
+              };
+            });
+            console.log('commentmodels', commentModels)
+            setComments(commentModels);
+          } else {
+            console.error("Failed to fetch comments");
+          }
+        } catch (error) {
+          console.error("An error occurred");
+        }
+      };
+
+      fetchComments();
+    }, [post.postid]);
+
+
 
   const myToast: ToastOptions = {
     position: "top-center",
@@ -41,12 +79,21 @@ const CommentList = ({ post}: { post: PostModel}) => {
   };
 
       return (
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <input className="w-full p-4 bg-white rounded-2xl focus:outline-none" type="text" placeholder="Say Something" value={comment} onChange={(e) => setComment(e.target.value)} />
-          <button onClick={handleCommentSubmit}>
-            <FaPaperPlane />
-          </button>
-        </div>
+       
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <input className="w-full p-4 bg-white rounded-2xl focus:outline-none" type="text" placeholder="Say Something" value={comment} onChange={(e) => setComment(e.target.value)} />
+                  <button onClick={handleCommentSubmit}>
+                    <FaPaperPlane />
+                  </button>
+
+                  <div>
+                    {comments.map((comment: CommentModel, index: number) => (
+                      <div key={index}>{comment.comment}</div>
+                    ))}
+                  </div>
+
+                  
+                </div>
   );
 };
 

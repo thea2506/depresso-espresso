@@ -40,7 +40,7 @@ const ProfilePage = () => {
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
-    console.log(githubLink, "githubLink");
+    console.log(followers);
   };
 
   const getData = async () => {
@@ -59,7 +59,7 @@ const ProfilePage = () => {
 
   const retrievePosts = async () => {
     try {
-      const response = await axios.get('/get_author_posts');
+      const response = await axios.get("/get_author_posts");
       const postData = response.data;
       const postModels = postData.map((rawpost: any) => {
         return {
@@ -70,10 +70,10 @@ const ProfilePage = () => {
           likes: rawpost.fields.liked_by.length,
           commentcount: rawpost.fields.commentcount,
           username: rawpost.fields.authorname,
-          publishdate: rawpost.fields.publishdate
+          publishdate: rawpost.fields.publishdate,
         };
       });
-      console.log('postmodels', postModels)
+      console.log("postmodels", postModels);
       setPosts(postModels);
     } catch (error) {
       console.error(error);
@@ -115,26 +115,43 @@ const ProfilePage = () => {
           </Button>
         ))}
       </ul>
-      {currentTopic === "GitHub" && githubLink !== "" && (
-        <GitHubActionsList
-          github={githubLink}
-          displayName={displayName}
-        />
+
+      {/* Github Topic */}
+      {currentTopic === "GitHub" &&
+        (githubLink === "" || githubLink !== null) && (
+          <GitHubActionsList
+            github={githubLink}
+            displayName={displayName}
+          />
+        )}
+      {currentTopic === "GitHub" &&
+        (githubLink === "" || githubLink === null) && (
+          <div className="flex items-center justify-center text-lg opacity-80">
+            Link your Github...
+          </div>
+        )}
+
+      {/* Followers Topic */}
+      {currentTopic === "Followers" &&
+        followers != null &&
+        followers != undefined && <FollowList followers={followers} />}
+
+      {currentTopic === "Followers" &&
+        (followers === null || followers === undefined) && (
+          <div className="flex items-center justify-center text-lg opacity-80">
+            Make more friends ... Is this a clone account?
+          </div>
+        )}
+
+      {/* Posts Topic */}
+      {currentTopic === "Posts" && posts.length > 0 && (
+        <PostList posts={posts} />
       )}
-      {currentTopic === "GitHub" && githubLink === "" && (
+
+      {currentTopic === "Posts" && posts.length === 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
-          Link your Github...
+          No posts yet...
         </div>
-      )}
-      {currentTopic === "Followers" && (
-        <FollowList
-          followers = {followers}
-        />
-      )}
-      {currentTopic === "Posts" && (
-        <PostList
-          posts = {posts}
-        />
       )}
     </animated.div>
   );

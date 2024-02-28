@@ -57,6 +57,7 @@ def make_post(request):
             post.save()
             return JsonResponse(data) 
         else:
+            print(form.errors)
             data['success'] = False  
             return JsonResponse(data) 
 
@@ -130,7 +131,7 @@ def get_post_comments(request):
   print('request', request.user)
 
   data = json.loads(request.body)
-  postid = data.get('postid')
+  postid = data.get('postId')
   comments = Comment.objects.filter(postid=postid)
   print(comments)
   data = serializers.serialize('json', comments)
