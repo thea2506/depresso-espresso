@@ -126,6 +126,7 @@ def make_comment(request):
     return rend
 
 def get_post_comments(request):
+  '''Get all comments for a post'''
   print('request', request.user)
 
   data = json.loads(request.body)
