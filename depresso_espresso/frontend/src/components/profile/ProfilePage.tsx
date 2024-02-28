@@ -61,6 +61,7 @@ const ProfilePage = () => {
     try {
       const response = await axios.get("/get_author_posts");
       const postData = response.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const postModels = postData.map((rawpost: any) => {
         return {
           authorid: rawpost.fields.authorid,

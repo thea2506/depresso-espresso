@@ -83,8 +83,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
       formField.append("content", content);
       if (isMarkdownEnabled) {
         formField.append("contenttype", "markdown");
-      }
-      else {
+      } else {
         formField.append("contenttype", "plaintext");
       }
       // formField.append("image_post_id", imagePostId?.toString() || "");
@@ -204,7 +203,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
             </select>
           </div>
           <div className="flex items-center align-baseline gap-x-4 text-primary">
-            <p className="leading-8">Enable Markdown</p>
+            <p className="text-sm leading-8 md:text-base">Markdown</p>
             <input
               onChange={(e) => {
                 setMarkdownEnabled(e.target.checked);
@@ -217,8 +216,8 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
               }`}
             />
           </div>
-          <div className="flex gap-x-2 text-primary">
-            <p>{!imageUploadUrl && "No uploaded image"}</p>
+          <div className="flex text-sm gap-x-2 text-primary md:text-base">
+            <p>{!imageUploadUrl && "No image"}</p>
             <p>{imageUploadUrl && imageUploadUrl?.name}</p>
           </div>
         </div>

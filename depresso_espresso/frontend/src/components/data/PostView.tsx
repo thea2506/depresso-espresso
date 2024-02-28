@@ -76,7 +76,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
   return (
     <animated.div
       style={springs}
-      className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4"
+      className="flex flex-col w-full px-6 md:px-8 lg:px-0 gap-y-4"
     >
       <ToastContainer />
       <div
@@ -103,9 +103,16 @@ const PostView = ({ post }: CreatePostViewProps) => {
             <p className="text-sm">{formattedDate}</p>
           </div>
         </div>
-        <p>{post.content}</p>
+        <p className="text-start">{post.content}</p>
 
         {/* Image - need to display currently not saved I think*/}
+        {post.image_url && (
+          <img
+            src={post.image_url}
+            alt="post"
+            className="w-full h-96 object-cover rounded-[1.4rem]"
+          />
+        )}
 
         {/* Like, Comment, Share Section */}
         <div className="flex items-center justify-between w-full">
