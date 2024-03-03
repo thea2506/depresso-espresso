@@ -100,7 +100,7 @@ const PostForm = ({
     try {
       const formField = new FormData();
       formField.append("content", content);
-      if (isMarkdownEnabled) {
+      if (isMarkdownEnabled === "true" || isMarkdownEnabled === "markdown") {
         formField.append("contenttype", "markdown");
       } else {
         formField.append("contenttype", "plaintext");
@@ -111,24 +111,22 @@ const PostForm = ({
       formField.append("username", username);
       if (edit && postId) formField.append("postid", postId);
 
-      const response = edit
-        ? await axios.post("/edit_post", formField)
-        : await axios.patch("/make_post", formField);
+      const url = edit ? "/edit_post" : "/make_post";
+      const response = await axios.post(url, formField);
 
       if (response.data.success) {
-        console.log("PostForm Created Successfully");
-
-        toast.success("PostForm Created Successfully", myToast);
+        const message = edit
+          ? "Post edited successfully"
+          : "Post created successfully";
+        toast.success(message, myToast);
         setTimeout(() => {
           window.location.reload();
-        }, 1000);
+        }, 500);
       } else {
-        console.log("Failed to create post");
-        toast.error("Failed to create post", myToast);
+        toast.error("Failed to create/modify post", myToast);
       }
     } catch (error) {
-      console.error("An error occurred", error);
-      toast.error("An error occurred", myToast);
+      toast.error("An error occurred while posting", myToast);
     }
   };
   //#endregion

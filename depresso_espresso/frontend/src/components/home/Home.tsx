@@ -68,6 +68,9 @@ const Home = () => {
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
+            visibility: rawpost.fields.visibility,
+            image_url: rawpost.fields.image_url,
+            contenttype: rawpost.fields.contenttype,
           };
         });
         console.log("postmodels", postModels);
@@ -81,7 +84,6 @@ const Home = () => {
     retrieveData();
   }, [navigate, setAuthorID]);
   //#endregion
-
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <ToastContainer />

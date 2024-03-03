@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
 import Popup from "reactjs-popup";
+import Markdown from "react-markdown";
 
 // components
 import { PostModel } from "./PostModel";
@@ -92,6 +93,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
     { icon: <GoShare />, onClick: handleShareClick },
   ];
 
+  console.log("mdContent", post.contenttype);
   return (
     <animated.div
       style={springs}
@@ -146,7 +148,13 @@ const PostView = ({ post }: CreatePostViewProps) => {
             <p className="text-sm">{formattedDate}</p>
           </div>
         </div>
-        <p className="text-start">{post.content}</p>
+
+        {/* Content */}
+        {post.contenttype === "markdown" ? (
+          <Markdown>{mdContent}</Markdown>
+        ) : (
+          <p className="text-start">{post.content}</p>
+        )}
 
         {/* Image - need to display currently not saved I think*/}
         {post.image_url && (
