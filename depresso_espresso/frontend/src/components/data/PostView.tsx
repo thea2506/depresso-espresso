@@ -1,7 +1,6 @@
 //#region imports
 // import { useState } from "react";
 import axios from "axios";
-import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare } from "react-icons/go";
@@ -12,6 +11,7 @@ import Popup from "reactjs-popup";
 import Markdown from "react-markdown";
 
 // components
+import { UserDisplay } from "../UserDisplay";
 import { PostModel } from "./PostModel";
 import CommentList from "../profile/CommentList";
 import { PostForm } from "./PostForm";
@@ -100,7 +100,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
   return (
     <animated.div
       style={springs}
-      className="flex flex-col w-full px-6 md:px-8 lg:px-0 gap-y-4"
+      className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4"
     >
       <ToastContainer />
       {/* Popup */}
@@ -133,20 +133,12 @@ const PostView = ({ post }: CreatePostViewProps) => {
         }
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center justify-center gap-x-4">
-            <img
-              className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
-              src={
-                post.user_img_url != null
-                  ? post.user_img_url
-                  : defaultProfileImage
-              }
-              alt="Profile picture"
-            />
-            <p className="text-primary">{post.username}</p>
-          </div>
+          <UserDisplay
+            username={post.username}
+            user_img_url={post.user_img_url}
+          />
 
-          <div className="flex items-center md:justify-center gap-x-1 opacity-80">
+          <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
             <p className="text-sm">{formattedDate}</p>
           </div>
