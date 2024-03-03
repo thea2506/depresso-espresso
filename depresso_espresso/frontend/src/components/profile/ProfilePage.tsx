@@ -1,7 +1,7 @@
-import axios from "axios";
-
 //#region imports
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 // components
 import { Button } from "../Button";
@@ -24,6 +24,7 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
 
+  const { authorId } = useParams<{ authorId: string }>();
   const [displayName, setDisplayName] = useState("");
   const [followers, setFollowers] = useState("");
   const [githubLink, setGithubLink] = useState("");
@@ -40,52 +41,47 @@ const ProfilePage = () => {
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
-    console.log(followers);
-  };
-
-  const getData = async () => {
-    try {
-      const response = await axios.get("/user_data");
-      const data = await response.data;
-      setDisplayName(data["display_name"]);
-      setGithubLink(data["github_link"]);
-      setProfileImage(data["profile_image"]);
-      setFollowers(data["followers"]);
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
-    // This could probably be combined into 1 request using render context
-  };
-
-  const retrievePosts = async () => {
-    try {
-      const response = await axios.get("/get_author_posts");
-      const postData = response.data;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const postModels = postData.map((rawpost: any) => {
-        return {
-          authorid: rawpost.fields.authorid,
-          content: rawpost.fields.content,
-          postid: rawpost.pk,
-          user_img_url: rawpost.fields.user_img_url,
-          likes: rawpost.fields.liked_by.length,
-          commentcount: rawpost.fields.commentcount,
-          username: rawpost.fields.authorname,
-          publishdate: rawpost.fields.publishdate,
-        };
-      });
-      console.log("postmodels", postModels);
-      setPosts(postModels);
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   useEffect(() => {
-    retrievePosts();
-  }, []);
+    const getData = async () => {
+      try {
+        const response = await axios.get(`/api/authors/${authorId}`);
+        const data = response.data;
+        setDisplayName(data.displayName);
+        setGithubLink(data.github);
+        setProfileImage(data.profileImage);
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+    getData();
 
-  getData();
+    const retrievePosts = async () => {
+      try {
+        const response = await axios.get("/get_author_posts");
+        const postData = response.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const postModels = postData.map((rawpost: any) => {
+          return {
+            authorid: rawpost.fields.authorid,
+            content: rawpost.fields.content,
+            postid: rawpost.pk,
+            user_img_url: rawpost.fields.user_img_url,
+            likes: rawpost.fields.liked_by.length,
+            commentcount: rawpost.fields.commentcount,
+            username: rawpost.fields.authorname,
+            publishdate: rawpost.fields.publishdate,
+          };
+        });
+        setPosts(postModels);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    retrievePosts();
+  }, [authorId, loading]);
+
   //#endregion
 
   return (
@@ -118,38 +114,27 @@ const ProfilePage = () => {
       </ul>
 
       {/* Github Topic */}
-      {currentTopic === "GitHub" &&
-        (githubLink === "" || githubLink !== null) && (
-          <GitHubActionsList
-            github={githubLink}
-            displayName={displayName}
-          />
-        )}
-      {currentTopic === "GitHub" &&
-        (githubLink === "" || githubLink === null) && (
-          <div className="flex items-center justify-center text-lg opacity-80">
-            Link your Github...
-          </div>
-        )}
+      {currentTopic === "GitHub" && githubLink != null && (
+        <GitHubActionsList
+          github={githubLink}
+          displayName={displayName}
+        />
+      )}
+
+      {currentTopic === "GitHub" && githubLink == null && (
+        <div className="flex items-center justify-center text-lg opacity-80">
+          Link your Github...
+        </div>
+      )}
 
       {/* Followers Topic */}
-      {currentTopic === "Followers" &&
-        followers != null &&
-        followers != undefined && <FollowList followers={followers} />}
-
-      {currentTopic === "Followers" &&
-        (followers === null || followers === undefined) && (
-          <div className="flex items-center justify-center text-lg opacity-80">
-            Make more friends ... Is this a clone account?
-          </div>
-        )}
 
       {/* Posts Topic */}
       {currentTopic === "Posts" && posts.length > 0 && (
         <PostList posts={posts} />
       )}
 
-      {currentTopic === "Posts" && posts.length === 0 && (
+      {currentTopic === "Posts" && posts.length == 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
           No posts yet...
         </div>

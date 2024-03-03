@@ -102,18 +102,6 @@ const Profile = ({
    * Checks if the given URL is a valid image URL.
    * @param {string} imageURL - The URL of the image to check.
    */
-  // async function checkImageURL(imageURL: string) {
-  //   if (imageURL === "") return;
-  //   try {
-  //     const img = await axios(imageURL);
-  //     if (img.status !== 200) {
-  //       alert("Invalid image URL");
-  //       return;
-  //     }
-  //   } catch (error) {
-  //     throw new Error("Invalid image URL");
-  //   }
-  // }
   const checkImageURL = (imageURL: string) => {
     const img = new Image();
     img.src = imageURL;
@@ -134,7 +122,7 @@ const Profile = ({
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
-      .then(async () => {
+      .then(() => {
         const validImage = checkImageURL(newImageURL);
         if (!validImage) throw new Error("Invalid image URL");
       })

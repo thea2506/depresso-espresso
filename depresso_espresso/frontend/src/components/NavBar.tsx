@@ -29,10 +29,7 @@ const myToast: ToastOptions = {
 
 const NavBar = () => {
   const { authorid } = useContext(AuthContext);
-  console.log("authorid", authorid);
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
-  console.log(window.location.pathname);
-  console.log("I ammmm", window.location.pathname.split("/")[1]);
   const [currentPage, setCurrentPage] = useState<string>(
     window.location.pathname.split("/")[1]
   );

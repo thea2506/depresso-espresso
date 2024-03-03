@@ -56,8 +56,6 @@ function App() {
     retrieveAuthorID();
   }, []);
 
-  const authorIDPath = `/authors/${authorid}`;
-
   return (
     <BrowserRouter>
       <Routes>
@@ -83,14 +81,16 @@ function App() {
           }
         />
         <Route
-          path={authorIDPath} // This is a dynamic route + project requirements
+          path="/authors/:authorId" // This is a dynamic route + project requirements
           element={
-            <General
-              authorid={authorid}
-              setAuthorID={setAuthorID}
-            >
-              <ProfilePage />
-            </General>
+            <>
+              <General
+                authorid={authorid}
+                setAuthorID={setAuthorID}
+              >
+                <ProfilePage />
+              </General>
+            </>
           }
         />
       </Routes>
