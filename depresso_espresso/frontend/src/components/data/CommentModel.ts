@@ -1,4 +1,3 @@
-
 export interface CommentModel {
   authorid: string;
   authorname: string;
@@ -10,5 +9,3 @@ export interface CommentModel {
   postid: string;
   publishdate: string;
 }
-
-

@@ -100,7 +100,8 @@ const PostView = ({ post }: CreatePostViewProps) => {
   return (
     <animated.div
       style={springs}
-      className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4"
+      className="flex flex-col items-center justify-center px-6 md:px-8 lg:px-0 gap-y-4
+      bg-accent-3 rounded-[1.4rem] w-[26rem] sm:w-[30rem] md:w-[48rem]"
     >
       <ToastContainer />
       {/* Popup */}
@@ -114,7 +115,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
         }}
         closeOnEscape={true}
       >
-        <div className=" bg-accent-3 rounded-[1.4rem] w-[26rem] sm:w-[30rem] md:w-[48rem]">
+        <div className="w-full">
           <PostForm
             username={username}
             oldContent={post.content}
@@ -129,7 +130,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
 
       <div
         className={
-          "w-full p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
+          "w-full p-3 md:p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
         }
       >
         <div className="flex items-center justify-between">
@@ -185,9 +186,11 @@ const PostView = ({ post }: CreatePostViewProps) => {
           )}
         </div>
       </div>
-      <div className="w-full">
-        {showComments && <CommentList post={post} />}
-      </div>
+      {showComments && (
+        <div className="w-full mb-4">
+          <CommentList post={post} />
+        </div>
+      )}
     </animated.div>
   );
 };

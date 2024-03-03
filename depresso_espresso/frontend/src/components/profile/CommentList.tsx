@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
+import { UserDisplay } from "../UserDisplay";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -22,8 +23,36 @@ const myToast: ToastOptions = {
 const CommentList = ({ post }: { post: PostModel }) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
+  const [authorImg, setAuthorImg] = useState("");
+
+  //#region functions
+  const formatDateString = (inputDateString: string) => {
+    const date = new Date(inputDateString);
+    const formattedDate = date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return formattedDate;
+  };
+  //#endregion
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get("/user_data");
+        const data = response.data;
+
+        if (response.data.success) {
+          setAuthorImg(data.profile_image);
+        }
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+
     const fetchComments = async () => {
       try {
         const response = await axios.post("/get_post_comments", {
@@ -55,6 +84,7 @@ const CommentList = ({ post }: { post: PostModel }) => {
       }
     };
 
+    fetchProfile();
     fetchComments();
   }, [post.postid]);
 
@@ -77,9 +107,9 @@ const CommentList = ({ post }: { post: PostModel }) => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-y-4 w-full rounded-[1.4rem] bg-accent-3 px-4 md:px-8">
       <ToastContainer />
-      <div className="flex items-center bg-accent-3">
+      <div className="flex items-center mb-4 gap-x-4">
         <input
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           type="text"
@@ -94,16 +124,22 @@ const CommentList = ({ post }: { post: PostModel }) => {
         />
       </div>
 
-      <div>
+      <div className="flex flex-col gap-y-8">
         {comments.map((comment: CommentModel, index: number) => (
           <div
-            className="w-full p-4 bg-white rounded-2xl focus:outline-none"
-            style={{ marginTop: "10px" }}
             key={index}
+            className="flex flex-col mb-4 gap-y-4"
           >
-            <h2>{comment.authorname} </h2>
-            <h3>{comment.publishdate.substring(0, 16)} </h3>
-            <p>{comment.comment}</p>
+            <div className="flex items-center justify-between">
+              <UserDisplay
+                username={comment.authorname}
+                user_img_url={authorImg}
+              />
+              <p className="text-sm opacity-70">
+                {formatDateString(comment.publishdate.substring(0, 16))}
+              </p>
+            </div>
+            <p className="text-start">{comment.comment}</p>
           </div>
         ))}
       </div>
