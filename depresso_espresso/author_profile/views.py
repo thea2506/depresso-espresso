@@ -6,40 +6,38 @@ from authentication.models import Author
 import json
 
 # Potentially edit this to only use 1 function
-
-@login_required
-def profile(request):
-    return render(request, "index.html")
+def get_profile(request, authorid):
+    if request.method == "GET":
+        author = get_object_or_404(Author, pk=authorid)
+        data = {
+            "type": "author",
+            "id": f"http://{request.get_host()}/authors/{authorid}",
+            "host": f"http://{request.get_host()}/",
+            "displayName": author.display_name,
+            "url": f"http://{request.get_host()}/authors/{authorid}",
+            "github": author.github_link,
+            "profileImage": author.profile_image
+        }
+        return JsonResponse(data)
     
 #@login_required
 def user_data(request):
-    print("user_data??")
+    user = request.user
     if request.method == "GET":
-
         data = {}
-        user = request.user
         if user:
             authorid = getattr(user, 'authorid')
-            
             data['display_name'] = getattr(user, 'display_name')
             data["authorid"] = authorid
             data["host"] = f"http://{request.get_host()}/"
             data["authorurl"] = f"http://{request.get_host()}/authors/{authorid}"
-            print(data["authorid"], data["host"], data["authorurl"])
 
             data['github_link'] = getattr(user, 'github_link')
             data['profile_image'] = getattr(user, 'profile_image')
             data['username'] = getattr(user, 'username')
             data['success'] = True
-            #data['follows'] = getattr(user, 'follows')
-            #data['friends'] = getattr(user, 'friends')
-            friends = getattr(user, 'friends')
-            print("username:", getattr(user, 'username'))
-            print("FRIENDS:", friends)
-            #data['username'] = getattr(user, 'username') May want to display this as well as display name 
-
         else:
-            data['success'] = False
+            data['success'] = {"message": "User not found"}
     
         return JsonResponse(data)
 
@@ -56,7 +54,6 @@ def user_data(request):
             return JsonResponse({"message": str(e)}, status=400)
 
     elif request.method == "POST":
-
         user = request.user
         if user:
             if "display_name" in request.POST:
