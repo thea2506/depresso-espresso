@@ -23,7 +23,7 @@ const myToast: ToastOptions = {
 const CommentList = ({ post }: { post: PostModel }) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
-  const [authorImg, setAuthorImg] = useState("");
+  const [, setAuthorImg] = useState("");
 
   //#region functions
   const formatDateString = (inputDateString: string) => {
@@ -61,19 +61,23 @@ const CommentList = ({ post }: { post: PostModel }) => {
         console.log("comments resp", response.data);
         if (response.status === 200) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const commentModels = response.data.map((rawcomment: any) => {
-            return {
-              authorid: rawcomment.fields.authorid,
-              authorname: rawcomment.fields.authorname,
-              comment: rawcomment.fields.comment,
-              commentlikecount: rawcomment.fields.commentlikecount,
-              contenttype: rawcomment.fields.contenttype,
-              editdate: rawcomment.fields.editdate,
-              liked_by: rawcomment.fields.liked_by,
-              postid: rawcomment.fields.postid,
-              publishdate: rawcomment.fields.publishdate,
-            };
-          });
+          const commentModels = response.data.comment.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (rawcomment: any, index: number) => {
+              return {
+                authorid: rawcomment.fields.authorid,
+                authorname: rawcomment.fields.authorname,
+                comment: rawcomment.fields.comment,
+                commentlikecount: rawcomment.fields.commentlikecount,
+                contenttype: rawcomment.fields.contenttype,
+                editdate: rawcomment.fields.editdate,
+                liked_by: rawcomment.fields.liked_by,
+                postid: rawcomment.fields.postid,
+                publishdate: rawcomment.fields.publishdate,
+                profile_image: response.data.author[index].fields.profile_image,
+              };
+            }
+          );
           console.log("commentmodels", commentModels);
           setComments(commentModels);
         } else {
@@ -133,7 +137,7 @@ const CommentList = ({ post }: { post: PostModel }) => {
             <div className="flex items-center justify-between">
               <UserDisplay
                 username={comment.authorname}
-                user_img_url={authorImg}
+                user_img_url={comment.profile_image}
               />
               <p className="text-sm opacity-70">
                 {formatDateString(comment.publishdate.substring(0, 16))}

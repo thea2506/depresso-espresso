@@ -20,6 +20,8 @@ import { PostForm } from "./PostForm";
 //#region interfaces
 interface CreatePostViewProps {
   post: PostModel;
+  refresh: boolean;
+  setRefresh: (refresh: boolean) => void;
 }
 //#endregion
 
@@ -29,12 +31,12 @@ interface CreatePostViewProps {
  * @param {string} user_img_url - The URL of the user's avatar
  * @returns
  */
-const PostView = ({ post }: CreatePostViewProps) => {
+const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   const [username, setUsername] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [clickLike, setClickLike] = useState(false);
+  // const [clickLike, setClickLike] = useState(post.likes);
 
   const date = new Date(post.publishdate);
   const formattedDate = date
@@ -65,7 +67,9 @@ const PostView = ({ post }: CreatePostViewProps) => {
     console.log("Share clicked");
   };
 
-  const handleLikeToggle = async () => {
+  const handleLikeToggle = () => {
+    // setClickLike(clickLike ? clickLike + 1 : post.likes);
+    setRefresh(!refresh);
     axios.post("/toggle_like", { postid: post.postid });
   };
 
@@ -81,7 +85,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
     };
 
     getData();
-  });
+  }, []);
   //#endregion
 
   const interactSection = [
@@ -131,7 +135,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
 
       <div
         className={
-          "w-full p-3 md:p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
+          "w-full p-3 md:p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-8"
         }
       >
         <div className="flex items-center justify-between">

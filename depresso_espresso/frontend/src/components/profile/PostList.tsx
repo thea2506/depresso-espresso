@@ -8,10 +8,12 @@ import { twMerge } from "tailwind-merge";
 interface PostListProps {
   posts: PostModel[];
   className?: string;
+  refresh: boolean;
+  setRefresh: (refresh: boolean) => void;
 }
 //#endregion
 
-const PostList = ({ posts, className }: PostListProps) => {
+const PostList = ({ posts, refresh, setRefresh, className }: PostListProps) => {
   return (
     <ul
       className={twMerge(
@@ -20,7 +22,11 @@ const PostList = ({ posts, className }: PostListProps) => {
       )}
     >
       {posts.map((post: PostModel) => (
-        <PostView post={post} />
+        <PostView
+          post={post}
+          refresh={refresh}
+          setRefresh={setRefresh}
+        />
       ))}
     </ul>
   );

@@ -27,6 +27,7 @@ const Home = () => {
   const [image_url, setImage] = useState<string>("");
   const [posts, setPosts] = useState<PostModel[]>([]);
   const { setAuthorID } = useContext(AuthContext);
+  const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();
 
@@ -82,7 +83,7 @@ const Home = () => {
     console.log("Please");
     retrievePosts();
     retrieveData();
-  }, [navigate, setAuthorID]);
+  }, [navigate, setAuthorID, refresh]);
   //#endregion
   return (
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
@@ -96,6 +97,8 @@ const Home = () => {
       <PostList
         posts={posts}
         className="w-full mt-8 lg:w-1/2"
+        refresh={refresh}
+        setRefresh={setRefresh}
       />
     </div>
   );

@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from .models import Post
 from .models import Comment
+from authentication.models import Author
 from django.http import JsonResponse
 from django import forms
 import datetime
@@ -133,9 +134,17 @@ def get_post_comments(request):
   data = json.loads(request.body)
   postid = data.get('postId')
   comments = Comment.objects.filter(postid=postid)
-  print(comments)
-  data = serializers.serialize('json', comments)
-  print('data', data)
+  commentData = serializers.serialize('json', comments)
+  authorData = []
+  for comment in comments:
+    author = Author.objects.get(username=(comment.authorid))
+    authorData.append(author)
+  authorData = serializers.serialize("json", authorData, fields=["authorid", "profile_image", "display_name", "github_link", "username"])
+
+  list_a = json.loads(commentData)
+  list_b = json.loads(authorData)
+  merged = {"author": list_b, "comment": list_a}
+  data = json.dumps(merged)
 
   return HttpResponse(data, content_type='application/json')
 

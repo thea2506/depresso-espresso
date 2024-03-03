@@ -26,7 +26,7 @@ const ProfilePage = () => {
 
   const { authorId } = useParams<{ authorId: string }>();
   const [displayName, setDisplayName] = useState("");
-  const [followers, setFollowers] = useState("");
+  // const [followers, setFollowers] = useState("");
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
@@ -131,7 +131,11 @@ const ProfilePage = () => {
 
       {/* Posts Topic */}
       {currentTopic === "Posts" && posts.length > 0 && (
-        <PostList posts={posts} />
+        <PostList
+          posts={posts}
+          refresh={loading}
+          setRefresh={setLoading}
+        />
       )}
 
       {currentTopic === "Posts" && posts.length == 0 && (
