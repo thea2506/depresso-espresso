@@ -90,6 +90,7 @@ const Home = () => {
       <PostForm
         username={username}
         user_img_url={image_url}
+        edit={false}
       />
 
       <PostList

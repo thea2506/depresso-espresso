@@ -4,14 +4,17 @@ import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { GoComment, GoHeart, GoShare } from "react-icons/go";
-import { useState } from "react";
+import { GoComment, GoHeart, GoPencil, GoShare } from "react-icons/go";
+import { useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
+import Popup from "reactjs-popup";
 
 // components
 import { PostModel } from "./PostModel";
 import CommentList from "../profile/CommentList";
+import { Button } from "../Button";
+import { PostForm } from "./PostForm";
 //#endregion
 
 //#region interfaces
@@ -27,6 +30,8 @@ interface CreatePostViewProps {
  * @returns
  */
 const PostView = ({ post }: CreatePostViewProps) => {
+  const [username, setUsername] = useState("");
+  const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [like, setLike] = useState<number | undefined>(post.likes || 0);
   const date = new Date(post.publishdate);
@@ -61,6 +66,19 @@ const PostView = ({ post }: CreatePostViewProps) => {
   const handleShareClick = () => {
     console.log("Share clicked");
   };
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.get("/user_data");
+        setUsername(response.data.username);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    getData();
+  });
   //#endregion
 
   const interactSection = [
@@ -79,6 +97,29 @@ const PostView = ({ post }: CreatePostViewProps) => {
       className="flex flex-col w-full px-6 md:px-8 lg:px-0 gap-y-4"
     >
       <ToastContainer />
+      {/* Popup */}
+      <Popup
+        overlayStyle={{ background: "rgba(0, 0, 0, 0.5)" }}
+        open={open}
+        modal
+        lockScroll={true}
+        onClose={() => {
+          setOpen(false);
+        }}
+        closeOnEscape={true}
+      >
+        <div className=" bg-accent-3 rounded-[1.4rem] w-[26rem] sm:w-[30rem] md:w-[48rem]">
+          <PostForm
+            username={username}
+            oldContent={post.content}
+            oldImageUrl={post.image_url}
+            oldVisibility={post.visibility}
+            oldIsMarkdownEnabled={post.contenttype}
+            edit={true}
+          />
+        </div>
+      </Popup>
+
       <div
         className={
           "w-full p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6"
@@ -130,6 +171,12 @@ const PostView = ({ post }: CreatePostViewProps) => {
               <p>{item.count}</p>
             </div>
           ))}
+          <div>
+            <GoPencil
+              className="text-xl cursor-pointer hover:text-secondary-light text-secondary-dark lg:text-2xl"
+              onClick={() => setOpen(!open)}
+            />
+          </div>
         </div>
       </div>
       <div className="w-full">
