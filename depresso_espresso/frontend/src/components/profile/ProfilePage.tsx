@@ -86,7 +86,7 @@ const ProfilePage = () => {
 
   return (
     <animated.div
-      className="flex flex-col px-4 gap-y-8 sm:px-12 md:px-20"
+      className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"
       style={springs}
     >
       <Profile

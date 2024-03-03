@@ -132,7 +132,7 @@ const PostForm = ({
   //#endregion
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
+    <div className="flex flex-col items-center justify-center w-full gap-y-4">
       <ToastContainer />
       {/* Short version*/}
       {edit === false && (

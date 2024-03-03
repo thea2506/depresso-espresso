@@ -34,7 +34,8 @@ const PostView = ({ post }: CreatePostViewProps) => {
   const [authorId, setAuthorId] = useState("");
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [like, setLike] = useState<number | undefined>(post.likes || 0);
+  const [clickLike, setClickLike] = useState(false);
+
   const date = new Date(post.publishdate);
   const formattedDate = date
     .toLocaleString("en-US", {
@@ -56,20 +57,16 @@ const PostView = ({ post }: CreatePostViewProps) => {
   `;
 
   //#region functions
-  const handleLikeToggle = async () => {
-    console.log(post.likes);
-    axios.post("/toggle_like", { postid: post.postid }).then(() => {
-      setLike(like == 0 ? 1 : 0);
-    });
-  };
-
   const handleCommentClick = () => {
-    console.log("Comment clicked");
     setShowComments(!showComments);
   };
 
   const handleShareClick = () => {
     console.log("Share clicked");
+  };
+
+  const handleLikeToggle = async () => {
+    axios.post("/toggle_like", { postid: post.postid });
   };
 
   useEffect(() => {
@@ -88,7 +85,11 @@ const PostView = ({ post }: CreatePostViewProps) => {
   //#endregion
 
   const interactSection = [
-    { icon: <GoHeart />, count: like, onClick: handleLikeToggle },
+    {
+      icon: <GoHeart />,
+      count: post.likes,
+      onClick: handleLikeToggle,
+    },
     {
       icon: <GoComment />,
       count: post.commentcount,
@@ -100,8 +101,8 @@ const PostView = ({ post }: CreatePostViewProps) => {
   return (
     <animated.div
       style={springs}
-      className="flex flex-col items-center justify-center px-6 md:px-8 lg:px-0 gap-y-4
-      bg-accent-3 rounded-[1.4rem] w-[26rem] sm:w-[30rem] md:w-[48rem]"
+      className="flex flex-col items-center justify-center gap-y-4
+      bg-accent-3 rounded-[1.4rem] w-full px-4 md:px-0"
     >
       <ToastContainer />
       {/* Popup */}
