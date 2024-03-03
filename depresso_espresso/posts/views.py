@@ -34,7 +34,6 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
-    print(request)
     if request.method == 'POST':
         form = PostView(request.POST)
         
@@ -57,6 +56,7 @@ def make_post(request):
             post.save()
             return JsonResponse(data) 
         else:
+            print("form is not valid")
             print(form.errors)
             data['success'] = False  
             return JsonResponse(data) 
