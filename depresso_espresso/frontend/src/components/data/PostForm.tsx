@@ -215,6 +215,9 @@ const PostForm = ({
               type="checkbox"
               name="markdown"
               id="markdown"
+              defaultChecked={
+                oldIsMarkdownEnabled === "markdown" ? true : false
+              }
               className={`w-6 h-6 transition ease-out duration-150 bg-white rounded-md appearance-none cursor-pointer checked:bg-primary ${
                 isOpen || edit ? "opacity-100" : "opacity-0"
               }`}

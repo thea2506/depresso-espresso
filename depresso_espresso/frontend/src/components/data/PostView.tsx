@@ -51,6 +51,10 @@ const PostView = ({ post }: CreatePostViewProps) => {
     config: { duration: 1000 },
   });
 
+  const mdContent = `
+  ${post.content}
+  `;
+
   //#region functions
   const handleLikeToggle = async () => {
     console.log(post.likes);
@@ -150,9 +154,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
 
         {/* Content */}
         {post.contenttype === "markdown" ? (
-          <Markdown>{`
-          ${post.content}
-          `}</Markdown>
+          <Markdown>{mdContent}</Markdown>
         ) : (
           <p className="text-start">{post.content}</p>
         )}
@@ -171,10 +173,10 @@ const PostView = ({ post }: CreatePostViewProps) => {
           {interactSection.map((item, index) => (
             <div
               key={index}
-              className="flex items-center justify-center text-lg lg:text-xl gap-x-4 text-primary"
+              className="flex items-center justify-center text-xl gap-x-4 text-primary"
             >
               <p
-                className="text-xl cursor-pointer hover:text-secondary-light lg:text-2xl"
+                className="cursor-pointer hover:text-secondary-light"
                 onClick={item.onClick}
               >
                 {item.icon}
@@ -185,7 +187,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
 
           {authorId === post.authorid && (
             <GoPencil
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary lg:text-2xl"
+              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(!open)}
             />
           )}
