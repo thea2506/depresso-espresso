@@ -13,7 +13,6 @@ import Popup from "reactjs-popup";
 // components
 import { PostModel } from "./PostModel";
 import CommentList from "../profile/CommentList";
-import { Button } from "../Button";
 import { PostForm } from "./PostForm";
 //#endregion
 
@@ -31,6 +30,7 @@ interface CreatePostViewProps {
  */
 const PostView = ({ post }: CreatePostViewProps) => {
   const [username, setUsername] = useState("");
+  const [authorId, setAuthorId] = useState("");
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [like, setLike] = useState<number | undefined>(post.likes || 0);
@@ -72,6 +72,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
       try {
         const response = await axios.get("/user_data");
         setUsername(response.data.username);
+        setAuthorId(response.data.authorid);
       } catch (error) {
         console.error(error);
       }
@@ -115,6 +116,7 @@ const PostView = ({ post }: CreatePostViewProps) => {
             oldImageUrl={post.image_url}
             oldVisibility={post.visibility}
             oldIsMarkdownEnabled={post.contenttype}
+            postId={post.postid}
             edit={true}
           />
         </div>
@@ -171,12 +173,13 @@ const PostView = ({ post }: CreatePostViewProps) => {
               <p>{item.count}</p>
             </div>
           ))}
-          <div>
+
+          {authorId === post.authorid && (
             <GoPencil
-              className="text-xl cursor-pointer hover:text-secondary-light text-secondary-dark lg:text-2xl"
+              className="text-xl cursor-pointer hover:text-secondary-light text-primary lg:text-2xl"
               onClick={() => setOpen(!open)}
             />
-          </div>
+          )}
         </div>
       </div>
       <div className="w-full">

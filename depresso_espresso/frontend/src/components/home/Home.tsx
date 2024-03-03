@@ -79,9 +79,7 @@ const Home = () => {
     console.log("Please");
     retrievePosts();
     retrieveData();
-  }, []);
-
-  // retrieveData();
+  }, [navigate, setAuthorID]);
   //#endregion
 
   return (

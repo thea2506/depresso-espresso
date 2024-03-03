@@ -5,7 +5,7 @@ import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { FaLock } from "react-icons/fa6";
-import { a, animated, useSpring } from "@react-spring/web";
+import { animated, useSpring } from "@react-spring/web";
 
 // components
 import { Button } from "../Button";
@@ -23,6 +23,7 @@ interface CreatePostProps {
   oldImageUrl?: string;
   oldImageUploadUrl?: File;
   oldIsMarkdownEnabled?: string;
+  postId?: string;
 }
 //#endregion
 
@@ -51,6 +52,7 @@ const PostForm = ({
   oldVisibility,
   oldImageUrl,
   oldIsMarkdownEnabled,
+  postId,
 }: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs, api] = useSpring(() => ({
@@ -107,8 +109,11 @@ const PostForm = ({
       if (imageUrl != "") formField.append("attached_img_post", imageUrl);
       formField.append("visibility", visibility);
       formField.append("username", username);
+      if (edit && postId) formField.append("postid", postId);
 
-      const response = await axios.post("/make_post", formField);
+      const response = edit
+        ? await axios.post("/edit_post", formField)
+        : await axios.patch("/make_post", formField);
 
       if (response.data.success) {
         console.log("PostForm Created Successfully");

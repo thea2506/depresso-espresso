@@ -179,22 +179,18 @@ def delete_comment(request):
     print("horrible deletion failure")
     return JsonResponse(data)
   
-# def edit_post(request):
-#   '''Edit a post'''
-#   data = {}
+def edit_post(request):
+  data = {}
+  postid = request.POST.get('postid') 
 
-#   data = json.loads(request.body)
-#   postid = data.get('postid')
-#   post = Post.objects.filter(postid=postid)
-#   print('request', request.user, 'post', post)
-
-#   if request.user == post.authorid.user:
-#     post.delete()
-#     data['success'] = True  
-#     print("great editing success")
-#     return JsonResponse(data) 
-  
-#   else:
-#     data['success'] = False
-#     print("horrible editing failure")
-#     return JsonResponse(data)
+  post = Post.objects.filter(postid=postid)
+  if "content" in request.POST:
+    post.update(content=request.POST.get('content'))
+  if "image_url" in request.POST:
+    post.update(image_url=request.POST.get('image_url'))
+  if "visibility" in request.POST:
+    post.update(visibility=request.POST.get('visibility'))
+  if "contenttype" in request.POST:
+    post.update(contenttype=request.POST.get('contenttype'))
+  data['success'] = True
+  return JsonResponse(data)
