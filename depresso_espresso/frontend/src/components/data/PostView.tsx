@@ -93,7 +93,6 @@ const PostView = ({ post }: CreatePostViewProps) => {
     { icon: <GoShare />, onClick: handleShareClick },
   ];
 
-  console.log("mdContent", post.contenttype);
   return (
     <animated.div
       style={springs}
@@ -151,7 +150,9 @@ const PostView = ({ post }: CreatePostViewProps) => {
 
         {/* Content */}
         {post.contenttype === "markdown" ? (
-          <Markdown>{mdContent}</Markdown>
+          <Markdown>{`
+          ${post.content}
+          `}</Markdown>
         ) : (
           <p className="text-start">{post.content}</p>
         )}
