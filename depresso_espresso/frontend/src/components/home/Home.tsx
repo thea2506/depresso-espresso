@@ -27,6 +27,7 @@ const Home = () => {
   const [image_url, setImage] = useState<string>("");
   const [posts, setPosts] = useState<PostModel[]>([]);
   const { setAuthorID } = useContext(AuthContext);
+  const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();
 
@@ -68,6 +69,9 @@ const Home = () => {
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
+            visibility: rawpost.fields.visibility,
+            image_url: rawpost.fields.image_url,
+            contenttype: rawpost.fields.contenttype,
           };
         });
         console.log("postmodels", postModels);
@@ -79,22 +83,22 @@ const Home = () => {
     console.log("Please");
     retrievePosts();
     retrieveData();
-  }, []);
-
-  // retrieveData();
+  }, [navigate, setAuthorID, refresh]);
   //#endregion
-
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
       <ToastContainer />
       <PostForm
         username={username}
         user_img_url={image_url}
+        edit={false}
       />
 
       <PostList
         posts={posts}
-        className="w-full mt-4 lg:w-1/2"
+        className="w-full mt-8 lg:w-1/2"
+        refresh={refresh}
+        setRefresh={setRefresh}
       />
     </div>
   );

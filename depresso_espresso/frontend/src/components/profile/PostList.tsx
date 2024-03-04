@@ -8,21 +8,25 @@ import { twMerge } from "tailwind-merge";
 interface PostListProps {
   posts: PostModel[];
   className?: string;
+  refresh: boolean;
+  setRefresh: (refresh: boolean) => void;
 }
 //#endregion
 
-const PostList = ({ posts, className }: PostListProps) => {
+const PostList = ({ posts, refresh, setRefresh, className }: PostListProps) => {
   return (
     <ul
       className={twMerge(
-        "flex flex-col items-center justify-center w-full",
+        "flex flex-col items-center justify-center gap-y-8 w-full",
         className
       )}
     >
       {posts.map((post: PostModel) => (
-        <li className="flex flex-col items-center justify-center w-full">
-          <PostView post={post} />
-        </li>
+        <PostView
+          post={post}
+          refresh={refresh}
+          setRefresh={setRefresh}
+        />
       ))}
     </ul>
   );

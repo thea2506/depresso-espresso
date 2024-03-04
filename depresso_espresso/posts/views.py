@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from .models import Post
 from .models import Comment
+from authentication.models import Author
 from django.http import JsonResponse
 from django import forms
 import datetime
@@ -34,7 +35,6 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
-    print(request)
     if request.method == 'POST':
         form = PostView(request.POST)
         
@@ -57,6 +57,7 @@ def make_post(request):
             post.save()
             return JsonResponse(data) 
         else:
+            print("form is not valid")
             print(form.errors)
             data['success'] = False  
             return JsonResponse(data) 
@@ -133,9 +134,17 @@ def get_post_comments(request):
   data = json.loads(request.body)
   postid = data.get('postId')
   comments = Comment.objects.filter(postid=postid)
-  print(comments)
-  data = serializers.serialize('json', comments)
-  print('data', data)
+  commentData = serializers.serialize('json', comments)
+  authorData = []
+  for comment in comments:
+    author = Author.objects.get(username=(comment.authorid))
+    authorData.append(author)
+  authorData = serializers.serialize("json", authorData, fields=["authorid", "profile_image", "display_name", "github_link", "username"])
+
+  list_a = json.loads(commentData)
+  list_b = json.loads(authorData)
+  merged = {"author": list_b, "comment": list_a}
+  data = json.dumps(merged)
 
   return HttpResponse(data, content_type='application/json')
 
@@ -179,22 +188,18 @@ def delete_comment(request):
     print("horrible deletion failure")
     return JsonResponse(data)
   
-# def edit_post(request):
-#   '''Edit a post'''
-#   data = {}
+def edit_post(request):
+  data = {}
+  postid = request.POST.get('postid') 
 
-#   data = json.loads(request.body)
-#   postid = data.get('postid')
-#   post = Post.objects.filter(postid=postid)
-#   print('request', request.user, 'post', post)
-
-#   if request.user == post.authorid.user:
-#     post.delete()
-#     data['success'] = True  
-#     print("great editing success")
-#     return JsonResponse(data) 
-  
-#   else:
-#     data['success'] = False
-#     print("horrible editing failure")
-#     return JsonResponse(data)
+  post = Post.objects.filter(postid=postid)
+  if "content" in request.POST:
+    post.update(content=request.POST.get('content'))
+  if "image_url" in request.POST:
+    post.update(image_url=request.POST.get('image_url'))
+  if "visibility" in request.POST:
+    post.update(visibility=request.POST.get('visibility'))
+  if "contenttype" in request.POST:
+    post.update(contenttype=request.POST.get('contenttype'))
+  data['success'] = True
+  return JsonResponse(data)

@@ -49,7 +49,7 @@ def loginview(request):
         
         data ={}
         user = Login.post(request)
-
+        print("USER RIGHT HERE", user)
         if user:
             login(request, user)
             data['success'] = True  

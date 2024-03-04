@@ -15,6 +15,15 @@ import { Button } from "../Button";
 interface CreatePostProps {
   username: string;
   user_img_url?: string;
+  edit: boolean;
+
+  // edits
+  oldContent?: string;
+  oldVisibility?: string;
+  oldImageUrl?: string;
+  oldImageUploadUrl?: File;
+  oldIsMarkdownEnabled?: string;
+  postId?: string;
 }
 //#endregion
 
@@ -35,18 +44,28 @@ const myToast: ToastOptions = {
  * @param {string} user_img_url - The URL of the user's avatar
  * @returns
  */
-const PostForm = ({ username, user_img_url }: CreatePostProps) => {
+const PostForm = ({
+  username,
+  user_img_url,
+  edit = false,
+  oldContent,
+  oldVisibility,
+  oldImageUrl,
+  oldIsMarkdownEnabled,
+  postId,
+}: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs, api] = useSpring(() => ({
     from: { opacity: 0, y: -100 },
   }));
 
-  const [content, setContent] = useState("");
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [content, setContent] = useState(oldContent || "");
+  const [imageUrl, setImageUrl] = useState(oldImageUrl || "");
   const [imageUploadUrl, setImageUploadUrl] = useState<File | null>();
-  // const [imagePostId, setImagePostId] = useState<number | null>(null);
-  const [isMarkdownEnabled, setMarkdownEnabled] = useState(false);
-  const [visibility, setVisibility] = useState("public");
+  const [isMarkdownEnabled, setMarkdownEnabled] = useState(
+    oldIsMarkdownEnabled || "false"
+  );
+  const [visibility, setVisibility] = useState(oldVisibility || "public");
 
   //#region functions
   const openPost = () => {
@@ -81,7 +100,7 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
     try {
       const formField = new FormData();
       formField.append("content", content);
-      if (isMarkdownEnabled) {
+      if (isMarkdownEnabled === "true" || isMarkdownEnabled === "markdown") {
         formField.append("contenttype", "markdown");
       } else {
         formField.append("contenttype", "plaintext");
@@ -90,66 +109,50 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
       if (imageUrl != "") formField.append("attached_img_post", imageUrl);
       formField.append("visibility", visibility);
       formField.append("username", username);
+      if (edit && postId) formField.append("postid", postId);
 
-      const response = await axios.post("/make_post", formField);
+      const url = edit ? "/edit_post" : "/make_post";
+      const response = await axios.post(url, formField);
 
       if (response.data.success) {
-        console.log("PostForm Created Successfully");
-
-        toast.success("PostForm Created Successfully", myToast);
+        const message = edit
+          ? "Post edited successfully"
+          : "Post created successfully";
+        toast.success(message, myToast);
         setTimeout(() => {
-          // Reference: https://stackoverflow.com/questions/75920012/react-toast-when-navigate by inkredusk 2024-02-24
           window.location.reload();
-        }, 1000);
+        }, 500);
       } else {
-        console.log("Failed to create post");
-        toast.error("Failed to create post", myToast);
+        toast.error("Failed to create/modify post", myToast);
       }
     } catch (error) {
-      console.error("An error occurred", error);
-      toast.error("An error occurred", myToast);
+      toast.error("An error occurred while posting", myToast);
     }
   };
-
-  // const handleImageUpload = async () => {
-  //   try {
-  //     // Here you would handle the uploading of the image using the provided URL
-  //     const formField = new FormData();
-  //     formField.append("image_url", imageUploadUrl ? imageUploadUrl : "");
-  //     const response = await axios.post("/make_post", formField);
-  //     if (response.data.success) {
-  //       setImagePostId(response.data["post_id"]);
-  //       toast.success("Image uploaded Successfully", myToast);
-  //       console.log("Image uploaded Successfully");
-  //     } else {
-  //       console.log("Failed to upload Image");
-  //       toast.error("Failed to upload Image", myToast);
-  //     }
-  //   } catch (error) {
-  //     console.error("An error occurred", error);
-  //     toast.error("An error occurred", myToast);
-  //   }
-  //   // imageUploadUrl is actually a file object, I keep the name as imageUrl for consistency
-  //   // setImageUrl(imageUploadUrl);
-  // };
   //#endregion
 
   return (
-    <div className="flex flex-col items-center justify-center w-full px-6 md:px-8 lg:px-0 gap-y-4">
+    <div className="flex flex-col items-center justify-center w-full gap-y-4">
       <ToastContainer />
       {/* Short version*/}
-      <div
-        className="flex w-full px-4 py-6 bg-white cursor-pointer lg:w-1/2 text-primary border-[2rem] rounded-[1.4rem] border-accent-3"
-        onClick={openPost}
-      >
-        <p>What's on your mind?</p>
-      </div>
+      {edit === false && (
+        <div
+          className="flex w-full px-4 py-6 bg-white cursor-pointer lg:w-1/2 text-primary border-[2rem] rounded-[1.4rem] border-accent-3"
+          onClick={openPost}
+        >
+          <p>What's on your mind?</p>
+        </div>
+      )}
       {/* Long version */}
       <animated.form
         onSubmit={handlePostSubmit}
-        style={{ ...springs }}
-        className={`w-full p-8 lg:w-1/2 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-6 ${
-          isOpen ? "block" : "hidden"
+        style={edit === false ? { ...springs } : {}}
+        className={`w-full rounded-[1.4rem] flex flex-col gap-y-6 bg-accent-3 ${
+          edit || isOpen
+            ? `block  ${isOpen && "p-8 lg:w-1/2"} ${
+                edit && "px-2 py-4 sm:p-4 lg:p-8"
+              }`
+            : "hidden"
         }`}
       >
         <div className="flex items-center justify-between">
@@ -177,7 +180,8 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
           cols={30}
           rows={10}
           maxLength={850}
-          placeholder="Say something..."
+          placeholder={"Say something..."}
+          defaultValue={oldContent || ""}
           className="resize-none focus:outline-none w-full p-4 bg-white rounded-[1.4rem] overflow-none"
           onChange={(e) => setContent(e.target.value)}
         ></textarea>
@@ -206,13 +210,16 @@ const PostForm = ({ username, user_img_url }: CreatePostProps) => {
             <p className="text-sm leading-8 md:text-base">Markdown</p>
             <input
               onChange={(e) => {
-                setMarkdownEnabled(e.target.checked);
+                setMarkdownEnabled(e.target.checked.toString());
               }}
               type="checkbox"
               name="markdown"
               id="markdown"
+              defaultChecked={
+                oldIsMarkdownEnabled === "markdown" ? true : false
+              }
               className={`w-6 h-6 transition ease-out duration-150 bg-white rounded-md appearance-none cursor-pointer checked:bg-primary ${
-                isOpen ? "opacity-100" : "opacity-0"
+                isOpen || edit ? "opacity-100" : "opacity-0"
               }`}
             />
           </div>

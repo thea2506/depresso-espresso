@@ -1,4 +1,3 @@
-
 export interface CommentModel {
   authorid: string;
   authorname: string;
@@ -9,6 +8,5 @@ export interface CommentModel {
   liked_by: string[];
   postid: string;
   publishdate: string;
+  profile_image: string;
 }
-
-
