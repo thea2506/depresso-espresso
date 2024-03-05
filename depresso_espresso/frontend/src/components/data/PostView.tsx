@@ -3,7 +3,7 @@
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { GoComment, GoHeart, GoPencil, GoShare } from "react-icons/go";
+import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
@@ -36,18 +36,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   const [authorId, setAuthorId] = useState("");
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  // const [clickLike, setClickLike] = useState(post.likes);
-
-  const date = new Date(post.publishdate);
-  const formattedDate = date
-    .toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      month: "long",
-      day: "2-digit",
-      year: "numeric",
-    })
-    .replace(",", "");
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -68,9 +56,33 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   };
 
   const handleLikeToggle = () => {
-    // setClickLike(clickLike ? clickLike + 1 : post.likes);
     setRefresh(!refresh);
     axios.post("/toggle_like", { postid: post.postid });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await axios.post("/delete_post", {
+        postid: post.postid,
+      });
+      if (response.data.success) {
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
+  };
+
+  const formatDateString = (inputDateString: string) => {
+    const date = new Date(inputDateString);
+    const formattedDate = date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return formattedDate;
   };
 
   useEffect(() => {
@@ -146,7 +158,9 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
-            <p className="text-sm">{formattedDate}</p>
+            <p className="text-sm">
+              {formatDateString(post.publishdate.substring(0, 16))}
+            </p>
           </div>
         </div>
 
@@ -184,11 +198,16 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           ))}
 
           {authorId === post.authorid && (
-            <GoPencil
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={() => setOpen(!open)}
-            />
-          )}
+              <GoPencil
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={() => setOpen(!open)}
+              />
+            ) && (
+              <GoTrash
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={handleDelete}
+              />
+            )}
         </div>
       </div>
       {showComments && (
