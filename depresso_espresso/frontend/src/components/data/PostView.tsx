@@ -151,6 +151,7 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             edit={true}
             refresh={refresh}
             setRefresh={setRefresh}
+            closePopup={() => setOpen(false)}
           />
         </div>
       </Popup>

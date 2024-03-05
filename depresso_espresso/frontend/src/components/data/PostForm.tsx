@@ -28,18 +28,20 @@ interface CreatePostProps {
   oldImageUploadUrl?: File;
   oldIsMarkdownEnabled?: string;
   postId?: string;
+
+  // close popup
+  closePopup?: () => void;
 }
 //#endregion
 
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 900,
-  hideProgressBar: true,
+  hideProgressBar: false,
   closeOnClick: true,
   closeButton: false,
   pauseOnHover: false,
   draggable: false,
-  progress: undefined,
 };
 
 /**
@@ -59,6 +61,7 @@ const PostForm = ({
   oldImageUrl,
   oldIsMarkdownEnabled,
   postId,
+  closePopup,
 }: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs, api] = useSpring(() => ({
@@ -120,11 +123,10 @@ const PostForm = ({
       const response = await axios.post(url, formField);
 
       if (response.data.success) {
-        const message = edit
-          ? "Post edited successfully"
-          : "Post created successfully";
-        toast.success(message, myToast);
         setRefresh(!refresh);
+        setTimeout(function () {
+          closePopup && closePopup();
+        }, 200);
       } else {
         toast.error("Failed to create/modify post", myToast);
       }
