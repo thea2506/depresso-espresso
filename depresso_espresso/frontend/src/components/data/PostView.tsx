@@ -4,6 +4,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
+import { AiOutlineClose } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
@@ -132,7 +133,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
         }}
         closeOnEscape={true}
       >
-        <div className="w-full">
+        <div className="flex flex-col w-full h-full p-4 rounded-xl bg-accent-3">
+          <div className="relative flex items-center justify-center">
+            <p className="text-xl md:text-2xl text-secondary-dark">Edit</p>
+            <AiOutlineClose
+              className="absolute top-0 text-3xl cursor-pointer text-primary right-2"
+              onClick={() => setOpen(false)}
+            />
+          </div>
           <PostForm
             username={username}
             oldContent={post.content}
@@ -141,6 +149,8 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             oldIsMarkdownEnabled={post.contenttype}
             postId={post.postid}
             edit={true}
+            refresh={refresh}
+            setRefresh={setRefresh}
           />
         </div>
       </Popup>
@@ -198,16 +208,18 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           ))}
 
           {authorId === post.authorid && (
-              <GoPencil
-                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-                onClick={() => setOpen(!open)}
-              />
-            ) && (
-              <GoTrash
-                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-                onClick={handleDelete}
-              />
-            )}
+            <GoPencil
+              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+              onClick={() => setOpen(true)}
+            />
+          )}
+
+          {authorId === post.authorid && (
+            <GoTrash
+              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+              onClick={handleDelete}
+            />
+          )}
         </div>
       </div>
       {showComments && (

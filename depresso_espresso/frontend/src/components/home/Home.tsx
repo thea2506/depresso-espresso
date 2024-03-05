@@ -80,7 +80,6 @@ const Home = () => {
         console.error(error);
       }
     };
-    console.log("Please");
     retrievePosts();
     retrieveData();
   }, [navigate, setAuthorID, refresh]);
@@ -92,6 +91,8 @@ const Home = () => {
         username={username}
         user_img_url={image_url}
         edit={false}
+        refresh={refresh}
+        setRefresh={setRefresh}
       />
 
       <PostList

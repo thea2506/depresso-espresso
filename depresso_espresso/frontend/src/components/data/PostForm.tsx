@@ -17,6 +17,10 @@ interface CreatePostProps {
   user_img_url?: string;
   edit: boolean;
 
+  // trigger home refresh everytime the post is changed/created
+  refresh: boolean;
+  setRefresh: (refresh: boolean) => void;
+
   // edits
   oldContent?: string;
   oldVisibility?: string;
@@ -29,7 +33,7 @@ interface CreatePostProps {
 
 const myToast: ToastOptions = {
   position: "top-center",
-  autoClose: 1000,
+  autoClose: 900,
   hideProgressBar: true,
   closeOnClick: true,
   closeButton: false,
@@ -48,6 +52,8 @@ const PostForm = ({
   username,
   user_img_url,
   edit = false,
+  refresh,
+  setRefresh,
   oldContent,
   oldVisibility,
   oldImageUrl,
@@ -105,8 +111,7 @@ const PostForm = ({
       } else {
         formField.append("contenttype", "plaintext");
       }
-      // formField.append("image_post_id", imagePostId?.toString() || "");
-      if (imageUrl != "") formField.append("attached_img_post", imageUrl);
+      if (imageUrl != "") formField.append("image_url", imageUrl);
       formField.append("visibility", visibility);
       formField.append("username", username);
       if (edit && postId) formField.append("postid", postId);
@@ -119,9 +124,7 @@ const PostForm = ({
           ? "Post edited successfully"
           : "Post created successfully";
         toast.success(message, myToast);
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        setRefresh(!refresh);
       } else {
         toast.error("Failed to create/modify post", myToast);
       }
@@ -149,9 +152,7 @@ const PostForm = ({
         style={edit === false ? { ...springs } : {}}
         className={`w-full rounded-[1.4rem] flex flex-col gap-y-6 bg-accent-3 ${
           edit || isOpen
-            ? `block  ${isOpen && "p-8 lg:w-1/2"} ${
-                edit && "px-2 py-4 sm:p-4 lg:p-8"
-              }`
+            ? `block  ${isOpen && "p-8 lg:w-1/2"} ${edit && "p-4 lg:p-8"}`
             : "hidden"
         }`}
       >
@@ -167,7 +168,7 @@ const PostForm = ({
           </div>
           <Button
             buttonType="text"
-            className="px-12 lg:px-20 rounded-2xl"
+            className="px-12 lg:px-20 rounded-2xl focus:outline-none"
             type="submit"
           >
             Post
@@ -231,6 +232,7 @@ const PostForm = ({
         <input
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           placeholder="Image URL"
+          defaultValue={oldImageUrl || ""}
           type="text"
           onChange={(e) => setImageUrl(e.target.value)}
         />
