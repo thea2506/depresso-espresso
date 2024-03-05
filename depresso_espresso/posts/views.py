@@ -67,18 +67,13 @@ def make_post(request):
 
 
 def get_all_posts(request):
-  posts = Post.objects.all()
+  posts = Post.objects.filter(visibility="public").order_by('-publishdate')
   data = serializers.serialize('json', posts)
-  print('data', data)
   return HttpResponse(data, content_type='application/json')
 
 def get_author_posts(request):
-  print('request')
-  print('request', request.user)
-  posts = Post.objects.filter(authorid=request.user)
-  print(posts)
+  posts = Post.objects.filter(authorid=request.user).order_by('-publishdate')
   data = serializers.serialize('json', posts)
-  print('data', data)
   return HttpResponse(data, content_type='application/json')
 
 
@@ -154,10 +149,9 @@ def delete_post(request):
 
   data = json.loads(request.body)
   postid = data.get('postid')
-  post = Post.objects.filter(postid=postid)
-  print('request', request.user, 'post', post)
+  post = Post.objects.get(pk=postid)
 
-  if request.user == post.authorid.user:
+  if request.user == post.authorid:
     post.delete()
     data['success'] = True  
     print("great deletion success")

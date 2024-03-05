@@ -72,6 +72,7 @@ const ProfilePage = () => {
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
+            contenttype: rawpost.fields.contenttype,
           };
         });
         setPosts(postModels);
