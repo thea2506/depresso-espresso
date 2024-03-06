@@ -13,6 +13,7 @@ urlpatterns = [
     path("get_post_comments", views.get_post_comments, name="get_post_comments"),
     path("delete_post", views.delete_post, name="delete_post"),
     path("delete_comment", views.delete_comment, name="delete_comment")
-
 ]
+
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

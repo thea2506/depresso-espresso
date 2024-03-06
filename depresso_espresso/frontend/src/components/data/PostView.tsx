@@ -115,6 +115,8 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     { icon: <GoShare />, onClick: handleShareClick },
   ];
 
+  console.log("post in POstView", post);
+
   return (
     <animated.div
       style={springs}

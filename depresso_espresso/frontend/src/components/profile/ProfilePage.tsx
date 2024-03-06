@@ -67,12 +67,13 @@ const ProfilePage = () => {
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
             postid: rawpost.pk,
-            image_file: rawpost.fields.image_file,
-            image_url: rawpost.fields.image_url,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
+            visibility: rawpost.fields.visibility,
+            image_url: rawpost.fields.image_url,
+            image_file: rawpost.fields.image_file,
             contenttype: rawpost.fields.contenttype,
           };
         });
@@ -85,7 +86,7 @@ const ProfilePage = () => {
   }, [authorId, loading]);
 
   //#endregion
-
+  console.log("posts", posts);
   return (
     <animated.div
       className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from posts.models import Post
 from authentication.models import Author
@@ -74,3 +74,6 @@ def user_posts(request, username):
 
 def front_end(request, authorid):
     return render(request, 'index.html')
+
+def get_image(request, image_file):
+    return redirect(f'/images/{image_file}')
