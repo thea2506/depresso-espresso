@@ -5,6 +5,7 @@ import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
+import Discover from "./components/discover/Discover.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 import AuthCheck from "./components/auth/Authcheck.tsx";
 import React, { useState, useEffect, createContext } from "react";
@@ -91,6 +92,20 @@ function App() {
                 <ProfilePage />
               </General>
             </>
+          }
+        />
+
+        <Route
+          path="/discover"
+          element={
+            <AuthCheck>
+              <General
+                authorid={authorid}
+                setAuthorID={setAuthorID}
+              >
+                <Discover />
+              </General>
+            </AuthCheck>
           }
         />
       </Routes>
