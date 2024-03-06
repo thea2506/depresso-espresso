@@ -125,11 +125,14 @@ const PostForm = ({
       // visibility
       formField.append("visibility", visibility);
       formField.append("username", username);
+      formField.append("authorprofile", user_img_url || "");
       if (edit && postId) formField.append("postid", postId);
 
       // image file
       console.log("imageFile", imageFile);
-      if (imageFile) formField.append("image_file", imageFile);
+      if (imageFile != null) formField.append("image_file", imageFile);
+      else if (imageFile == null && oldImageFile != null)
+        formField.append("image_file", oldImageFile);
 
       const url = edit ? "/edit_post" : "/make_post";
       const response = await axios.post(url, formField);

@@ -22,7 +22,7 @@ class PostView(forms.ModelForm):
         return render(request, "index.html")
     class Meta:
         model = Post
-        fields = ("content", "image_url", "visibility", "contenttype", "image_file")
+        fields = ("content", "image_url", "visibility", "contenttype", "image_file", "authorprofile")
 
 class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
@@ -35,14 +35,17 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
+    print("HERE",request.POST)
     if request.method == 'POST':
         form = PostView(request.POST, request.FILES)
-        if form.is_valid():  
+        # print(form)
+        if form.is_valid():
             post = form.save(commit=False)
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.contenttype = form.cleaned_data["contenttype"]
             post.authorid = request.user
+            post.authorprofile = form.cleaned_data["authorprofile"]
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
             post.commentcount = 0
@@ -186,11 +189,11 @@ def delete_comment(request):
 def edit_post(request):
   data = {}
   postid = request.POST.get('postid') 
-  print("EDIT POST")
 
   post = get_object_or_404(Post, pk=postid)
   if request.method == 'POST':
-      post.image_file = request.FILES.get('image_file')
+      if request.FILES.get('image_file'):
+        post.image_file = request.FILES.get('image_file')
       post.content = request.POST.get('content')
       post.image_url = request.POST.get('image_url')
       post.visibility = request.POST.get('visibility')
