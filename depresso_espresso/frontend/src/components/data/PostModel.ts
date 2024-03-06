@@ -1,4 +1,4 @@
-export interface PostModel { 
+export interface PostModel {
   username: string;
   user_img_url?: string;
 
@@ -7,6 +7,7 @@ export interface PostModel {
   source?: string;
   origin?: string;
   image_url?: string;
+  image_file?: string;
   description?: string;
   contenttype: string;
   content: string;
@@ -14,6 +15,5 @@ export interface PostModel {
   commentcount: number;
   publishdate: string;
   visibility: string;
-  linked_img_post?: string;
   likes?: number;
 }

@@ -60,11 +60,11 @@ const Home = () => {
         const postData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
+          console.log("rawpost", rawpost);
           return {
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
             postid: rawpost.pk,
-            user_img_url: rawpost.fields.user_img_url,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
@@ -72,6 +72,8 @@ const Home = () => {
             visibility: rawpost.fields.visibility,
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
+            image_file: rawpost.fields.image_file,
+            user_img_url: rawpost.fields.authorprofile,
           };
         });
         console.log("postmodels", postModels);
@@ -80,7 +82,6 @@ const Home = () => {
         console.error(error);
       }
     };
-    console.log("Please");
     retrievePosts();
     retrieveData();
   }, [navigate, setAuthorID, refresh]);
@@ -92,6 +93,8 @@ const Home = () => {
         username={username}
         user_img_url={image_url}
         edit={false}
+        refresh={refresh}
+        setRefresh={setRefresh}
       />
 
       <PostList

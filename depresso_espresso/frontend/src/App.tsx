@@ -31,7 +31,7 @@ const General = ({
 }) => {
   return (
     <AuthContext.Provider value={{ authorid, setAuthorID }}>
-      <div className="w-full">
+      <div className="w-full mb-20">
         <NavBar />
         {children}
       </div>

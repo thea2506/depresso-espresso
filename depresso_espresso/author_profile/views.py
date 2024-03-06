@@ -1,6 +1,5 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
 from posts.models import Post
 from authentication.models import Author
 import json
@@ -96,23 +95,8 @@ def get_authors(request):
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
-# #         Single Author
-# # URL: ://service/authors/{AUTHOR_ID}/
-# # GET [local, remote]: retrieve AUTHOR_ID's profile
-# # PUT [local]: update AUTHOR_ID's profile
-# # Example Format:
-# # {
-# #     "type":"author",
-# #     // ID of the Author
-# #     "id":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-# #     // the home host of the author
-# #     "host":"http://127.0.0.1:5454/",
-# #     // the display name of the author
-# #     "displayName":"Lara Croft",
-# #     // url to the authors profile
-# #     "url":"http://127.0.0.1:5454/authors/9de17f29c12e8f97bcbbd34cc908f1baba40658e",
-# #     // HATEOS url for Github API
-# #     "github": "http://github.com/laracroft",
-# #     // Image from a public domain
-# #     "profileImage": "https://i.imgur.com/k7XVwpB.jpeg"
-# # }
+def front_end(request, authorid):
+    return render(request, 'index.html')
+
+def get_image(request, image_file):
+    return redirect(f'/images/{image_file}')

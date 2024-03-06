@@ -3,7 +3,8 @@
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { GoComment, GoHeart, GoPencil, GoShare } from "react-icons/go";
+import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
+import { AiOutlineClose } from "react-icons/ai";
 import { useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
@@ -36,18 +37,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   const [authorId, setAuthorId] = useState("");
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
-  // const [clickLike, setClickLike] = useState(post.likes);
-
-  const date = new Date(post.publishdate);
-  const formattedDate = date
-    .toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      month: "long",
-      day: "2-digit",
-      year: "numeric",
-    })
-    .replace(",", "");
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -68,9 +57,33 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   };
 
   const handleLikeToggle = () => {
-    // setClickLike(clickLike ? clickLike + 1 : post.likes);
     setRefresh(!refresh);
     axios.post("/toggle_like", { postid: post.postid });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await axios.post("/delete_post", {
+        postid: post.postid,
+      });
+      if (response.data.success) {
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
+  };
+
+  const formatDateString = (inputDateString: string) => {
+    const date = new Date(inputDateString);
+    const formattedDate = date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return formattedDate;
   };
 
   useEffect(() => {
@@ -120,15 +133,26 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
         }}
         closeOnEscape={true}
       >
-        <div className="w-full">
+        <div className="flex flex-col w-full h-full p-4 rounded-xl bg-accent-3">
+          <div className="relative flex items-center justify-center">
+            <p className="text-xl md:text-2xl text-secondary-dark">Edit</p>
+            <AiOutlineClose
+              className="absolute top-0 text-3xl cursor-pointer text-primary right-2"
+              onClick={() => setOpen(false)}
+            />
+          </div>
           <PostForm
             username={username}
             oldContent={post.content}
             oldImageUrl={post.image_url}
+            oldImageFile={post.image_file}
             oldVisibility={post.visibility}
             oldIsMarkdownEnabled={post.contenttype}
             postId={post.postid}
             edit={true}
+            refresh={refresh}
+            setRefresh={setRefresh}
+            closePopup={() => setOpen(false)}
           />
         </div>
       </Popup>
@@ -142,11 +166,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           <UserDisplay
             username={post.username}
             user_img_url={post.user_img_url}
+            link={`/authors/${post.authorid}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
-            <p className="text-sm">{formattedDate}</p>
+            <p className="text-sm">
+              {formatDateString(post.publishdate.substring(0, 16))}
+            </p>
           </div>
         </div>
 
@@ -161,6 +188,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
         {post.image_url && (
           <img
             src={post.image_url}
+            alt="post"
+            className="w-full h-96 object-cover rounded-[1.4rem]"
+          />
+        )}
+
+        {post.image_file && (
+          <img
+            src={post.image_file}
             alt="post"
             className="w-full h-96 object-cover rounded-[1.4rem]"
           />
@@ -186,7 +221,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           {authorId === post.authorid && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={() => setOpen(!open)}
+              onClick={() => setOpen(true)}
+            />
+          )}
+
+          {authorId === post.authorid && (
+            <GoTrash
+              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+              onClick={handleDelete}
             />
           )}
         </div>

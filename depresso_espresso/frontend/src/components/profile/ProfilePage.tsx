@@ -59,7 +59,11 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_author_posts");
+        const response = await axios.get("/get_author_posts", {
+          params: {
+            authorid: authorId,
+          },
+        });
         const postData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
@@ -67,11 +71,15 @@ const ProfilePage = () => {
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
             postid: rawpost.pk,
-            user_img_url: rawpost.fields.user_img_url,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
             username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
+            visibility: rawpost.fields.visibility,
+            image_url: rawpost.fields.image_url,
+            image_file: rawpost.fields.image_file,
+            contenttype: rawpost.fields.contenttype,
+            user_img_url: rawpost.fields.authorprofile,
           };
         });
         setPosts(postModels);
@@ -83,7 +91,7 @@ const ProfilePage = () => {
   }, [authorId, loading]);
 
   //#endregion
-
+  console.log("posts", posts);
   return (
     <animated.div
       className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"
