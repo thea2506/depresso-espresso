@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 // import { PostModel } from "../data/PostModel";
 // import PostList from "../profile/PostList";
 import { AuthContext } from "../../App";
+import AuthorSearch from "../data/AuthorSearch";
 
 const Discover = () => {
   const { setAuthorID } = useContext(AuthContext);
@@ -19,6 +20,8 @@ const Discover = () => {
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
      
      <h1>Discover Works!</h1>
+
+     <AuthorSearch></AuthorSearch>
     </div>
   );
 };
