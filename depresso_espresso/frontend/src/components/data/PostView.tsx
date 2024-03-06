@@ -166,6 +166,7 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           <UserDisplay
             username={post.username}
             user_img_url={post.user_img_url}
+            link={`/authors/${post.authorid}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">

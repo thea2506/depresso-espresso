@@ -76,7 +76,8 @@ def get_all_posts(request):
   return HttpResponse(data, content_type='application/json')
 
 def get_author_posts(request):
-  posts = Post.objects.filter(authorid=request.user).order_by('-publishdate')
+  author_id = request.GET.get("authorid")
+  posts = Post.objects.filter(authorid=author_id).order_by('-publishdate')
   data = serializers.serialize('json', posts)
   return HttpResponse(data, content_type='application/json')
 

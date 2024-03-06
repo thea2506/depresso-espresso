@@ -59,7 +59,11 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_author_posts");
+        const response = await axios.get("/get_author_posts", {
+          params: {
+            authorid: authorId,
+          },
+        });
         const postData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
@@ -75,6 +79,7 @@ const ProfilePage = () => {
             image_url: rawpost.fields.image_url,
             image_file: rawpost.fields.image_file,
             contenttype: rawpost.fields.contenttype,
+            user_img_url: rawpost.fields.authorprofile,
           };
         });
         setPosts(postModels);
