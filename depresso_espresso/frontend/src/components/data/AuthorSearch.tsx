@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { FC, useState, useEffect } from "react";
 import { AuthorModel } from "./AuthorModel";
+import { UserDisplay } from "../UserDisplay";
 
 interface AuthorSearchProps {}
 
@@ -50,7 +51,7 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
   };
 
   return (
-    <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
+    <div className="max-w-[600px] flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
       <input
         className="resize-none focus:outline-none w-full p-4 bg-secondary rounded-[1.4rem] overflow-none"
         type="text"
@@ -58,11 +59,17 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
         onChange={handleInputChange}
         placeholder="Search for users"
       />
-      <div className="w-full ">
+      <div className="w-full">
         {authors &&
           authors?.map((author) => (
-            <div className=" resize-none focus:outline-none w-full p-4 bg-accent-3 rounded-[1.4rem] overflow-none m-2">
-              <p>{author.displayName} </p>
+            <div
+              className="resize-none focus:outline-none w-full p-4 bg-accent-3 rounded-[1.4rem] overflow-none m-2 hover:bg-primary md:hover:bg-secondary-light hover:text-white"
+              onClick={() => window.location.href = `/authors/${author.id}/`}
+            >
+              <UserDisplay
+                username={author.displayName}
+                user_img_url={author.profileImage}
+              />
             </div>
           ))}
       </div>
