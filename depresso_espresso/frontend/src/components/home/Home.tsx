@@ -60,6 +60,7 @@ const Home = () => {
         const postData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
+          console.log("rawpost", rawpost);
           return {
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
@@ -72,6 +73,7 @@ const Home = () => {
             visibility: rawpost.fields.visibility,
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
+            image_file: rawpost.fields.image_file,
           };
         });
         console.log("postmodels", postModels);

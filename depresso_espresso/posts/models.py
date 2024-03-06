@@ -16,7 +16,8 @@ class Post(models.Model):
     content = models.TextField(null = True)
 
     image_url = models.URLField(blank=True, null=True)
-    linked_img_post = models.TextField("self", blank = True, null = True)
+    # linked_img_post = models.TextField("self", blank = True, null = True)
+    image_file = models.ImageField(upload_to='images/', blank=True, null=True)
     
     publishdate = models.DateTimeField(db_column='publishDate')
     editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)

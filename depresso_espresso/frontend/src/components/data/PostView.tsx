@@ -145,6 +145,7 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             username={username}
             oldContent={post.content}
             oldImageUrl={post.image_url}
+            oldImageFile={post.image_file}
             oldVisibility={post.visibility}
             oldIsMarkdownEnabled={post.contenttype}
             postId={post.postid}
@@ -186,6 +187,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
         {post.image_url && (
           <img
             src={post.image_url}
+            alt="post"
+            className="w-full h-96 object-cover rounded-[1.4rem]"
+          />
+        )}
+
+        {post.image_file && (
+          <img
+            src={post.image_file}
             alt="post"
             className="w-full h-96 object-cover rounded-[1.4rem]"
           />

@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path("make_post", views.make_post, name="make_post"),
@@ -11,4 +13,6 @@ urlpatterns = [
     path("get_post_comments", views.get_post_comments, name="get_post_comments"),
     path("delete_post", views.delete_post, name="delete_post"),
     path("delete_comment", views.delete_comment, name="delete_comment")
+
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

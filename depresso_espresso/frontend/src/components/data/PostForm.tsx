@@ -25,7 +25,7 @@ interface CreatePostProps {
   oldContent?: string;
   oldVisibility?: string;
   oldImageUrl?: string;
-  oldImageUploadUrl?: File;
+  oldImageFile?: string;
   oldIsMarkdownEnabled?: string;
   postId?: string;
 
@@ -59,6 +59,7 @@ const PostForm = ({
   oldContent,
   oldVisibility,
   oldImageUrl,
+  oldImageFile,
   oldIsMarkdownEnabled,
   postId,
   closePopup,
@@ -70,7 +71,7 @@ const PostForm = ({
 
   const [content, setContent] = useState(oldContent || "");
   const [imageUrl, setImageUrl] = useState(oldImageUrl || "");
-  const [imageUploadUrl, setImageUploadUrl] = useState<File | null>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isMarkdownEnabled, setMarkdownEnabled] = useState(
     oldIsMarkdownEnabled || "false"
   );
@@ -108,16 +109,27 @@ const PostForm = ({
     event.preventDefault();
     try {
       const formField = new FormData();
+      // content
       formField.append("content", content);
+
+      // content type
       if (isMarkdownEnabled === "true" || isMarkdownEnabled === "markdown") {
         formField.append("contenttype", "markdown");
       } else {
         formField.append("contenttype", "plaintext");
       }
+
+      // image url
       if (imageUrl != "") formField.append("image_url", imageUrl);
+
+      // visibility
       formField.append("visibility", visibility);
       formField.append("username", username);
       if (edit && postId) formField.append("postid", postId);
+
+      // image file
+      console.log("imageFile", imageFile);
+      if (imageFile) formField.append("image_file", imageFile);
 
       const url = edit ? "/edit_post" : "/make_post";
       const response = await axios.post(url, formField);
@@ -227,8 +239,10 @@ const PostForm = ({
             />
           </div>
           <div className="flex text-sm gap-x-2 text-primary md:text-base">
-            <p>{!imageUploadUrl && "No image"}</p>
-            <p>{imageUploadUrl && imageUploadUrl?.name}</p>
+            <p>
+              {oldImageFile && imageFile == null && oldImageFile.split("/")[1]}
+            </p>
+            <p>{imageFile && imageFile?.name}</p>
           </div>
         </div>
         <input
@@ -246,7 +260,7 @@ const PostForm = ({
               name="file"
               onChange={(e) => {
                 const file = e.target.files?.[0] || null;
-                setImageUploadUrl(file);
+                setImageFile(file);
               }}
             />
             Upload Image
