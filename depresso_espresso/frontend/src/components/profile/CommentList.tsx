@@ -138,6 +138,7 @@ const CommentList = ({ post }: { post: PostModel }) => {
               <UserDisplay
                 username={comment.authorname}
                 user_img_url={comment.profile_image}
+                link={`/authors/${comment.authorid}`}
               />
               <p className="text-sm opacity-70">
                 {formatDateString(comment.publishdate.substring(0, 16))}

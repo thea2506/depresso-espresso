@@ -7,6 +7,7 @@ class Post(models.Model):
     authorid = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     authorname = models.TextField(null = True)
+    authorprofile = models.URLField(null = True)
 
     title = models.TextField(null = True)
     source = models.TextField(null = True)
@@ -16,7 +17,8 @@ class Post(models.Model):
     content = models.TextField(null = True)
 
     image_url = models.URLField(blank=True, null=True)
-    linked_img_post = models.TextField("self", blank = True, null = True)
+    # linked_img_post = models.TextField("self", blank = True, null = True)
+    image_file = models.ImageField(upload_to='images/', blank=True, null=True)
     
     publishdate = models.DateTimeField(db_column='publishDate')
     editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)

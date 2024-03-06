@@ -17,25 +17,31 @@ interface CreatePostProps {
   user_img_url?: string;
   edit: boolean;
 
+  // trigger home refresh everytime the post is changed/created
+  refresh: boolean;
+  setRefresh: (refresh: boolean) => void;
+
   // edits
   oldContent?: string;
   oldVisibility?: string;
   oldImageUrl?: string;
-  oldImageUploadUrl?: File;
+  oldImageFile?: string;
   oldIsMarkdownEnabled?: string;
   postId?: string;
+
+  // close popup
+  closePopup?: () => void;
 }
 //#endregion
 
 const myToast: ToastOptions = {
   position: "top-center",
-  autoClose: 1000,
-  hideProgressBar: true,
+  autoClose: 900,
+  hideProgressBar: false,
   closeOnClick: true,
   closeButton: false,
   pauseOnHover: false,
   draggable: false,
-  progress: undefined,
 };
 
 /**
@@ -48,11 +54,15 @@ const PostForm = ({
   username,
   user_img_url,
   edit = false,
+  refresh,
+  setRefresh,
   oldContent,
   oldVisibility,
   oldImageUrl,
+  oldImageFile,
   oldIsMarkdownEnabled,
   postId,
+  closePopup,
 }: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [springs, api] = useSpring(() => ({
@@ -61,7 +71,7 @@ const PostForm = ({
 
   const [content, setContent] = useState(oldContent || "");
   const [imageUrl, setImageUrl] = useState(oldImageUrl || "");
-  const [imageUploadUrl, setImageUploadUrl] = useState<File | null>();
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [isMarkdownEnabled, setMarkdownEnabled] = useState(
     oldIsMarkdownEnabled || "false"
   );
@@ -99,29 +109,39 @@ const PostForm = ({
     event.preventDefault();
     try {
       const formField = new FormData();
+      // content
       formField.append("content", content);
+
+      // content type
       if (isMarkdownEnabled === "true" || isMarkdownEnabled === "markdown") {
         formField.append("contenttype", "markdown");
       } else {
         formField.append("contenttype", "plaintext");
       }
-      // formField.append("image_post_id", imagePostId?.toString() || "");
-      if (imageUrl != "") formField.append("attached_img_post", imageUrl);
+
+      // image url
+      if (imageUrl != "") formField.append("image_url", imageUrl);
+
+      // visibility
       formField.append("visibility", visibility);
       formField.append("username", username);
+      formField.append("authorprofile", user_img_url || "");
       if (edit && postId) formField.append("postid", postId);
+
+      // image file
+      console.log("imageFile", imageFile);
+      if (imageFile != null) formField.append("image_file", imageFile);
+      else if (imageFile == null && oldImageFile != null)
+        formField.append("image_file", oldImageFile);
 
       const url = edit ? "/edit_post" : "/make_post";
       const response = await axios.post(url, formField);
 
       if (response.data.success) {
-        const message = edit
-          ? "Post edited successfully"
-          : "Post created successfully";
-        toast.success(message, myToast);
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        setRefresh(!refresh);
+        setTimeout(function () {
+          closePopup && closePopup();
+        }, 200);
       } else {
         toast.error("Failed to create/modify post", myToast);
       }
@@ -149,9 +169,7 @@ const PostForm = ({
         style={edit === false ? { ...springs } : {}}
         className={`w-full rounded-[1.4rem] flex flex-col gap-y-6 bg-accent-3 ${
           edit || isOpen
-            ? `block  ${isOpen && "p-8 lg:w-1/2"} ${
-                edit && "px-2 py-4 sm:p-4 lg:p-8"
-              }`
+            ? `block  ${isOpen && "p-8 lg:w-1/2"} ${edit && "p-4 lg:p-8"}`
             : "hidden"
         }`}
       >
@@ -167,7 +185,7 @@ const PostForm = ({
           </div>
           <Button
             buttonType="text"
-            className="px-12 lg:px-20 rounded-2xl"
+            className="px-12 lg:px-20 rounded-2xl focus:outline-none"
             type="submit"
           >
             Post
@@ -224,13 +242,16 @@ const PostForm = ({
             />
           </div>
           <div className="flex text-sm gap-x-2 text-primary md:text-base">
-            <p>{!imageUploadUrl && "No image"}</p>
-            <p>{imageUploadUrl && imageUploadUrl?.name}</p>
+            <p>
+              {oldImageFile && imageFile == null && oldImageFile.split("/")[1]}
+            </p>
+            <p>{imageFile && imageFile?.name}</p>
           </div>
         </div>
         <input
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           placeholder="Image URL"
+          defaultValue={oldImageUrl || ""}
           type="text"
           onChange={(e) => setImageUrl(e.target.value)}
         />
@@ -242,7 +263,7 @@ const PostForm = ({
               name="file"
               onChange={(e) => {
                 const file = e.target.files?.[0] || null;
-                setImageUploadUrl(file);
+                setImageFile(file);
               }}
             />
             Upload Image

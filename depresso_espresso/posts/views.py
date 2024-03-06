@@ -1,7 +1,6 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.views.generic import TemplateView
 from .models import Post
 from .models import Comment
 from authentication.models import Author
@@ -12,6 +11,7 @@ from django.db.models import F
 from django.utils.timezone import make_aware
 from django.core import serializers
 import json
+from django.shortcuts import get_object_or_404
 # Create your views here.
 
 
@@ -22,7 +22,7 @@ class PostView(forms.ModelForm):
         return render(request, "index.html")
     class Meta:
         model = Post
-        fields = ("content", "image_url", "visibility", "contenttype")
+        fields = ("content", "image_url", "visibility", "contenttype", "image_file", "authorprofile")
 
 class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
@@ -35,21 +35,27 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
+    print("HERE",request.POST)
     if request.method == 'POST':
-        form = PostView(request.POST)
-        
-        if form.is_valid():  
+        form = PostView(request.POST, request.FILES)
+        # print(form)
+        if form.is_valid():
             post = form.save(commit=False)
             post.content = form.cleaned_data["content"]
             post.image_url = form.cleaned_data["image_url"]
             post.contenttype = form.cleaned_data["contenttype"]
             post.authorid = request.user
+            post.authorprofile = form.cleaned_data["authorprofile"]
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
             post.commentcount = 0
            
             post.authorname = request.user.display_name
             post.visibility = form.cleaned_data["visibility"]
+
+            # images
+            post.image_file = form.cleaned_data["image_file"]
+            print("image file add",post.image_file)
 
             form.save(commit = True)
             data['success'] = True  
@@ -62,23 +68,17 @@ def make_post(request):
             data['success'] = False  
             return JsonResponse(data) 
 
-    rend = PostView().get(request)
-    return rend
-
+    return render(request, "index.html")
 
 def get_all_posts(request):
-  posts = Post.objects.all()
+  posts = Post.objects.filter(visibility="public").order_by('-publishdate')
   data = serializers.serialize('json', posts)
-  print('data', data)
   return HttpResponse(data, content_type='application/json')
 
 def get_author_posts(request):
-  print('request')
-  print('request', request.user)
-  posts = Post.objects.filter(authorid=request.user)
-  print(posts)
+  author_id = request.GET.get("authorid")
+  posts = Post.objects.filter(authorid=author_id).order_by('-publishdate')
   data = serializers.serialize('json', posts)
-  print('data', data)
   return HttpResponse(data, content_type='application/json')
 
 
@@ -154,10 +154,9 @@ def delete_post(request):
 
   data = json.loads(request.body)
   postid = data.get('postid')
-  post = Post.objects.filter(postid=postid)
-  print('request', request.user, 'post', post)
+  post = Post.objects.get(pk=postid)
 
-  if request.user == post.authorid.user:
+  if request.user == post.authorid:
     post.delete()
     data['success'] = True  
     print("great deletion success")
@@ -192,14 +191,14 @@ def edit_post(request):
   data = {}
   postid = request.POST.get('postid') 
 
-  post = Post.objects.filter(postid=postid)
-  if "content" in request.POST:
-    post.update(content=request.POST.get('content'))
-  if "image_url" in request.POST:
-    post.update(image_url=request.POST.get('image_url'))
-  if "visibility" in request.POST:
-    post.update(visibility=request.POST.get('visibility'))
-  if "contenttype" in request.POST:
-    post.update(contenttype=request.POST.get('contenttype'))
+  post = get_object_or_404(Post, pk=postid)
+  if request.method == 'POST':
+      if request.FILES.get('image_file'):
+        post.image_file = request.FILES.get('image_file')
+      post.content = request.POST.get('content')
+      post.image_url = request.POST.get('image_url')
+      post.visibility = request.POST.get('visibility')
+      post.contenttype = request.POST.get('contenttype')
+      post.save()
   data['success'] = True
   return JsonResponse(data)
