@@ -1,15 +1,15 @@
 import "./App.css";
+import React, { useState, useEffect, createContext } from "react";
+import axios from "axios";
 
-// import App from "./App";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
+import InboxPage from "./components/inbox/InboxPage.tsx";
 import Discover from "./components/discover/Discover.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 import AuthCheck from "./components/auth/Authcheck.tsx";
-import React, { useState, useEffect, createContext } from "react";
-import axios from "axios";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -82,7 +82,7 @@ function App() {
           }
         />
         <Route
-          path="/authors/:authorId" // This is a dynamic route + project requirements
+          path="/authors/:authorId"
           element={
             <>
               <General
@@ -94,7 +94,19 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/inbox"
+          element={
+            <AuthCheck>
+              <General
+                authorid={authorid}
+                setAuthorID={setAuthorID}
+              >
+                <InboxPage />
+              </General>
+            </AuthCheck>
+          }
+        />
         <Route
           path="/discover"
           element={
