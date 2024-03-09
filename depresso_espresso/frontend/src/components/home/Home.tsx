@@ -73,7 +73,6 @@ const Home = () => {
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
             image_file: rawpost.fields.image_file,
-            user_img_url: rawpost.fields.authorprofile,
           };
         });
         console.log("postmodels", postModels);

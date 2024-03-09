@@ -8,7 +8,6 @@ import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
-import FollowList from "./FollowList";
 import PostList from "./PostList";
 import { PostModel } from "../data/PostModel";
 //#endregion
@@ -79,7 +78,6 @@ const ProfilePage = () => {
             image_url: rawpost.fields.image_url,
             image_file: rawpost.fields.image_file,
             contenttype: rawpost.fields.contenttype,
-            user_img_url: rawpost.fields.authorprofile,
           };
         });
         setPosts(postModels);
