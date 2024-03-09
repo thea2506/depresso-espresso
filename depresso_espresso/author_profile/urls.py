@@ -11,4 +11,5 @@ urlpatterns = [
     path('user/<str:username>/', views.user_posts, name='user_posts'),
     path('get_author_posts', post_views.get_author_posts, name='author_posts'),
     path('authors/images/<str:image_file>', views.get_image, name='image_file'),
+    path("authors/", views.get_all_authors, name="get_all_authors"),
 ]

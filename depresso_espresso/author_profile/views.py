@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from posts.models import Post
 from authentication.models import Author
+from django.core.serializers import serialize
 import json
 
 # Potentially edit this to only use 1 function
@@ -18,6 +19,26 @@ def get_profile(request, authorid):
             "profileImage": author.profile_image
         }
         return JsonResponse(data)
+
+def get_all_authors(request):
+    if request.method == "GET":
+        response = {}
+        response["type"] = "authors"
+        response["items"] = []
+
+        authors = Author.objects.all()
+        for author in authors:
+            data = {
+                "type": "author",
+                "id": f"http://{request.get_host()}/authors/{author.authorid}",
+                "host": f"http://{request.get_host()}/",
+                "displayName": author.display_name,
+                "url": f"http://{request.get_host()}/authors/{author.authorid}",
+                "github": author.github_link,
+                "profileImage": author.profile_image
+            }
+            response["items"].append(data)
+        return JsonResponse(response)
     
 #@login_required
 def user_data(request):
