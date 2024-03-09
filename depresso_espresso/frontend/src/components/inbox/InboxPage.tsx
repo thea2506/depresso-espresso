@@ -10,10 +10,12 @@ const InboxPage = () => {
       <Notification
         username="Annie"
         type="follow"
+        link=""
       />
       <Notification
         username="Katarina"
         type="share"
+        link=""
       />
     </div>
   );
