@@ -24,12 +24,14 @@ const Home = () => {
      */
     const retrieveData = async () => {
       try {
+
         const response = await axios.get("/curUser");
         if (response.data.success == true) {
           const userData = response.data;
           setDisplayName(userData.displayName);
           setImage(userData.profileImage);
         }
+
       } catch (error) {
         console.error(error);
       }
@@ -46,17 +48,21 @@ const Home = () => {
         const postModels = postData.map((rawpost: any) => {
           console.log("rawpost", rawpost);
           return {
+            username: rawpost.fields.author_username,
+            user_img_url: rawpost.fields.author_profile_image,
+
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
             postid: rawpost.pk,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
-            username: rawpost.fields.authorname,
+            //username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
             visibility: rawpost.fields.visibility,
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
             image_file: rawpost.fields.image_file,
+
           };
         });
         console.log("postmodels", postModels);
@@ -65,9 +71,10 @@ const Home = () => {
         console.error(error);
       }
     };
-    retrievePosts();
     retrieveData();
+
   }, [navigate, refresh]);
+
   //#endregion
   return (
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">

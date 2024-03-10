@@ -20,6 +20,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('postid', models.UUIDField(db_column='postID', default=uuid.uuid4, primary_key=True, serialize=False)),
                 ('authorname', models.TextField(null=True)),
+
+                ('authorprofile', models.URLField(null=True)),
+
                 ('title', models.TextField(null=True)),
                 ('source', models.TextField(null=True)),
                 ('origin', models.TextField(null=True)),

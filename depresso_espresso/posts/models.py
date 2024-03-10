@@ -8,6 +8,7 @@ class Post(models.Model):
     postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     authorname = models.TextField(null = True)
 
+
     title = models.TextField(null = True)
     source = models.TextField(null = True)
     origin = models.TextField(null = True)
