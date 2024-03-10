@@ -71,6 +71,29 @@ def user_data(request):
 def user_posts(request, username):
     user_posts = Post.objects.filter(authorid__username=username)
     return render(request, 'author_profile/user_posts.html', {'user_posts': user_posts})
+  
+def get_authors(request):
+  if request.method == "GET":
+    search_terms = request.GET.get('search')
+    if search_terms:
+      authors = Author.objects.filter(display_name__icontains=search_terms)
+    else:
+      authors = Author.objects.all()
+    
+    data = []
+    for author in authors:
+      data.append({
+        "type": "author",
+        "id": f"http://{request.get_host()}/authors/{author.pk}",
+        "url": f"http://{request.get_host()}/authors/{author.pk}",
+        "host": f"http://{request.get_host()}/",
+        "displayName": author.display_name,
+        "github": author.github_link,
+        "profileImage": author.profile_image
+      })
+    return JsonResponse(data, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 def front_end(request, authorid):
     return render(request, 'index.html')
