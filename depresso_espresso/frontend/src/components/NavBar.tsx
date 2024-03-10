@@ -28,14 +28,15 @@ const myToast: ToastOptions = {
 };
 
 const NavBar = () => {
-  const { authorid } = useContext(AuthContext);
+  const { id0 } = useContext(AuthContext);
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
   const [currentPage, setCurrentPage] = useState<string>(
     window.location.pathname.split("/")[1]
   );
 
   const nav = useNavigate();
-  const authorIDPath = `/authors/${authorid}`;
+  console.log("id0", id0);
+  const authorIDPath = `/authors/${id0}`;
 
   // TODO: add the correct authorID to the link (dynamic route)
   // Inbox and Discover are not implemented yet

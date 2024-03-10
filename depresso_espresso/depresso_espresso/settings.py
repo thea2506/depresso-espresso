@@ -70,7 +70,9 @@ MIDDLEWARE = [
 # Add pages which shouldn't be redirected to signin page
 LOGIN_EXEMPT_URLS = (
     r"signup",
-    r"admin"
+    r"admin",
+    r"api/signin",
+    
 )
 
 CORS_ALLOWED_ORIGINS = [

@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { animated, useSpring } from "@react-spring/web";
+import { useContext } from "react";
+import { AuthContext } from "../../App";
 
 // components
 import { Button } from "../Button";
@@ -30,8 +32,8 @@ const myToast: ToastOptions = {
  * @returns The rendered signup page.
  */
 const Signin = () => {
-  const inputs: string[] = ["Username", "Password"];
-  const [username, setUsername] = useState<string>("");
+  const inputs: string[] = ["Display Name", "Password"];
+  const [displayName, setDisplayName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
   const nav = useNavigate();
@@ -40,6 +42,14 @@ const Signin = () => {
     to: { opacity: 1 },
     config: { duration: 1000 },
   });
+  const {
+    setId0,
+    setHost0,
+    setDisplayName0,
+    setUrl0,
+    setGithub0,
+    setProfileImage0,
+  } = useContext(AuthContext);
 
   //#region functions
   /**
@@ -48,8 +58,8 @@ const Signin = () => {
    */
   const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "Username") {
-      setUsername(value);
+    if (name === "Display Name") {
+      setDisplayName(value);
     } else if (name === "Password") {
       setPassword(value);
     }
@@ -63,12 +73,20 @@ const Signin = () => {
     event.preventDefault();
     try {
       const formField = new FormData();
-      formField.append("username", username);
+      formField.append("displayName", displayName);
       formField.append("password", password);
 
-      const response = await axios.post("/signin", formField);
+      const response = await axios.post("/api/signin", formField);
 
       if (response.data.success) {
+        console.log(response.data);
+        setId0(response.data.id);
+        setHost0(response.data.host);
+        setDisplayName0(response.data.displayName);
+        setUrl0(response.data.url);
+        setGithub0(response.data.github);
+        setProfileImage0(response.data.profileImage);
+
         toast.success("Login Successful", myToast);
         nav("/");
       } else {
