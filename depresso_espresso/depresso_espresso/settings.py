@@ -30,6 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 # Application definition
 
@@ -51,7 +52,6 @@ INSTALLED_APPS = [
     'home',
     'author_profile',
     'posts',
-    'base.apps.BaseConfig',
     'django.contrib.admin',
 ]
 
@@ -72,7 +72,7 @@ LOGIN_EXEMPT_URLS = (
     r"signup",
     r"admin",
     r"api/signin",
-    
+    r"curUser",
 )
 
 CORS_ALLOWED_ORIGINS = [

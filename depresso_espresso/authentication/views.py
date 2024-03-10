@@ -9,6 +9,8 @@ from .register import Register
 from .login import Login
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
+from django.contrib.sessions.models import Session
+from authentication.models import Author
 from django.core import serializers
 
 def register(request):
@@ -20,6 +22,7 @@ def register(request):
         
         if form.is_valid():
             form.save(request.get_host())
+            
             data['success'] = True  
             return JsonResponse(data)  
         else:
@@ -41,27 +44,41 @@ def loginUser(request):
        returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
         user = Login.post(request)
-        return JsonResponse({
-            "displayName": user.displayName,
-            "type": user.type,
-            "url": user.url,
-            "id": user.id,
-            "github": user.github,
-            "profileImage": user.profileImage,
-
-            "isAuthenticated": user.is_authenticated,
-            "success": user is not None,
-        }) 
-
-def frontend(request):
+        login(request, user)
+        if user is not None:
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False})
     return render(request, "index.html")
 
 def logoutUser(request):
     data = {}
+
     logout(request)
-    
     if request.user.is_authenticated:
+        print("User is still logged in")
         data['success'] = False
     else:
+        print("User is not still logged in")
         data['success'] = True
     return JsonResponse(data)
+
+def curUser(request):
+    data = {} 
+    if request.method == 'GET' and request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            user = Author.objects.get(id=uid)
+
+            data["type"] = user.type
+            data["id"] = user.id
+            data["displayName"] = user.displayName
+            data["host"] = user.host
+            data["url"] = user.url
+            data["github"] = user.github
+            data["profileImage"] = user.profileImage
+            data["success"] = True
+        return JsonResponse(data)
+    return JsonResponse({'success': False})

@@ -76,7 +76,7 @@ const Signin = () => {
       formField.append("displayName", displayName);
       formField.append("password", password);
 
-      const response = await axios.post("/api/signin", formField);
+      const response = await axios.post("/signin", formField);
 
       if (response.data.success) {
         console.log(response.data);
