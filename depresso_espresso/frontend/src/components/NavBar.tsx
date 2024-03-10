@@ -35,7 +35,6 @@ const NavBar = () => {
   );
 
   const nav = useNavigate();
-  console.log("id0", id0);
   const authorIDPath = `/authors/${id0}`;
 
   // TODO: add the correct authorID to the link (dynamic route)

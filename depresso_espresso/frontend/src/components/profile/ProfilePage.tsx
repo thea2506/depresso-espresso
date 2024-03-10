@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { AuthContext } from "../../App";
 
 // components
 import { Button } from "../Button";
@@ -11,6 +10,7 @@ import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
 import PostList from "./PostList";
 import { PostModel } from "../data/PostModel";
+import { AuthContext } from "../../App";
 //#endregion
 
 /**
@@ -26,7 +26,6 @@ const ProfilePage = () => {
 
   const { authorId } = useParams<{ authorId: string }>();
   const [displayName, setDisplayName] = useState("");
-  // const [followers, setFollowers] = useState("");
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
@@ -37,6 +36,7 @@ const ProfilePage = () => {
     to: { opacity: 1 },
     config: { duration: 1000 },
   });
+  const { id0 } = useContext(AuthContext);
 
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,7 +46,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/api/authors/${authorId}`);
+        const response = await axios.get(`/api/authors/${id0}`);
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);

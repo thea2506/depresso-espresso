@@ -42,14 +42,6 @@ const Signin = () => {
     to: { opacity: 1 },
     config: { duration: 1000 },
   });
-  const {
-    setId0,
-    setHost0,
-    setDisplayName0,
-    setUrl0,
-    setGithub0,
-    setProfileImage0,
-  } = useContext(AuthContext);
 
   //#region functions
   /**
@@ -79,14 +71,6 @@ const Signin = () => {
       const response = await axios.post("/signin", formField);
 
       if (response.data.success) {
-        console.log(response.data);
-        setId0(response.data.id);
-        setHost0(response.data.host);
-        setDisplayName0(response.data.displayName);
-        setUrl0(response.data.url);
-        setGithub0(response.data.github);
-        setProfileImage0(response.data.profileImage);
-
         toast.success("Login Successful", myToast);
         nav("/");
       } else {

@@ -1,5 +1,6 @@
 import "./App.css";
-import React, { useState, createContext, Dispatch } from "react";
+import React, { useState, createContext, Dispatch, useEffect } from "react";
+import axios from "axios";
 
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
@@ -13,17 +14,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 interface UserInfo {
   id0: string;
-  host0: string;
-  displayName0: string;
-  url0: string;
-  github0: string | undefined | null;
-  profileImage0: string | undefined | null;
-  setId0: Dispatch<React.SetStateAction<string>>;
-  setHost0: Dispatch<React.SetStateAction<string>>;
-  setDisplayName0: Dispatch<React.SetStateAction<string>>;
-  setUrl0: Dispatch<React.SetStateAction<string>>;
-  setGithub0: Dispatch<React.SetStateAction<string>>;
-  setProfileImage0: Dispatch<React.SetStateAction<string>>;
 }
 
 export const AuthContext = createContext({} as UserInfo);
@@ -42,29 +32,21 @@ function App() {
    * Retrieves the id from the backend
    */
   const [id0, setId0] = useState<string>("");
-  const [host0, setHost0] = useState<string>("");
-  const [displayName0, setDisplayName0] = useState<string>("");
-  const [url0, setUrl0] = useState<string>("");
-  const [github0, setGithub0] = useState<string>("");
-  const [profileImage0, setProfileImage0] = useState<string>("");
+
+  useEffect(() => {
+    const getId = async () => {
+      try {
+        const response = await axios.get("/curUser");
+        setId0(response.data.id);
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+    getId();
+  }, [id0]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        id0,
-        host0,
-        displayName0,
-        url0,
-        github0,
-        profileImage0,
-        setId0,
-        setHost0,
-        setDisplayName0,
-        setUrl0,
-        setGithub0,
-        setProfileImage0,
-      }}
-    >
+    <AuthContext.Provider value={{ id0 }}>
       <BrowserRouter>
         <Routes>
           <Route
