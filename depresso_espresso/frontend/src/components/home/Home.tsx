@@ -13,7 +13,6 @@ const Home = () => {
   const [displayName, setDisplayName] = useState<string>("");
   const [image_url, setImage] = useState<string>("");
   const [posts, setPosts] = useState<PostModel[]>([]);
-  // const { setAuthorID } = useContext(AuthContext);
   const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();

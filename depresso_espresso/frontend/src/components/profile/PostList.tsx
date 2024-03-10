@@ -1,4 +1,5 @@
 //#region imports
+import React from "react";
 import { PostModel } from "../data/PostModel";
 import { PostView } from "../data/PostView";
 import { twMerge } from "tailwind-merge";
@@ -9,7 +10,7 @@ interface PostListProps {
   posts: PostModel[];
   className?: string;
   refresh: boolean;
-  setRefresh: (refresh: boolean) => void;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
 }
 //#endregion
 

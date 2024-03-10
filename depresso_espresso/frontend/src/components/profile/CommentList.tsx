@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, useState, SetStateAction } from "react";
 import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
@@ -20,7 +20,15 @@ const myToast: ToastOptions = {
   closeButton: false,
 };
 
-const CommentList = ({ post }: { post: PostModel }) => {
+const CommentList = ({
+  post,
+  refresh,
+  setRefresh,
+}: {
+  refresh: boolean;
+  setRefresh: Dispatch<SetStateAction<boolean>>;
+  post: PostModel;
+}) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
   const [, setAuthorImg] = useState("");
@@ -90,7 +98,7 @@ const CommentList = ({ post }: { post: PostModel }) => {
 
     fetchProfile();
     fetchComments();
-  }, [post.postid]);
+  }, [post.postid, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
@@ -102,6 +110,8 @@ const CommentList = ({ post }: { post: PostModel }) => {
 
       if (response.data.success) {
         console.log("Comment creation successful");
+        setRefresh(!refresh);
+        setComment("");
       } else {
         toast.error("Failed to create comment", myToast);
       }
