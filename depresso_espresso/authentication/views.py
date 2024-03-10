@@ -9,21 +9,20 @@ from .register import Register
 from .login import Login
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
-from django.shortcuts import redirect
-from django.contrib.auth import get_user_model
+from django.contrib.sessions.models import Session
+from authentication.models import Author
+from django.core import serializers
 
 def register(request):
     '''Handles a form submission POST request to register
        returns: JSON data including success status + errors if applicable'''  
     if request.method == 'POST':  
         data ={}
-        print(request.POST)
         form = Register(request.POST)
         
-        if form.is_valid():  
-            user = form.save()
+        if form.is_valid():
+            form.save(request.get_host())
             
-            login(request, user)
             data['success'] = True  
             return JsonResponse(data)  
         else:
@@ -40,43 +39,46 @@ def register(request):
 
     return render(request, "index.html")
     
-def loginview(request):
+def loginUser(request):
     '''Handles a form submission POST request to login
-       returns: JSON data including success status + errors if applicable'''  
-    
-
+       returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
-        
-        data ={}
         user = Login.post(request)
-        print("USER RIGHT HERE", user)
-        if user:
-            login(request, user)
-            data['success'] = True  
-            return JsonResponse(data)  
+        login(request, user)
+        if user is not None:
+            return JsonResponse({'success': True})
         else:
-            data['success'] = False
-            return JsonResponse(data)  
-        
-    return render(request, 'index.html')
-
-def index(request):
+            return JsonResponse({'success': False})
     return render(request, "index.html")
-
-def get_auth(request):
-    data = {}
-    if request.user.is_authenticated:
-        data['success'] = True
-    else:
-        data['success'] = False
-    return JsonResponse(data)
 
 def logoutUser(request):
     data = {}
+
     logout(request)
-    
     if request.user.is_authenticated:
+        print("User is still logged in")
         data['success'] = False
     else:
+        print("User is not still logged in")
         data['success'] = True
     return JsonResponse(data)
+
+def curUser(request):
+    data = {} 
+    if request.method == 'GET' and request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            user = Author.objects.get(id=uid)
+
+            data["type"] = user.type
+            data["id"] = user.id
+            data["displayName"] = user.displayName
+            data["host"] = user.host
+            data["url"] = user.url
+            data["github"] = user.github
+            data["profileImage"] = user.profileImage
+            data["success"] = True
+        return JsonResponse(data)
+    return JsonResponse({'success': False})

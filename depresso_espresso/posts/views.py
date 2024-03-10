@@ -35,8 +35,8 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
-    print("HERE",request.POST)
     if request.method == 'POST':
+        print("Post request", request.user.displayName)
         form = PostView(request.POST, request.FILES)
         # print(form)
         if form.is_valid():
@@ -49,7 +49,7 @@ def make_post(request):
             post.publishdate = make_aware(naive_datetime)
             post.commentcount = 0
            
-            post.authorname = request.user.display_name
+            post.authorname = request.user.displayName
             post.visibility = form.cleaned_data["visibility"]
 
             # images
@@ -83,7 +83,7 @@ def get_all_posts(request):
   return HttpResponse(json.dumps(data_dict), content_type='application/json')
 
 def get_author_posts(request):
-  author_id = request.GET.get("authorid")
+  author_id = request.GET.get("id")
   posts = Post.objects.filter(authorid=author_id).order_by('-publishdate')
   data = serializers.serialize('json', posts)
   return HttpResponse(data, content_type='application/json')
@@ -115,7 +115,7 @@ def make_comment(request):
             comment.authorid = request.user
             naive_datetime = datetime.datetime.now()
             comment.publishdate = make_aware(naive_datetime)
-            comment.authorname = request.user.display_name
+            comment.authorname = request.user.displayName
 
             post = form.cleaned_data.get("postid")
             comment.postid = post
@@ -146,7 +146,7 @@ def get_post_comments(request):
   for comment in comments:
     author = Author.objects.get(username=(comment.authorid))
     authorData.append(author)
-  authorData = serializers.serialize("json", authorData, fields=["authorid", "profile_image", "display_name", "github_link", "username"])
+  authorData = serializers.serialize("json", authorData, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   list_a = json.loads(commentData)
   list_b = json.loads(authorData)

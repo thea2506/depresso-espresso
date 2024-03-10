@@ -1,8 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from posts.models import Post
 from authentication.models import Author
-import json
 
 # Potentially edit this to only use 1 function
 def get_profile(request, authorid):
@@ -10,63 +9,14 @@ def get_profile(request, authorid):
         author = get_object_or_404(Author, pk=authorid)
         data = {
             "type": "author",
-            "id": f"http://{request.get_host()}/authors/{authorid}",
-            "host": f"http://{request.get_host()}/",
-            "displayName": author.display_name,
-            "url": f"http://{request.get_host()}/authors/{authorid}",
-            "github": author.github_link,
-            "profileImage": author.profile_image
+            "id": author.id,
+            "host": author.host,
+            "displayName": author.displayName,
+            "url": author.url,
+            "github": author.github,
+            "profileImage": author.profileImage
         }
         return JsonResponse(data)
-    
-#@login_required
-def user_data(request):
-    user = request.user
-    if request.method == "GET":
-        data = {}
-        if user:
-            authorid = getattr(user, 'authorid')
-            data['display_name'] = getattr(user, 'display_name')
-            data["authorid"] = authorid
-            data["host"] = f"http://{request.get_host()}/"
-            data["authorurl"] = f"http://{request.get_host()}/authors/{authorid}"
-
-            data['github_link'] = getattr(user, 'github_link')
-            data['profile_image'] = getattr(user, 'profile_image')
-            data['username'] = getattr(user, 'username')
-            data['success'] = True
-        else:
-            data['success'] = {"message": "User not found"}
-    
-        return JsonResponse(data)
-
-    elif request.method == "PUT":
-        try:
-            data = json.loads(request.body)
-            author = get_object_or_404(Author, pk=user.authorid)
-            author.display_name = data.get('displayName', author.display_name)
-            author.github_link = data.get('github', author.github_link)
-            author.profile_image = data.get('profileImage', author.profile_image)
-            author.save()
-            return JsonResponse({"message": "Profile updated successfully!"})
-        except Exception as e:
-            return JsonResponse({"message": str(e)}, status=400)
-
-    elif request.method == "POST":
-        user = request.user
-        if user:
-            if "display_name" in request.POST:
-                setattr(user, 'display_name', request.POST["display_name"])
-            if "github_link" in request.POST:
-                setattr(user, 'github_link', request.POST["github_link"])
-            if "profile_image" in request.POST:
-                setattr(user, 'profile_image', request.POST["profile_image"])
-            user.save()
-
-        return JsonResponse({"message": "Profile updated successfully!"})
-
-    else:
-        return JsonResponse({"message": "Method not allowed"}, status=405)
 
 def user_posts(request, username):
     user_posts = Post.objects.filter(authorid__username=username)
@@ -100,3 +50,14 @@ def front_end(request, authorid):
 
 def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
+
+def edit_profile(request, authorid):
+    author = Author.objects.get(id=authorid)
+    print(author)
+    if request.method == "POST":
+        data = request.POST
+        author.github = data['github']
+        author.profileImage = data['profileImage']
+        author.save()
+        return JsonResponse({"message": "Profile updated successfully"})
+    return JsonResponse({"message": "Profile not updated"})

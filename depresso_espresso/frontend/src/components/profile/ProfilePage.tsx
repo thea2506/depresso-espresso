@@ -1,5 +1,5 @@
 //#region imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -8,7 +8,6 @@ import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
-import FollowList from "./FollowList";
 import PostList from "./PostList";
 import { PostModel } from "../data/PostModel";
 //#endregion
@@ -26,7 +25,6 @@ const ProfilePage = () => {
 
   const { authorId } = useParams<{ authorId: string }>();
   const [displayName, setDisplayName] = useState("");
-  // const [followers, setFollowers] = useState("");
   const [githubLink, setGithubLink] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
@@ -79,7 +77,6 @@ const ProfilePage = () => {
             image_url: rawpost.fields.image_url,
             image_file: rawpost.fields.image_file,
             contenttype: rawpost.fields.contenttype,
-            user_img_url: rawpost.fields.authorprofile,
           };
         });
         setPosts(postModels);
@@ -98,6 +95,7 @@ const ProfilePage = () => {
       style={springs}
     >
       <Profile
+        id={authorId}
         display_name={displayName}
         imageURL={profileImage}
         github={githubLink}
