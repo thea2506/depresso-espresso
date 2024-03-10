@@ -26,7 +26,8 @@ const Home = () => {
   const [username, setUsername] = useState<string>("");
   const [image_url, setImage] = useState<string>("");
   const [posts, setPosts] = useState<PostModel[]>([]);
-  const { setAuthorID } = useContext(AuthContext);
+  const [authorid, setAuthorID] = useState<string>("");
+  //const {setAuthorID } = useContext(AuthContext);
   const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();
@@ -39,7 +40,6 @@ const Home = () => {
     const retrieveData = async () => {
       try {
         const response = await axios.get("/user_data");
-        // setDisplayName(response.data.display_name);
         setUsername(response.data.username);
         setImage(response.data.profile_image);
         localStorage.setItem("authorid", response.data.authorid);
@@ -62,18 +62,21 @@ const Home = () => {
         const postModels = postData.map((rawpost: any) => {
           console.log("rawpost", rawpost);
           return {
+            username: rawpost.fields.author_username,
+            user_img_url: rawpost.fields.author_profile_image,
+
             authorid: rawpost.fields.authorid,
             content: rawpost.fields.content,
             postid: rawpost.pk,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
-            username: rawpost.fields.authorname,
+            //username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
             visibility: rawpost.fields.visibility,
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
-            image_file: rawpost.fields.image_file,
-            user_img_url: rawpost.fields.authorprofile,
+            image_file: rawpost.fields.image_file, 
+            //user_img_url: rawpost.fields.authorprofile, 
           };
         });
         console.log("postmodels", postModels);
@@ -82,8 +85,8 @@ const Home = () => {
         console.error(error);
       }
     };
-    retrievePosts();
     retrieveData();
+    retrievePosts();
   }, [navigate, setAuthorID, refresh]);
   //#endregion
   return (

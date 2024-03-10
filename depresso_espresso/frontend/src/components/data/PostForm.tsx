@@ -125,7 +125,8 @@ const PostForm = ({
       // visibility
       formField.append("visibility", visibility);
       formField.append("username", username);
-      formField.append("authorprofile", user_img_url || "");
+      //formField.append("authorprofile", user_img_url || "");
+
       if (edit && postId) formField.append("postid", postId);
 
       // image file
