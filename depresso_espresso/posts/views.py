@@ -22,7 +22,7 @@ class PostView(forms.ModelForm):
         return render(request, "index.html")
     class Meta:
         model = Post
-        fields = ("content", "image_url", "visibility", "contenttype", "image_file", "authorprofile")
+        fields = ("content", "image_url", "visibility", "contenttype", "image_file")
 
 class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
@@ -45,7 +45,6 @@ def make_post(request):
             post.image_url = form.cleaned_data["image_url"]
             post.contenttype = form.cleaned_data["contenttype"]
             post.authorid = request.user
-            post.authorprofile = form.cleaned_data["authorprofile"]
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
             post.commentcount = 0
@@ -59,7 +58,6 @@ def make_post(request):
 
             form.save(commit = True)
             data['success'] = True  
-            print("great success")
             post.save()
             return JsonResponse(data) 
         else:
@@ -72,8 +70,17 @@ def make_post(request):
 
 def get_all_posts(request):
   posts = Post.objects.filter(visibility="public").order_by('-publishdate')
-  data = serializers.serialize('json', posts)
-  return HttpResponse(data, content_type='application/json')
+  data_dict = json.loads(serializers.serialize('json', posts))
+
+  for model in data_dict:
+     print("MODELLLLLLL: ", model)
+     author_of_post = Author.objects.filter(authorid = model["fields"]["authorid"])
+     author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
+     print("author_of_post_json", author_of_post_json)
+     model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profile_image"]
+     model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
+
+  return HttpResponse(json.dumps(data_dict), content_type='application/json')
 
 def get_author_posts(request):
   author_id = request.GET.get("authorid")
