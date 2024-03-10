@@ -1,11 +1,10 @@
 //#region imports
-import { useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthContext } from "../App";
 
 // components
 import { Button } from "./Button";
@@ -28,14 +27,28 @@ const myToast: ToastOptions = {
 };
 
 const NavBar = () => {
-  const { id0 } = useContext(AuthContext);
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
   const [currentPage, setCurrentPage] = useState<string>(
     window.location.pathname.split("/")[1]
   );
+  const [id0, setId0] = useState<string>("");
+  const authorIDPath = `/authors/${id0}`;
 
   const nav = useNavigate();
-  const authorIDPath = `/authors/${id0}`;
+
+  useEffect(() => {
+    const getId = async () => {
+      try {
+        const response = await axios.get("/curUser");
+        if (response.data.success) {
+          setId0(response.data.id);
+        }
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+    getId();
+  });
 
   // TODO: add the correct authorID to the link (dynamic route)
   // Inbox and Discover are not implemented yet

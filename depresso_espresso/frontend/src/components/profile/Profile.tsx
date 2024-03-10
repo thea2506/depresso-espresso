@@ -11,6 +11,7 @@ import defaultPic from "../../assets/images/default_profile.jpg";
 
 //#region interfaces
 interface ProfileProps {
+  id: string | undefined;
   display_name: string;
   github?: string;
   imageURL?: string;
@@ -32,6 +33,7 @@ interface ProfileProps {
  * @returns {JSX.Element} The rendered profile component.
  */
 const Profile = ({
+  id,
   display_name,
   github,
   imageURL,
@@ -70,9 +72,6 @@ const Profile = ({
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
-      case "display_name":
-        setDisplayName(value);
-        break;
       case "github":
         setGithub(value);
         break;
@@ -127,11 +126,6 @@ const Profile = ({
         if (!validImage) throw new Error("Invalid image URL");
       })
       .then(() => {
-        if (newDisplayName !== "" && newDisplayName.length <= 4) {
-          throw new Error("Display Name is too short");
-        }
-      })
-      .then(() => {
         toast.success("Profile updated successfully", myToast);
         closeModal();
       })
@@ -140,10 +134,10 @@ const Profile = ({
       });
 
     const formField = new FormData();
-    if (newDisplayName !== "") formField.append("display_name", newDisplayName);
-    formField.append("github_link", newGithub);
-    formField.append("profile_image", newImageURL);
-    await axios.post("/user_data", formField);
+    if (newDisplayName !== "") formField.append("displayName", newDisplayName);
+    formField.append("github", newGithub);
+    formField.append("profileImage", newImageURL);
+    await axios.post(`/edit_profile/${id}`, formField);
     setLoading(!loading);
   };
   //#endregion
@@ -202,6 +196,7 @@ const Profile = ({
                   id={field.value}
                   defaultValue={field.placeholder}
                   className="flex-grow px-4 py-4 bg-accent-3 rounded-xl"
+                  disabled={field.value === "display_name"}
                   onChange={(e) => extractValue(e.target.value, field.value)}
                 />
               </div>

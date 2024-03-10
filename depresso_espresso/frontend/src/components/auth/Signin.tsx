@@ -9,8 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { animated, useSpring } from "@react-spring/web";
-import { useContext } from "react";
-import { AuthContext } from "../../App";
 
 // components
 import { Button } from "../Button";

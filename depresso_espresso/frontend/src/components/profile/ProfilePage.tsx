@@ -10,7 +10,6 @@ import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
 import PostList from "./PostList";
 import { PostModel } from "../data/PostModel";
-import { AuthContext } from "../../App";
 //#endregion
 
 /**
@@ -36,7 +35,6 @@ const ProfilePage = () => {
     to: { opacity: 1 },
     config: { duration: 1000 },
   });
-  const { id0 } = useContext(AuthContext);
 
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,7 +44,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/api/authors/${id0}`);
+        const response = await axios.get(`/api/authors/${authorId}`);
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);
@@ -97,6 +95,7 @@ const ProfilePage = () => {
       style={springs}
     >
       <Profile
+        id={authorId}
         display_name={displayName}
         imageURL={profileImage}
         github={githubLink}

@@ -2,8 +2,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from posts.models import Post
 from authentication.models import Author
-from django.core.serializers import serialize
-import json
 
 # Potentially edit this to only use 1 function
 def get_profile(request, authorid):
@@ -11,12 +9,12 @@ def get_profile(request, authorid):
         author = get_object_or_404(Author, pk=authorid)
         data = {
             "type": "author",
-            "id": f"http://{request.get_host()}/authors/{authorid}",
-            "host": f"http://{request.get_host()}/",
-            "displayName": author.display_name,
-            "url": f"http://{request.get_host()}/authors/{authorid}",
-            "github": author.github_link,
-            "profileImage": author.profile_image
+            "id": author.id,
+            "host": author.host,
+            "displayName": author.displayName,
+            "url": author.url,
+            "github": author.github,
+            "profileImage": author.profileImage
         }
         return JsonResponse(data)
 
@@ -29,3 +27,14 @@ def front_end(request, authorid):
 
 def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
+
+def edit_profile(request, authorid):
+    author = Author.objects.get(id=authorid)
+    print(author)
+    if request.method == "POST":
+        data = request.POST
+        author.github = data['github']
+        author.profileImage = data['profileImage']
+        author.save()
+        return JsonResponse({"message": "Profile updated successfully"})
+    return JsonResponse({"message": "Profile not updated"})
