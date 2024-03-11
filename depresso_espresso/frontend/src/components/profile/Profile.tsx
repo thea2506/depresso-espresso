@@ -72,10 +72,16 @@ const Profile = ({
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
+      case "display_name":
+        console.log("display_name", value);
+        setDisplayName(value);
+        break;
       case "github":
+        console.log("github", value);
         setGithub(value);
         break;
       case "image":
+        console.log("image", value);
         setImageURL(value);
         break;
     }
@@ -196,7 +202,6 @@ const Profile = ({
                   id={field.value}
                   defaultValue={field.placeholder}
                   className="flex-grow px-4 py-4 bg-accent-3 rounded-xl"
-                  disabled={field.value === "display_name"}
                   onChange={(e) => extractValue(e.target.value, field.value)}
                 />
               </div>

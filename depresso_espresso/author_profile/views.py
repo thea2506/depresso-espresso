@@ -55,7 +55,7 @@ def get_image(request, image_file):
 
 def edit_profile(request, authorid):
     author = Author.objects.get(id=authorid)
-
+    print(request.user, author, request.user == author)
     if request.method == "POST":
         data = request.POST
         if request.user == author:
