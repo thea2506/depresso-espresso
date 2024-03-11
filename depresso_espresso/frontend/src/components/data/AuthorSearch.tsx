@@ -29,9 +29,7 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
             };
           }
         );
-        console.log("authorModels", authorModels);
         setAuthors(authorModels);
-        console.log("authors", authors);
       } catch (error) {
         console.error(error);
       }

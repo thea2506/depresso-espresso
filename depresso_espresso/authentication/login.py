@@ -20,7 +20,6 @@ class Login(LoginView):
         password = request.POST["password"]
 
         unauthenticated_user = Author.objects.filter(username = username)
-        print("authenticated user:", len(unauthenticated_user.values()))
 
         if len(unauthenticated_user.values()) == 1:
             if (unauthenticated_user.values())[0]["allowRegister"] == False:

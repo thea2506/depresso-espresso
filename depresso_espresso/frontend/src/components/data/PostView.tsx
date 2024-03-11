@@ -142,8 +142,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
       onClick: handleShareClick,
     },
   ];
-  console.log("author", authorId);
-  console.log("author post", post.authorid);
 
   return (
     <animated.div

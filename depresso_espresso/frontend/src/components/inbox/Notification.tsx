@@ -42,8 +42,20 @@ const Notification = ({ username, type }: NotificationProps) => {
     }
   };
 
-  const handleDecline = () => {
-    console.log("Declined");
+  const handleDecline = async () => {
+    console.log("Decline clicked");
+
+    const formField = new FormData();
+    formField.append("username", username);
+    formField.append("decision", "decline");
+    try {
+      const response = await axios.post("/respond_to_follow_request", formField );
+      if (response.data.success) {
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
   //#endregion
 

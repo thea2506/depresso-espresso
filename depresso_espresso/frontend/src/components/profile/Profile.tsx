@@ -73,15 +73,12 @@ const Profile = ({
   const extractValue = (value: string, field: string) => {
     switch (field) {
       case "display_name":
-        console.log("display_name", value);
         setDisplayName(value);
         break;
       case "github":
-        console.log("github", value);
         setGithub(value);
         break;
       case "image":
-        console.log("image", value);
         setImageURL(value);
         break;
     }
@@ -143,7 +140,7 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("displayName", newDisplayName);
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
-    await axios.post(`/edit_profile/${id}`, formField);
+    await axios.post(`${id}/edit_profile`, formField);
     setLoading(!loading);
   };
   //#endregion

@@ -44,7 +44,6 @@ const Home = () => {
         const postData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
-          console.log("rawpost", rawpost);
           return {
             username: rawpost.fields.author_username,
             user_img_url: rawpost.fields.author_profile_image,
@@ -63,7 +62,6 @@ const Home = () => {
             image_file: rawpost.fields.image_file,
           };
         });
-        console.log("postmodels", postModels);
         setPosts(postModels);
       } catch (error) {
         console.error(error);

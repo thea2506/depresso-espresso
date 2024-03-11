@@ -36,7 +36,6 @@ class CommentView(forms.ModelForm):
 def make_post(request):
     data ={}
     if request.method == 'POST':
-        print("Post request", request.user.displayName)
         form = PostView(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
@@ -53,15 +52,12 @@ def make_post(request):
 
             # images
             post.image_file = form.cleaned_data["image_file"]
-            print("image file add", post.image_file)
 
             form.save(commit = True)
             data['success'] = True  
             post.save()
             return JsonResponse(data) 
         else:
-            print("form is not valid")
-            print(form.errors)
             data['success'] = False  
             return JsonResponse(data) 
 
@@ -72,10 +68,8 @@ def get_all_posts(request):
   data_dict = json.loads(serializers.serialize('json', posts))
   
   for model in data_dict:
-     print("model", model)
      author_of_post = Author.objects.filter(id = model["fields"]["authorid"])
      author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
-     print("author_of_post_json", author_of_post_json)
      model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profileImage"]
      model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
 
@@ -104,7 +98,6 @@ def toggle_like(request):
 
 def make_comment(request):
     data ={}
-    print("Comment request", request)
     if request.method == 'POST':
         form = CommentView(request.POST)
         
@@ -123,7 +116,6 @@ def make_comment(request):
 
             form.save(commit = True)
             data['success'] = True  
-            print("great success")
             comment.save()
             return JsonResponse(data) 
         else:
@@ -135,7 +127,6 @@ def make_comment(request):
 
 def get_post_comments(request):
   '''Get all comments for a post'''
-  print('request', request.user)
 
   data = json.loads(request.body)
   postid = data.get('postId')
@@ -165,12 +156,10 @@ def delete_post(request):
   if request.user == post.authorid:
     post.delete()
     data['success'] = True  
-    print("great deletion success")
     return JsonResponse(data) 
   
   else:
     data['success'] = False
-    print("horrible deletion failure")
     return JsonResponse(data)
 
 def delete_comment(request):
@@ -180,17 +169,14 @@ def delete_comment(request):
   data = json.loads(request.body)
   commentid = data.get('commentid')
   comment = Comment.objects.filter(commentid=commentid)
-  print('request', request.user, 'comment', comment)
 
   if request.user == comment.authorid.user:
     comment.delete()
     data['success'] = True  
-    print("great deletion success")
     return JsonResponse(data) 
   
   else:
     data['success'] = False
-    print("horrible deletion failure")
     return JsonResponse(data)
   
 def edit_post(request):

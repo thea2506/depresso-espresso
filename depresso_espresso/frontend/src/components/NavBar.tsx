@@ -50,8 +50,6 @@ const NavBar = () => {
     getId();
   });
 
-  // TODO: add the correct authorID to the link (dynamic route)
-  // Inbox and Discover are not implemented yet
   const navContents = [
     { icon: <GoHome />, link: "/", name: "" },
     { icon: <GoPerson />, link: authorIDPath, name: "authors" },

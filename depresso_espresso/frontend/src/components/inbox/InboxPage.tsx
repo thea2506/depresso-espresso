@@ -8,7 +8,7 @@ const InboxPage = () => {
         <p className="cursor-pointer hover:text-primary">Clear Activity</p>
       </div>
       <Notification
-        username="Annie"
+        username="biguser" // Manually enter name of user sending follow request for now
         type="follow"
         link=""
       />

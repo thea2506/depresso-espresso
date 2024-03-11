@@ -26,7 +26,6 @@ class Register(UserCreationForm):
         elif (register_config.values())[0]["requireRegisterPerms"] == False:
             user.allowRegister = True
         else:
-            print("WHY")
             user.allowRegister = False
 
         user.username = self.cleaned_data["username"]

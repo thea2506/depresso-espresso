@@ -12,10 +12,23 @@ class Author(AbstractUser):
     url = models.URLField(null = True, blank = True)
     github = models.URLField(null = True, blank = True)
     profileImage = models.URLField(null = True, blank = True)
-    follows = models.ManyToManyField("self", blank=True)
-    followRequests = models.ManyToManyField("self", symmetrical=False, related_name='pending_follow_requests', blank=True)
-    friends = models.ManyToManyField("self", blank=True)
     allowRegister = models.BooleanField(null = False, blank = False, default=False)
 
 class RegisterConfig(models.Model):
     requireRegisterPerms = models.BooleanField(null = False, blank = False)
+
+class Following(models.Model):
+    authorid = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="following")
+    followingid = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="followers")
+    areFriends = models.BooleanField(null = False, blank = False, default=False)
+
+    class Meta:
+        managed = True
+        unique_together = ('authorid', 'followingid')
+        
+class FollowRequest(models.Model):
+    requester = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="follow_requests_sent")
+    receiver = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="follow_requests_received")
+
+    class Meta:
+        managed = True

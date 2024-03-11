@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from posts.models import Post
-from authentication.models import Author
+from authentication.models import Author, Following, FollowRequest
 
 # Potentially edit this to only use 1 function
 def get_profile(request, authorid):
@@ -55,11 +55,11 @@ def get_image(request, image_file):
 
 def edit_profile(request, authorid):
     author = Author.objects.get(id=authorid)
-    print(request.user, author, request.user == author)
     if request.method == "POST":
         data = request.POST
         if request.user == author:
-          author.displayName = data['displayName']
+          if data.get('displayName') != None:
+            author.displayName = data['displayName']
           author.github = data['github']
           author.profileImage = data['profileImage']
           author.save()
@@ -71,32 +71,86 @@ def edit_profile(request, authorid):
 
 def send_follow_request(request, authorid):
     requestedAuthor = Author.objects.get(id=authorid)
-    print(request.user, "is sending a follow request to", requestedAuthor)
+    
     if request.method == "POST":
-        if request.user not in requestedAuthor.followRequests.all():
-          requestedAuthor.followRequests.add(request.user)
+        if not FollowRequest.objects.filter(requester = request.user, receiver = requestedAuthor).exists():
+          FollowRequest.objects.create(requester = request.user, receiver = requestedAuthor)
+
+          message = request.user.username, "sent a follow request to", requestedAuthor.username
+          print(message)
           
-          return JsonResponse({"message": "Follow request sent"})
+          return JsonResponse({"message": message,
+                               "success": True})
         
-    return JsonResponse({"message": "Follow request not sent"})
+        elif FollowRequest.objects.filter(requester = request.user, receiver = requestedAuthor).exists():
+          message = request.user.username, "has already sent a follow request to", requestedAuthor.username
+          print(message)
+          
+          return JsonResponse({"message": message,
+                               "success": False})
+        
+    return JsonResponse({"message": "Follow request not sent",
+                         "success": False})
 
 def respond_to_follow_request(request):
     data = request.POST
     username = data["username"]
-    print(username)
-    requestedAuthor = Author.objects.get(username=username)
-    print(request.user, "is sending a follow request to", requestedAuthor)
+    requestingAuthor = Author.objects.get(username=username)
+    print(requestingAuthor)
     if request.method == "POST":
         if data["decision"] == "accept":
+          FollowRequest.objects.filter(requester = requestingAuthor, receiver = request.user).delete()
+          Following.objects.create(authorid = requestingAuthor, followingid = request.user, areFriends = False)
           
-          print("Follow request from", requestedAuthor, "accepted by", request.user)
-          return JsonResponse({"message": "Follow request accepted",
+          message = "Follow request from", requestingAuthor.username, "accepted by", request.user.username
+
+          print(message)
+          return JsonResponse({"message": message,
                                "success": True})
         
-        elif data["decision"] == "declined":
-          
-          print("Follow request from", requestedAuthor, "declined by", request.user)
-          return JsonResponse({"message": "Follow request declined",
+        elif data["decision"] == "decline":
+          FollowRequest.objects.filter(requester = requestingAuthor, receiver = request.user).delete()
+
+          message = "Follow request from", requestingAuthor.username, "declined by", request.user.username
+          print(message)
+          return JsonResponse({"message": message,
                                "success": True})
         
-    return JsonResponse({"message": "Follow request not sent"})
+    return JsonResponse({"message": "Error responding to follow request",})
+
+def get_followers(request, authorid):
+  if request.method == "GET":
+    followers = Following.objects.filter(followingid=authorid)
+    print(authorid, request.user)
+    data = []
+    for follower in followers:
+      user = Author.objects.get(id=follower.authorid.id)
+      data.append({
+        "type": user.type,
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage
+      })
+    print("Followers data", data)
+    return JsonResponse(data, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# WIP
+def unfollow(request):
+  data = request.POST
+  username = data["username"]
+  requestingAuthor = Author.objects.get(username=username)
+  print(requestingAuthor, request.user)
+  if request.method == "POST":
+      if data["decision"] == "accept":
+        requestingAuthor.follows.remove(request.user)
+        message = requestingAuthor.username, "unfollowed", request.user.username
+
+        print(message)
+        return JsonResponse({"message": message,
+                              "success": True})
