@@ -4,12 +4,16 @@ from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class Author(AbstractUser):
-    github_link = models.URLField(null = True, blank = True)
-    profile_image = models.URLField(null = True, blank = True)
-    follows = models.ManyToManyField("self", blank=True) #https://stackoverflow.com/questions/11721157/django-many-to-many-m2m-relation-to-same-model
+    type = models.CharField(max_length=50, default="author")
+    id = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4)
+    host = models.URLField(null = True, blank = True)
+    displayName = models.CharField(null=False, blank=False, max_length=50)
+    url = models.URLField(null = True, blank = True)
+    github = models.URLField(null = True, blank = True)
+    profileImage = models.URLField(null = True, blank = True)
+
+    follows = models.ManyToManyField("self", blank=True)
     friends = models.ManyToManyField("self", blank=True)
-    authorid = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
-    display_name = models.CharField(null=False, blank=False, max_length=50)
     allow_register = models.BooleanField(null = False, blank = False)
 
 

@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { AiOutlineClose } from "react-icons/ai";
-import { useEffect, useState } from "react";
+import { Dispatch, useEffect, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
 import Popup from "reactjs-popup";
@@ -22,7 +22,7 @@ import { PostForm } from "./PostForm";
 interface CreatePostViewProps {
   post: PostModel;
   refresh: boolean;
-  setRefresh: (refresh: boolean) => void;
+  setRefresh: Dispatch<React.SetStateAction<boolean>>;
 }
 //#endregion
 
@@ -89,14 +89,15 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get("/user_data");
-        setUsername(response.data.username);
-        setAuthorId(response.data.authorid);
+        const response = await axios.get("/curUser");
+        if (response.data.success == true) {
+          setUsername(response.data.displayName);
+          setAuthorId(response.data.id);
+        }
       } catch (error) {
         console.error(error);
       }
     };
-
     getData();
   }, []);
   //#endregion
@@ -235,7 +236,11 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
       </div>
       {showComments && (
         <div className="w-full mb-4">
-          <CommentList post={post} />
+          <CommentList
+            post={post}
+            refresh={refresh}
+            setRefresh={setRefresh}
+          />
         </div>
       )}
     </animated.div>

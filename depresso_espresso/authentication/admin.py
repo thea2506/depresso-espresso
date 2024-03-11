@@ -29,7 +29,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = Author
-        fields = ('username', 'first_name', 'last_name', "github_link", "profile_image", "display_name", "friends")
+        fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends")
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -53,14 +53,14 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = Author
-        fields = ('username', 'first_name', 'last_name', "github_link", "profile_image", "display_name")
+        fields = ("displayName", "github", "profileImage")
 
     def clean_password(self):
         # Regardless of what the user provides, return the initial value.
         return self.initial["password"]
 
 class AuthorAdmin(admin.ModelAdmin):
-    list_display = ('username', 'last_name', 'first_name', 'github_link', 'profile_image', 'is_active', 'password', "display_name")
+    fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password")
 
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('require_register_perms',)

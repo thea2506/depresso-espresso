@@ -1,61 +1,43 @@
 import "./App.css";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-// import App from "./App";
 import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
+import InboxPage from "./components/inbox/InboxPage.tsx";
 import Discover from "./components/discover/Discover.tsx";
 import { NavBar } from "./components/NavBar.tsx";
-import AuthCheck from "./components/auth/Authcheck.tsx";
-import React, { useState, useEffect, createContext } from "react";
-import axios from "axios";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-export const AuthContext = createContext({
-  authorid: "",
-  setAuthorID: (authorid: string) => {
-    console.log(authorid);
-  },
-});
-
-const General = ({
-  children,
-  authorid,
-  setAuthorID,
-}: {
-  children: React.ReactNode;
-  authorid: string;
-  setAuthorID: (authorid: string) => void;
-}) => {
+const General = ({ children }: { children: React.ReactNode }) => {
   return (
-    <AuthContext.Provider value={{ authorid, setAuthorID }}>
-      <div className="w-full mb-20">
-        <NavBar />
-        {children}
-      </div>
-    </AuthContext.Provider>
+    <div className="w-full mb-20">
+      <NavBar />
+      {children}
+    </div>
   );
 };
 
 function App() {
   /**
-   * Retrieves the authorid from the backend
+   * Retrieves the id from the backend
    */
-  const [authorid, setAuthorID] = useState<string>("");
+  const [id0, setId0] = useState<string>("");
+
   useEffect(() => {
-    const retrieveAuthorID = async () => {
+    const getId = async () => {
       try {
-        const response = await axios.get("/user_data");
-        setAuthorID(response.data.authorid);
-        console.log(response.data.authorid);
+        const response = await axios.get("/curUser");
+        setId0(response.data.id);
       } catch (error) {
-        console.error(error);
+        console.error("An error occurred", error);
       }
     };
-    retrieveAuthorID();
-  }, []);
+    getId();
+  }, [id0]);
 
   return (
     <BrowserRouter>
@@ -71,41 +53,33 @@ function App() {
         <Route
           path="/"
           element={
-            <AuthCheck>
-              <General
-                authorid={authorid}
-                setAuthorID={setAuthorID}
-              >
-                <Home />
-              </General>
-            </AuthCheck>
+            <General>
+              <Home />
+            </General>
           }
         />
         <Route
-          path="/authors/:authorId" // This is a dynamic route + project requirements
+          path="/authors/:authorId"
           element={
-            <>
-              <General
-                authorid={authorid}
-                setAuthorID={setAuthorID}
-              >
-                <ProfilePage />
-              </General>
-            </>
+            <General>
+              <ProfilePage />
+            </General>
           }
         />
-
+        <Route
+          path="/inbox"
+          element={
+            <General>
+              <InboxPage />
+            </General>
+          }
+        />
         <Route
           path="/discover"
           element={
-            <AuthCheck>
-              <General
-                authorid={authorid}
-                setAuthorID={setAuthorID}
-              >
-                <Discover />
-              </General>
-            </AuthCheck>
+            <General>
+              <Discover />
+            </General>
           }
         />
       </Routes>

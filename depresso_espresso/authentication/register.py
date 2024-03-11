@@ -1,4 +1,4 @@
-from django import forms
+
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
@@ -11,16 +11,16 @@ from .models import RegisterConfig
 
 class Register(UserCreationForm):
     permission_classes = (permissions.AllowAny)
-    template_name = "register.html", 
-
     class Meta:
         model = get_user_model()
-        fields = ("display_name", "username", "password1", "password2" )
+        
+        fields = ("displayName", "password1", "password2")
 
-    def save(self, commit=True):
-        user = super(Register, self).save(commit=False) # call save from parent UserCreationForm
+    def save(self, host, commit=True):
+        user = super(Register, self).save(commit=False)
 
-        user.display_name = self.cleaned_data["display_name"]
+        user.username = self.cleaned_data["displayName"]
+        user.displayName = self.cleaned_data["displayName"]
 
         register_config = (RegisterConfig.objects.all())[:1]
         if len(register_config) == 0:
@@ -32,7 +32,10 @@ class Register(UserCreationForm):
             user.allow_register = False
 
         
-        #user = authenticate(self.cleaned_data["username"], self.cleaned_data["password1"])
+        user.host = f"http://{host}/"
+        user.set_password(self.cleaned_data["password1"])
+        user.url = f"http://{host}/author/{user.id}"
+        
         if commit:
             user.save()
         return user
