@@ -27,21 +27,21 @@ def get_authors(request):
   if request.method == "GET":
     search_terms = request.GET.get('search')
     if search_terms:
-      authors = Author.objects.filter(display_name__icontains=search_terms)
+      authors = Author.objects.filter(displayName__icontains=search_terms)
     else:
       authors = Author.objects.all()
     
     data = []
     for author in authors:
       data.append({
-        "type": "author",
-        "id": f"http://{request.get_host()}/authors/{author.pk}",
-        "url": f"http://{request.get_host()}/authors/{author.pk}",
-        "host": f"http://{request.get_host()}/",
-        "displayName": author.display_name,
+        "type": author.type,
+        "id": author.id,
+        "url": author.url,
+        "host": author.host,
+        "displayName": author.displayName,
         "username": author.username,
-        "github": author.github_link,
-        "profileImage": author.profile_image
+        "github": author.github,
+        "profileImage": author.profileImage
       })
     return JsonResponse(data, safe=False)
   else:
