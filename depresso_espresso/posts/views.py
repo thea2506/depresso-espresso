@@ -72,10 +72,8 @@ def get_all_posts(request):
   data_dict = json.loads(serializers.serialize('json', posts))
   
   for model in data_dict:
-     print("model", model)
      author_of_post = Author.objects.filter(id = model["fields"]["authorid"])
      author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
-     print("author_of_post_json", author_of_post_json)
      model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profileImage"]
      model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
 
@@ -104,7 +102,6 @@ def toggle_like(request):
 
 def make_comment(request):
     data ={}
-    print("Comment request", request)
     if request.method == 'POST':
         form = CommentView(request.POST)
         
