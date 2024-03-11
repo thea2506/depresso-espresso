@@ -48,7 +48,9 @@ const Home = () => {
           return {
             author: author,
 
-            id: rawpost.fields.id,
+            id: rawpost.pk,
+            title: rawpost.fields.title,
+            description: rawpost.fields.description,
             contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
             count: rawpost.fields.count,

@@ -122,10 +122,6 @@ const Profile = ({
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
       .then(() => {
-        const validImage = checkImageURL(newImageURL);
-        if (!validImage) throw new Error("Invalid image URL");
-      })
-      .then(() => {
         toast.success("Profile updated successfully", myToast);
         closeModal();
       })

@@ -54,7 +54,6 @@ const ProfilePage = () => {
         console.error("An error occurred", error);
       }
     };
-    getData();
 
     const retrievePosts = async () => {
       try {
@@ -65,13 +64,15 @@ const ProfilePage = () => {
         });
         const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = allData.posts.map((rawpost: any, index: number) => {
-          const author = allData.authors[index];
+        const postModels = allData.posts.map((rawpost: any) => {
+          const author = allData.authors[0];
           author.fields.id = author.pk;
           return {
             author: author,
 
-            id: rawpost.fields.id,
+            id: rawpost.pk,
+            title: rawpost.fields.title,
+            description: rawpost.fields.description,
             contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
             count: rawpost.fields.count,
@@ -86,11 +87,11 @@ const ProfilePage = () => {
         console.error(error);
       }
     };
+    getData();
     retrievePosts();
-  }, [authorId, loading, displayName, githubLink, profileImage]);
+  }, [authorId, loading]);
 
   //#endregion
-  console.log("posts", posts);
   return (
     <animated.div
       className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"

@@ -151,6 +151,8 @@ const PostForm = ({
 
       if (edit && postId) formData.append("postid", postId);
 
+      setForm("");
+
       const url = edit ? "/edit_post" : "/make_post";
       const response = await axios.post(url, formData);
 
@@ -168,7 +170,6 @@ const PostForm = ({
     }
   };
   //#endregion
-
   return (
     <div className="flex flex-col items-center justify-center w-full gap-y-4">
       <ToastContainer />
@@ -233,6 +234,7 @@ const PostForm = ({
         <input
           type="text"
           placeholder="Title"
+          defaultValue={oldTitle || ""}
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           maxLength={100}
           onChange={(e) => setTitle(e.target.value)}
@@ -240,12 +242,14 @@ const PostForm = ({
         <input
           type="text"
           placeholder="Description"
+          defaultValue={oldDescription || ""}
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           maxLength={100}
           onChange={(e) => setDescription(e.target.value)}
         />
         {/* Text */}
-        {form === "Text/Markdown" ? (
+        {form === "Text/Markdown" ||
+        (oldContentType?.includes("text") && edit) ? (
           <textarea
             name="post-content"
             id="post-content"
@@ -306,7 +310,8 @@ const PostForm = ({
               ))}
             </select>
           </div>
-          {form == "Text/Markdown" && (
+          {form == "Text/Markdown" ||
+          (oldContentType?.includes("text") && edit) ? (
             <div className="flex items-center align-baseline gap-x-4 text-primary">
               <p className="text-sm leading-8 md:text-base">Markdown</p>
               <input
@@ -324,8 +329,8 @@ const PostForm = ({
                 }`}
               />
             </div>
-          )}
-          {form == "Image" && (
+          ) : null}
+          {form == "Image" || oldContentType?.includes("image") ? (
             <div className="flex text-sm gap-x-2 text-primary md:text-base">
               <p>
                 {oldImageFile &&
@@ -334,7 +339,7 @@ const PostForm = ({
               </p>
               <p>{imageFile && imageFile?.name}</p>
             </div>
-          )}
+          ) : null}
         </div>
       </animated.form>
     </div>

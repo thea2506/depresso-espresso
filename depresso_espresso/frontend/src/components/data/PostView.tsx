@@ -61,9 +61,9 @@ const PostView = ({
     console.log("Share clicked");
   };
 
-  const handleLikeToggle = () => {
+  const handleLikeToggle = async () => {
+    await axios.post("/toggle_like", { postid: post.id });
     setRefresh(!refresh);
-    axios.post("/toggle_like", { postid: post.id });
   };
 
   const handleDelete = async () => {
@@ -134,7 +134,9 @@ const PostView = ({
             />
           </div>
           <PostForm
-            author={post.author}
+            author={post.author.fields}
+            oldTitle={post.title}
+            oldDescription={post.description}
             oldContent={post.content}
             oldImageFile={post.content}
             oldVisibility={post.visibility}
@@ -169,15 +171,17 @@ const PostView = ({
         </div>
 
         {/* Content */}
-        {post.contenttype === "markdown" ? (
+        {post.contenttype === "text/markdown" && (
           <Markdown>{mdContent}</Markdown>
-        ) : (
+        )}
+
+        {post.contenttype === "text/plain" && (
           <p className="text-start">{post.content}</p>
         )}
 
-        {post.image_file && (
+        {post.contenttype?.includes("image") && (
           <img
-            src={post.image_file}
+            src={post.content}
             alt="post"
             className="w-full h-96 object-cover rounded-[1.4rem]"
           />

@@ -79,12 +79,13 @@ def get_author_posts(request):
   author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  print(results)
   return HttpResponse(results, content_type='application/json')
 
 def toggle_like(request):
   data = json.loads(request.body)
   postid = data.get('postid')
-  
+
   post = Post.objects.get(pk=postid)
  
   if request.user in post.liked_by.all():
@@ -191,9 +192,11 @@ def edit_post(request):
 
   post = get_object_or_404(Post, pk=postid)
   if request.method == 'POST':
+      post.title = request.POST.get('title')
+      post.description = request.POST.get('description')
       post.content = request.POST.get('content')
       post.visibility = request.POST.get('visibility')
-      post.contentType = request.POST.get('contenttype')
+      post.contentType = request.POST.get('contentType')
       post.save()
   data['success'] = True
   return JsonResponse(data)
