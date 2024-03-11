@@ -38,7 +38,6 @@ def make_post(request):
     if request.method == 'POST':
         print("Post request", request.user.displayName)
         form = PostView(request.POST, request.FILES)
-        # print(form)
         if form.is_valid():
             post = form.save(commit=False)
             post.content = form.cleaned_data["content"]
@@ -71,13 +70,13 @@ def make_post(request):
 def get_all_posts(request):
   posts = Post.objects.filter(visibility="public").order_by('-publishdate')
   data_dict = json.loads(serializers.serialize('json', posts))
-
+  
   for model in data_dict:
-     print("MODELLLLLLL: ", model)
-     author_of_post = Author.objects.filter(authorid = model["fields"]["authorid"])
+     print("model", model)
+     author_of_post = Author.objects.filter(id = model["fields"]["authorid"])
      author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
      print("author_of_post_json", author_of_post_json)
-     model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profile_image"]
+     model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profileImage"]
      model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
 
   return HttpResponse(json.dumps(data_dict), content_type='application/json')

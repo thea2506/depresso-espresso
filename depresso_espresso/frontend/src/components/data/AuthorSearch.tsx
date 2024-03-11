@@ -64,11 +64,12 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
           authors?.map((author) => (
             <div
               className="resize-none focus:outline-none w-full p-4 bg-accent-3 rounded-[1.4rem] overflow-none m-2 hover:bg-primary md:hover:bg-secondary-light hover:text-white"
-              onClick={() => window.location.href = `/authors/${author.id}/`}
+              onClick={() => (window.location.href = `/authors/${author.id}/`)}
             >
               <UserDisplay
                 username={author.displayName}
                 user_img_url={author.profileImage}
+                link={`/authors/${author.id}`}
               />
             </div>
           ))}
