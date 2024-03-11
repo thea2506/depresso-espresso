@@ -55,11 +55,14 @@ def get_image(request, image_file):
 
 def edit_profile(request, authorid):
     author = Author.objects.get(id=authorid)
-    print(author)
+
     if request.method == "POST":
         data = request.POST
-        author.github = data['github']
-        author.profileImage = data['profileImage']
-        author.save()
-        return JsonResponse({"message": "Profile updated successfully"})
+        if request.user == author:
+          author.displayName = data['displayName']
+          author.github = data['github']
+          author.profileImage = data['profileImage']
+          author.save()
+          return JsonResponse({"message": "Profile updated successfully"})
+        
     return JsonResponse({"message": "Profile not updated"})
