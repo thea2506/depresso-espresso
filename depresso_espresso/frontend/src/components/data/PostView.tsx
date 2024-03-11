@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { AiOutlineClose } from "react-icons/ai";
-import { Dispatch, useEffect, useState } from "react";
+import { Dispatch, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
 import Popup from "reactjs-popup";
@@ -16,10 +16,12 @@ import { UserDisplay } from "../UserDisplay";
 import { PostModel } from "./PostModel";
 import CommentList from "../profile/CommentList";
 import { PostForm } from "./PostForm";
+import { AuthorModel } from "./AuthorModel";
 //#endregion
 
 //#region interfaces
 interface CreatePostViewProps {
+  curUser: AuthorModel;
   post: PostModel;
   refresh: boolean;
   setRefresh: Dispatch<React.SetStateAction<boolean>>;
@@ -32,9 +34,12 @@ interface CreatePostViewProps {
  * @param {string} user_img_url - The URL of the user's avatar
  * @returns
  */
-const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
-  const [username, setUsername] = useState("");
-  const [authorId, setAuthorId] = useState("");
+const PostView = ({
+  curUser,
+  post,
+  refresh,
+  setRefresh,
+}: CreatePostViewProps) => {
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const springs = useSpring({
@@ -86,20 +91,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     return formattedDate;
   };
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success == true) {
-          setUsername(response.data.displayName);
-          setAuthorId(response.data.id);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getData();
-  }, [authorId]);
   //#endregion
 
   const interactSection = [
@@ -209,14 +200,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             </div>
           ))}
 
-          {authorId === post.author.id && (
+          {curUser.id === post.author.id && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {authorId === post.author.id && (
+          {curUser.id === post.author.id && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}

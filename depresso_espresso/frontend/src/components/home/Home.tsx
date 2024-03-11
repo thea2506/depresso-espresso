@@ -45,19 +45,19 @@ const Home = () => {
         const postModels = postData.map((rawpost: any) => {
           console.log("rawpost", rawpost);
           return {
+            author: rawpost.fields.author,
+            authorid: rawpost.fields.author.id,
             username: rawpost.fields.author.displayName,
-            // user_img_url: rawpost.fields.author_profile_image,
+            user_img_url: rawpost.fields.author.profileImage,
 
-            // authorid: rawpost.fields.authorid,
-            // content: rawpost.fields.content,
-            // postid: rawpost.pk,
-            // likes: rawpost.fields.liked_by.length,
-            // commentcount: rawpost.fields.commentcount,
-            // publishdate: rawpost.fields.publishdate,
-            // visibility: rawpost.fields.visibility,
-            // image_url: rawpost.fields.image_url,
-            // contenttype: rawpost.fields.contenttype,
-            // image_file: rawpost.fields.image_file,
+            id: rawpost.fields.id,
+            contenttype: rawpost.fields.contentType,
+            content: rawpost.fields.content,
+            count: rawpost.fields.count,
+            published: rawpost.fields.published,
+            visibility: rawpost.fields.visibility,
+
+            likes: rawpost.fields.liked_by.length,
           };
         });
         console.log("postmodels", postModels);
