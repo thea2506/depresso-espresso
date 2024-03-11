@@ -64,16 +64,9 @@ def make_post(request):
     return render(request, "index.html")
 
 def get_all_posts(request):
-  posts = Post.objects.filter(visibility="public").order_by('-published')
-  data_dict = json.loads(serializers.serialize('json', posts))
-  
-  # for model in data_dict:
-    #  author_of_post = Author.objects.filter(id = model["fields"]["author"])
-    #  author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
-    #  model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profileImage"]
-    #  model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
-
-  return HttpResponse(json.dumps(data_dict), content_type='application/json')
+  posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+  data = serializers.serialize('json', posts)
+  return HttpResponse(data, content_type='application/json')
 
 def get_author_posts(request):
   posts = Post.objects.filter(author=request.user).order_by('-published')
