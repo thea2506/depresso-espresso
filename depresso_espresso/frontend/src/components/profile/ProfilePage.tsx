@@ -85,7 +85,7 @@ const ProfilePage = () => {
       }
     };
     retrievePosts();
-  }, [authorId, loading]);
+  }, [authorId, loading, displayName, githubLink, profileImage]);
 
   //#endregion
   console.log("posts", posts);

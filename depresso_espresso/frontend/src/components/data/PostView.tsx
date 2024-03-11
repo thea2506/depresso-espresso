@@ -99,7 +99,7 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
       }
     };
     getData();
-  }, []);
+  }, [authorId]);
   //#endregion
 
   const interactSection = [
@@ -115,6 +115,8 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     },
     { icon: <GoShare />, onClick: handleShareClick },
   ];
+  console.log("author", authorId);
+  console.log("author post", post.authorid);
 
   return (
     <animated.div
