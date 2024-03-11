@@ -4,6 +4,7 @@ export interface AuthorModel {
   url: string;
   host: string;
   displayName: string;
+  username: string;
   github: string;
   profileImage: string;
 }

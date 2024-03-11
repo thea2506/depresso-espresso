@@ -23,6 +23,7 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
               url: rawauthor.url,
               host: rawauthor.host,
               displayName: rawauthor.displayName,
+              username: rawauthor.username,
               github: rawauthor.github,
               profileImage: rawauthor.profileImage,
             };

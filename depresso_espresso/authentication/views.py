@@ -77,6 +77,7 @@ def curUser(request):
 
             data["type"] = user.type
             data["id"] = user.id
+            data["username"] = user.username
             data["displayName"] = user.displayName
             data["host"] = user.host
             data["url"] = user.url

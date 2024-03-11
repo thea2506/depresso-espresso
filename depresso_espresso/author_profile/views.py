@@ -12,6 +12,7 @@ def get_profile(request, authorid):
             "id": author.id,
             "host": author.host,
             "displayName": author.displayName,
+            "username": author.username,
             "url": author.url,
             "github": author.github,
             "profileImage": author.profileImage
@@ -38,6 +39,7 @@ def get_authors(request):
         "url": f"http://{request.get_host()}/authors/{author.pk}",
         "host": f"http://{request.get_host()}/",
         "displayName": author.display_name,
+        "username": author.username,
         "github": author.github_link,
         "profileImage": author.profile_image
       })

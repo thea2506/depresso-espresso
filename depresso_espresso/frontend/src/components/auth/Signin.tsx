@@ -30,8 +30,8 @@ const myToast: ToastOptions = {
  * @returns The rendered signup page.
  */
 const Signin = () => {
-  const inputs: string[] = ["Display Name", "Password"];
-  const [displayName, setDisplayName] = useState<string>("");
+  const inputs: string[] = ["Username", "Password"];
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
   const nav = useNavigate();
@@ -48,8 +48,8 @@ const Signin = () => {
    */
   const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "Display Name") {
-      setDisplayName(value);
+    if (name === "Username") {
+      setUsername(value);
     } else if (name === "Password") {
       setPassword(value);
     }
@@ -63,7 +63,7 @@ const Signin = () => {
     event.preventDefault();
     try {
       const formField = new FormData();
-      formField.append("displayName", displayName);
+      formField.append("username", username);
       formField.append("password", password);
 
       const response = await axios.post("/signin", formField);

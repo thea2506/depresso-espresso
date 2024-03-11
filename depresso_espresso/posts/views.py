@@ -194,6 +194,7 @@ def delete_comment(request):
     return JsonResponse(data)
   
 def edit_post(request):
+  '''Edit a post'''
   data = {}
   postid = request.POST.get('postid')
 
@@ -212,7 +213,9 @@ def edit_post(request):
   return JsonResponse(data)
 
 def share_post(request):
+  '''Share a post'''
   data = {}
+  
   postid = request.POST.get('postid')
   postauthorid = request.POST.get('postauthorid')
   authorid = request.POST.get('authorid')
