@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 // import { PostModel } from "../data/PostModel";
 // import PostList from "../profile/PostList";
 
-import { AuthContext } from "../../App";
+import  AuthContext from "../../App";
 import AuthorSearch from "../data/AuthorSearch";
 
 const Discover = () => {

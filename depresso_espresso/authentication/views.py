@@ -21,6 +21,7 @@ def register(request):
        returns: JSON data including success status + errors if applicable'''  
     if request.method == 'POST':  
         data ={}
+        print("HERE")
         form = Register(request.POST)
         
         if form.is_valid():

@@ -2,7 +2,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
-from django.contrib.auth import authenticate
 from .models import RegisterConfig
 
 # https://www.youtube.com/watch?v=lHYzmlx2Vso&list=PLbMO9c_jUD44i7AkA4gj1VSKvCFIf59fb&index=7 Django Tutorial - User Registration & Sign Up Page #7 by Python Lessons
@@ -14,13 +13,13 @@ class Register(UserCreationForm):
     class Meta:
         model = get_user_model()
         
-        fields = ("displayName", "password1", "password2")
+        fields = ("username", "displayName", "password1", "password2")
 
     def save(self, host, commit=True):
+        print("HEREEEEEEEEEEEE")
+        print("displayname:", self.cleaned_data["displayName"])
         user = super(Register, self).save(commit=False)
-
-        user.username = self.cleaned_data["displayName"]
-        user.displayName = self.cleaned_data["displayName"]
+        
 
         register_config = (RegisterConfig.objects.all())[:1]
         if len(register_config) == 0:
@@ -31,7 +30,8 @@ class Register(UserCreationForm):
         else:
             user.allow_register = False
 
-        
+        user.username = self.cleaned_data["username"]
+        user.displayName = self.cleaned_data["displayName"]
         user.host = f"http://{host}/"
         user.set_password(self.cleaned_data["password1"])
         user.url = f"http://{host}/author/{user.id}"

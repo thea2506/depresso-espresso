@@ -69,6 +69,7 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
               <UserDisplay
                 username={author.displayName}
                 user_img_url={author.profileImage}
+                link={author.url}
               />
             </div>
           ))}
