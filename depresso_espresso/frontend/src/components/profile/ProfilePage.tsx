@@ -123,18 +123,18 @@ const ProfilePage = () => {
       </ul>
 
       {/* Github Topic */}
-      {currentTopic === "GitHub" && githubLink != null && (
+      {currentTopic === "GitHub" && githubLink ? (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
-      )}
+      ) : null}
 
-      {currentTopic === "GitHub" && githubLink == null && (
+      {currentTopic === "GitHub" && !githubLink ? (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
-      )}
+      ) : null}
 
       {/* Followers Topic */}
 
