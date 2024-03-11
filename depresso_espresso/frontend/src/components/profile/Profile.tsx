@@ -98,25 +98,6 @@ const Profile = ({
   }
 
   /**
-   * Checks if the given URL is a valid image URL.
-   * @param {string} imageURL - The URL of the image to check.
-   */
-  const checkImageURL = (imageURL: string) => {
-    const img = new Image();
-    img.src = imageURL;
-    if (img.complete) {
-      return true;
-    } else {
-      img.onload = () => {
-        return true;
-      };
-      img.onerror = () => {
-        return false;
-      };
-    }
-  };
-
-  /**
    * Saves the new profile information to the database.
    */
   const saveEdits = async () => {
