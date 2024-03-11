@@ -9,8 +9,15 @@ export interface PostModel {
   description: string;
   contenttype: string;
   content: string;
+<<<<<<< HEAD
   count: number;
   published: string;
+=======
+  authorid: string;
+  commentcount: number;
+  sharecount: number;
+  publishdate: string;
+>>>>>>> 2e4b932bf163ceb21552df24c9597bde6bd64de1
   visibility: string;
   likes?: number;
 }

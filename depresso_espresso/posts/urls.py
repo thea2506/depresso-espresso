@@ -12,7 +12,8 @@ urlpatterns = [
     path("make_comment", views.make_comment, name="make_comment"),
     path("get_post_comments", views.get_post_comments, name="get_post_comments"),
     path("delete_post", views.delete_post, name="delete_post"),
-    path("delete_comment", views.delete_comment, name="delete_comment")
+    path("delete_comment", views.delete_comment, name="delete_comment"),
+    path("share_post", views.share_post, name="share_post")
 ]
 
 

@@ -26,6 +26,7 @@ class Post(models.Model):
     count = models.IntegerField(db_column='commentCount', blank=True, null=True, default=0)
     comments = models.URLField() # URL to first page of comments
     liked_by = models.ManyToManyField(Author, related_name='liked_posts')
+    shared_by = models.ManyToManyField(Author, symmetrical=False, related_name='shared_posts', blank=True)
 
     class Meta:
         managed = True
@@ -42,7 +43,7 @@ class Comment(models.Model):
     editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)
 
     commentlikecount = models.IntegerField(db_column='commentLikeCount', blank=True, null=True)
-    liked_by = models.ManyToManyField(Author, related_name='liked_comments')
+    liked_by = models.ManyToManyField(Author, symmetrical=False, related_name='liked_comments')
 
     class Meta:
         managed = True

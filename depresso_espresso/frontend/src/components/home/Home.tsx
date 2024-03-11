@@ -60,7 +60,6 @@ const Home = () => {
             likes: rawpost.fields.liked_by.length,
           };
         });
-        console.log("postmodels", postModels);
         setPosts(postModels);
       } catch (error) {
         console.error(error);

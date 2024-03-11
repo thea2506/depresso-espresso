@@ -116,7 +116,6 @@ def make_comment(request):
 
             form.save(commit = True)
             data['success'] = True  
-            print("great success")
             comment.save()
             return JsonResponse(data) 
         else:
@@ -128,7 +127,6 @@ def make_comment(request):
 
 def get_post_comments(request):
   '''Get all comments for a post'''
-  print('request', request.user)
 
   data = json.loads(request.body)
   postid = data.get('postId')
@@ -158,12 +156,10 @@ def delete_post(request):
   if request.user == post.author:
     post.delete()
     data['success'] = True  
-    print("great deletion success")
     return JsonResponse(data) 
   
   else:
     data['success'] = False
-    print("horrible deletion failure")
     return JsonResponse(data)
 
 def delete_comment(request):
@@ -173,22 +169,20 @@ def delete_comment(request):
   data = json.loads(request.body)
   commentid = data.get('commentid')
   comment = Comment.objects.filter(commentid=commentid)
-  print('request', request.user, 'comment', comment)
 
   if request.user == comment.authorid.user:
     comment.delete()
     data['success'] = True  
-    print("great deletion success")
     return JsonResponse(data) 
   
   else:
     data['success'] = False
-    print("horrible deletion failure")
     return JsonResponse(data)
   
 def edit_post(request):
+  '''Edit a post'''
   data = {}
-  postid = request.POST.get('postid') 
+  postid = request.POST.get('postid')
 
   post = get_object_or_404(Post, pk=postid)
   if request.method == 'POST':
@@ -198,5 +192,38 @@ def edit_post(request):
       post.visibility = request.POST.get('visibility')
       post.contentType = request.POST.get('contentType')
       post.save()
+
   data['success'] = True
+
+  return JsonResponse(data)
+
+def share_post(request):
+  '''Share a post'''
+  data = {}
+  
+  postid = request.POST.get('postid')
+  postauthorid = request.POST.get('postauthorid')
+  authorid = request.POST.get('authorid')
+
+  post = Post.objects.get(pk=postid)
+  author = Author.objects.get(id=authorid)
+  print(request.user, post, postid)
+  print(author, post.shared_by.all(), author in post.shared_by.all())
+
+  if request.method == 'POST':
+      if authorid == postauthorid:
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Sharing own post"
+
+      elif author not in post.shared_by.all():
+        print("great sharing success")
+        post.shared_by.add(authorid)
+        data['success'] = True
+
+      elif author in post.shared_by.all():
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Already shared"
+
   return JsonResponse(data)

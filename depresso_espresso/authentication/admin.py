@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author
+from .models import Author, RegisterConfig, Following, FollowRequest
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -8,16 +8,28 @@ from django.core.exceptions import ValidationError
 # Register your models here.
 # User registration: https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Admin_site 2/17/2024
 # https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#a-full-example 2/19/2024
+# For only allowing 1 RegisterConfiguration: https://stackoverflow.com/questions/39412968/allow-only-one-instance-of-a-model-in-django answer from Ivan Semochkin 3/9/2024
+
+class RegisterConfigForm(forms.ModelForm):
+    """A form for configuring optional user registration admin perms"""
+    class Meta:
+        model = RegisterConfig
+        fields = ('requireRegisterPerms',)
+
+    def save(self):
+        if not self.pk and RegisterConfig.objects.exists():
+            raise ValidationError("Only one RegisterConfig instance allowed")
+        return super(RegisterConfig, self).save()
 
 
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. From django documentation."""
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-
+    
     class Meta:
         model = Author
-        fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends")
+        fields = "__all__"
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -48,8 +60,20 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 class AuthorAdmin(admin.ModelAdmin):
-    fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password")
+    fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "is_active", "password", "allowRegister")
+
+class RegisterConfigAdmin(admin.ModelAdmin):
+    fields = ('requireRegisterPerms',)
 
     # todo: https://stackoverflow.com/questions/18108521/how-to-show-a-many-to-many-field-with-list-display-in-django-admin
 
+@admin.register(Following)
+class FollowingAdmin(admin.ModelAdmin):
+    list_display = ('authorid', 'followingid', 'areFriends')
+
+@admin.register(FollowRequest)
+class FollowRequestAdmin(admin.ModelAdmin):
+    list_display = ('requester', 'receiver')
+
 admin.site.register(Author, AuthorAdmin)
+admin.site.register(RegisterConfig, RegisterConfigAdmin)

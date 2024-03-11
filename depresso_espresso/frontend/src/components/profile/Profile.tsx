@@ -72,6 +72,9 @@ const Profile = ({
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
+      case "display_name":
+        setDisplayName(value);
+        break;
       case "github":
         setGithub(value);
         break;
@@ -114,7 +117,7 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("displayName", newDisplayName);
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
-    await axios.post(`/edit_profile/${id}`, formField);
+    await axios.post(`${id}/edit_profile`, formField);
     setLoading(!loading);
   };
   //#endregion
@@ -173,7 +176,6 @@ const Profile = ({
                   id={field.value}
                   defaultValue={field.placeholder}
                   className="flex-grow px-4 py-4 bg-accent-3 rounded-xl"
-                  disabled={field.value === "display_name"}
                   onChange={(e) => extractValue(e.target.value, field.value)}
                 />
               </div>

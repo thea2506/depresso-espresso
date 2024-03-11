@@ -3,6 +3,8 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from django.contrib.auth import authenticate
+from .models import RegisterConfig
+from .models import Author
 
 class Login(LoginView):
     permission_classes = (permissions.AllowAny)
@@ -14,7 +16,17 @@ class Login(LoginView):
         fields = ("username", "password" )
 
     def post(request):
-        username = request.POST["displayName"]
+        username = request.POST["username"]
         password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
+
+        unauthenticated_user = Author.objects.filter(username = username)
+
+        if len(unauthenticated_user.values()) == 1:
+            if (unauthenticated_user.values())[0]["allowRegister"] == False:
+                user = None # force authenticaiton failure if user is not allowed registration access yet (Could eventually show the user an error)
+                return user
+            
+                
+        user = authenticate(request, username=username, password=password) # if execution reaches this point the user does not exist in database
         return user
+        

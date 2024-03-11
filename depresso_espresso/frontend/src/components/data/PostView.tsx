@@ -54,15 +54,43 @@ const PostView = ({
 
   //#region functions
   const handleCommentClick = () => {
+    console.log("Comments clicked");
     setShowComments(!showComments);
   };
 
-  const handleShareClick = () => {
+  const handleShareClick = async () => {
     console.log("Share clicked");
+
+    const formField = new FormData();
+    formField.append("postid", post.postid);
+    formField.append("postauthorid", post.authorid);
+    formField.append("authorid", authorId);
+    try {
+      const response = await axios.post("/share_post", formField );
+      if (response.data.success) {
+        console.log("Post shared");
+        setRefresh(!refresh);
+      }
+      else if (response.data.success === false && response.data.message === "Already shared") {
+        console.log("Post already shared");
+        setRefresh(!refresh);
+      }
+      else if (response.data.success === false && response.data.message === "Sharing own post") {
+        console.log("You are trying to share your own post");
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
 
+<<<<<<< HEAD
   const handleLikeToggle = async () => {
     await axios.post("/toggle_like", { postid: post.id });
+=======
+  const handleLikeToggle = () => {
+    console.log("Like toggle clicked");
+>>>>>>> 2e4b932bf163ceb21552df24c9597bde6bd64de1
     setRefresh(!refresh);
   };
 
@@ -104,7 +132,10 @@ const PostView = ({
       count: post.count,
       onClick: handleCommentClick,
     },
-    { icon: <GoShare />, onClick: handleShareClick },
+    { icon: <GoShare />, 
+      count: post.sharecount,
+      onClick: handleShareClick,
+    },
   ];
 
   return (

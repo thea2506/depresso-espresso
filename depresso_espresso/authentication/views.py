@@ -12,6 +12,9 @@ from django.http import JsonResponse
 from django.contrib.sessions.models import Session
 from authentication.models import Author
 from django.core import serializers
+from .models import RegisterConfig
+
+
 
 def register(request):
     '''Handles a form submission POST request to register
@@ -22,13 +25,11 @@ def register(request):
         
         if form.is_valid():
             form.save(request.get_host())
-            
             data['success'] = True  
             return JsonResponse(data)  
         else:
             errors = []
             for error in list(form.errors.values()):              
-                print(request, form.errors.items(), error)
                 errors.append(error)  
 
             data['errors'] = errors   
@@ -44,8 +45,8 @@ def loginUser(request):
        returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
         user = Login.post(request)
-        login(request, user)
         if user is not None:
+            login(request, user)
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'success': False})
@@ -56,10 +57,8 @@ def logoutUser(request):
 
     logout(request)
     if request.user.is_authenticated:
-        print("User is still logged in")
         data['success'] = False
     else:
-        print("User is not still logged in")
         data['success'] = True
     return JsonResponse(data)
 
@@ -74,6 +73,7 @@ def curUser(request):
 
             data["type"] = user.type
             data["id"] = user.id
+            data["username"] = user.username
             data["displayName"] = user.displayName
             data["host"] = user.host
             data["url"] = user.url

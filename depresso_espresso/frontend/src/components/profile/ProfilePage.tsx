@@ -8,9 +8,10 @@ import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
-// import PostList from "./PostList";
-import { PostModel } from "../data/PostModel";
 import PostList from "./PostList";
+import FollowerList from "./FollowerList";
+import { PostModel } from "../data/PostModel";
+import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 /**
@@ -31,6 +32,7 @@ const ProfilePage = () => {
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
   const [loading, setLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostModel[]>([]);
+  const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -54,6 +56,31 @@ const ProfilePage = () => {
         console.error("An error occurred", error);
       }
     };
+
+    const fetchFollowers = async () => {
+      try {
+        console.log("authorId", authorId);
+        const response = await axios.get(`${authorId}/get_followers`);
+        const data = response.data;
+        console.log("data", data[0]);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const followerModels = data?.map((rawauthor: any) => ({
+          type: rawauthor.type,
+          id: rawauthor.id,
+          url: rawauthor.url,
+          host: rawauthor.host,
+          displayName: rawauthor.displayName,
+          username: rawauthor.username,
+          github: rawauthor.github,
+          profileImage: rawauthor.profileImage,
+        }));
+        setFollowers(followerModels);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchFollowers();
 
     const retrievePosts = async () => {
       try {
@@ -137,6 +164,15 @@ const ProfilePage = () => {
       ) : null}
 
       {/* Followers Topic */}
+      {currentTopic === "Followers" && followers.length > 0 && (
+        <FollowerList followers={followers} />
+      )}
+
+      {currentTopic === "Followers" && followers.length == 0 && (
+        <div className="flex items-center justify-center text-lg opacity-80">
+          No followers yet...
+        </div>
+      )}
 
       {/* Posts Topic */}
       {currentTopic === "Posts" && posts.length > 0 && (
