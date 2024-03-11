@@ -11,6 +11,9 @@ from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.contrib.auth import get_user_model
+from .models import RegisterConfig
+
+
 
 def register(request):
     '''Handles a form submission POST request to register
@@ -21,6 +24,8 @@ def register(request):
         form = Register(request.POST)
         
         if form.is_valid():  
+
+            
             user = form.save()
             
             login(request, user)

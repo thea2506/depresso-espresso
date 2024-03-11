@@ -10,3 +10,8 @@ class Author(AbstractUser):
     friends = models.ManyToManyField("self", blank=True)
     authorid = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     display_name = models.CharField(null=False, blank=False, max_length=50)
+    allow_register = models.BooleanField(null = False, blank = False)
+
+
+class RegisterConfig(models.Model):
+    require_register_perms = models.BooleanField(null = False, blank = False)

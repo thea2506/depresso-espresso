@@ -16,5 +16,7 @@ class Login(LoginView):
     def post(request):
         username = request.POST["username"]
         password = request.POST["password"]
+
+        #if (.values())["require_register_perms"] == True
         user = authenticate(request, username=username, password=password)
         return user
