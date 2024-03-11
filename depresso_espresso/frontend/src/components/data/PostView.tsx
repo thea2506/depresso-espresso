@@ -58,13 +58,13 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
 
   const handleLikeToggle = () => {
     setRefresh(!refresh);
-    axios.post("/toggle_like", { postid: post.postid });
+    axios.post("/toggle_like", { postid: post.id });
   };
 
   const handleDelete = async () => {
     try {
       const response = await axios.post("/delete_post", {
-        postid: post.postid,
+        postid: post.id,
       });
       if (response.data.success) {
         setRefresh(!refresh);
@@ -110,13 +110,11 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     },
     {
       icon: <GoComment />,
-      count: post.commentcount,
+      count: post.count,
       onClick: handleCommentClick,
     },
     { icon: <GoShare />, onClick: handleShareClick },
   ];
-  console.log("author", authorId);
-  console.log("author post", post.authorid);
 
   return (
     <animated.div
@@ -145,13 +143,12 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             />
           </div>
           <PostForm
-            username={username}
+            author={post.author}
             oldContent={post.content}
-            oldImageUrl={post.image_url}
-            oldImageFile={post.image_file}
+            oldImageFile={post.content}
             oldVisibility={post.visibility}
-            oldIsMarkdownEnabled={post.contenttype}
-            postId={post.postid}
+            oldContentType={post.contenttype}
+            postId={post.id}
             edit={true}
             refresh={refresh}
             setRefresh={setRefresh}
@@ -167,15 +164,15 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            username={post.username}
-            user_img_url={post.user_img_url}
-            link={`/authors/${post.authorid}`}
+            username={post.author.displayName}
+            user_img_url={post.author.profileImage}
+            link={`/authors/${post.author.id}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
             <p className="text-sm">
-              {formatDateString(post.publishdate.substring(0, 16))}
+              {formatDateString(post.published.substring(0, 16))}
             </p>
           </div>
         </div>
@@ -185,15 +182,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
           <Markdown>{mdContent}</Markdown>
         ) : (
           <p className="text-start">{post.content}</p>
-        )}
-
-        {/* Image - need to display currently not saved I think*/}
-        {post.image_url && (
-          <img
-            src={post.image_url}
-            alt="post"
-            className="w-full h-96 object-cover rounded-[1.4rem]"
-          />
         )}
 
         {post.image_file && (
@@ -221,14 +209,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             </div>
           ))}
 
-          {authorId === post.authorid && (
+          {authorId === post.author.id && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {authorId === post.authorid && (
+          {authorId === post.author.id && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}

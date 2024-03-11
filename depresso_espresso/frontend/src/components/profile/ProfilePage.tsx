@@ -8,7 +8,7 @@ import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
-import PostList from "./PostList";
+// import PostList from "./PostList";
 import { PostModel } from "../data/PostModel";
 //#endregion
 
@@ -66,17 +66,17 @@ const ProfilePage = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = postData.map((rawpost: any) => {
           return {
-            authorid: rawpost.fields.authorid,
-            content: rawpost.fields.content,
-            postid: rawpost.pk,
-            likes: rawpost.fields.liked_by.length,
-            commentcount: rawpost.fields.commentcount,
-            username: rawpost.fields.authorname,
-            publishdate: rawpost.fields.publishdate,
-            visibility: rawpost.fields.visibility,
-            image_url: rawpost.fields.image_url,
-            image_file: rawpost.fields.image_file,
-            contenttype: rawpost.fields.contenttype,
+            authorid: rawpost.fields.author.id,
+            // content: rawpost.fields.content,
+            // postid: rawpost.pk,
+            // likes: rawpost.fields.liked_by.length,
+            // commentcount: rawpost.fields.commentcount,
+            // username: rawpost.fields.authorname,
+            // publishdate: rawpost.fields.publishdate,
+            // visibility: rawpost.fields.visibility,
+            // image_url: rawpost.fields.image_url,
+            // image_file: rawpost.fields.image_file,
+            // contenttype: rawpost.fields.contenttype,
           };
         });
         setPosts(postModels);
@@ -136,7 +136,7 @@ const ProfilePage = () => {
       {/* Followers Topic */}
 
       {/* Posts Topic */}
-      {currentTopic === "Posts" && posts.length > 0 && (
+      {/* {currentTopic === "Posts" && posts.length > 0 && (
         <PostList
           posts={posts}
           refresh={loading}
@@ -148,7 +148,7 @@ const ProfilePage = () => {
         <div className="flex items-center justify-center text-lg opacity-80">
           No posts yet...
         </div>
-      )}
+      )} */}
     </animated.div>
   );
 };

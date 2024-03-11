@@ -64,7 +64,7 @@ const CommentList = ({
     const fetchComments = async () => {
       try {
         const response = await axios.post("/get_post_comments", {
-          postId: post.postid,
+          postId: post.id,
         });
         console.log("comments resp", response.data);
         if (response.status === 200) {
@@ -98,13 +98,13 @@ const CommentList = ({
 
     fetchProfile();
     fetchComments();
-  }, [post.postid, refresh]);
+  }, [post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
       const formField = new FormData();
       formField.append("comment", comment);
-      formField.append("postid", post.postid);
+      formField.append("postid", post.id);
 
       const response = await axios.post("/make_comment", formField);
 

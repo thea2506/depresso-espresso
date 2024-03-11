@@ -1,19 +1,17 @@
-export interface PostModel {
-  username: string;
-  user_img_url?: string;
+import { AuthorModel } from "./AuthorModel";
 
+export interface PostModel {
+  author: AuthorModel;
   title?: string;
-  postid: string;
+  id: string;
   source?: string;
   origin?: string;
-  image_url?: string;
   image_file?: string;
-  description?: string;
+  description: string;
   contenttype: string;
   content: string;
-  authorid: string;
-  commentcount: number;
-  publishdate: string;
+  count: number;
+  published: string;
   visibility: string;
   likes?: number;
 }

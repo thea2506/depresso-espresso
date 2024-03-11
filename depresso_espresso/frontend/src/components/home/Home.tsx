@@ -7,11 +7,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
 import { PostModel } from "../data/PostModel";
 import PostList from "../profile/PostList";
+import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 const Home = () => {
-  const [displayName, setDisplayName] = useState<string>("");
-  const [image_url, setImage] = useState<string>("");
+  const [author, setAuthor] = useState<AuthorModel>({} as AuthorModel);
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [refresh, setRefresh] = useState(false);
 
@@ -27,8 +27,7 @@ const Home = () => {
         const response = await axios.get("/curUser");
         if (response.data.success == true) {
           const userData = response.data;
-          setDisplayName(userData.displayName);
-          setImage(userData.profileImage);
+          setAuthor(userData);
         }
       } catch (error) {
         console.error(error);
@@ -46,20 +45,19 @@ const Home = () => {
         const postModels = postData.map((rawpost: any) => {
           console.log("rawpost", rawpost);
           return {
-            username: rawpost.fields.author_username,
-            user_img_url: rawpost.fields.author_profile_image,
+            username: rawpost.fields.author.displayName,
+            // user_img_url: rawpost.fields.author_profile_image,
 
-            authorid: rawpost.fields.authorid,
-            content: rawpost.fields.content,
-            postid: rawpost.pk,
-            likes: rawpost.fields.liked_by.length,
-            commentcount: rawpost.fields.commentcount,
-            //username: rawpost.fields.authorname,
-            publishdate: rawpost.fields.publishdate,
-            visibility: rawpost.fields.visibility,
-            image_url: rawpost.fields.image_url,
-            contenttype: rawpost.fields.contenttype,
-            image_file: rawpost.fields.image_file,
+            // authorid: rawpost.fields.authorid,
+            // content: rawpost.fields.content,
+            // postid: rawpost.pk,
+            // likes: rawpost.fields.liked_by.length,
+            // commentcount: rawpost.fields.commentcount,
+            // publishdate: rawpost.fields.publishdate,
+            // visibility: rawpost.fields.visibility,
+            // image_url: rawpost.fields.image_url,
+            // contenttype: rawpost.fields.contenttype,
+            // image_file: rawpost.fields.image_file,
           };
         });
         console.log("postmodels", postModels);
@@ -77,8 +75,7 @@ const Home = () => {
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
       <ToastContainer />
       <PostForm
-        username={displayName}
-        user_img_url={image_url}
+        author={author}
         edit={false}
         refresh={refresh}
         setRefresh={setRefresh}
