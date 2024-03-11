@@ -16,16 +16,14 @@ class Register(UserCreationForm):
         fields = ("username", "displayName", "password1", "password2")
 
     def save(self, host, commit=True):
-        print("HEREEEEEEEEEEEE")
         print("displayname:", self.cleaned_data["displayName"])
         user = super(Register, self).save(commit=False)
-        
-
         register_config = (RegisterConfig.objects.all())[:1]
+
         if len(register_config) == 0:
-            register_config = RegisterConfig.objects.create(require_register_perms=False) # create new register config object that has its require_register_perms set to false by default (admin can change this setting)
+            register_config = RegisterConfig.objects.create(requireRegisterPerms=False) # create new register config object that has its require_register_perms set to false by default (admin can change this setting)
         
-        if (register_config.values())[0]["require_register_perms"] == False:
+        if (register_config.values())[0]["requireRegisterPerms"] == False:
             user.allow_register = True
         else:
             user.allow_register = False

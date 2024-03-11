@@ -25,10 +25,7 @@ def register(request):
         form = Register(request.POST)
         
         if form.is_valid():
-
-            
             form.save(request.get_host())
-            
             data['success'] = True  
             return JsonResponse(data)  
         else:

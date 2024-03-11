@@ -3,7 +3,6 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-      "postinstall": "cd depresso_espresso/frontend && npm install --include dev && npm run build",
-      "build": "webpack --config=Scripts/config/webpack.prod.js"
+      "postinstall": "cd depresso_espresso/frontend && npm install --include dev && npm run build"
     }
   }

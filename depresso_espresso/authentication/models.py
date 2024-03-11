@@ -11,11 +11,11 @@ class Author(AbstractUser):
     url = models.URLField(null = True, blank = True)
     github = models.URLField(null = True, blank = True)
     profileImage = models.URLField(null = True, blank = True)
-
-    follows = models.ManyToManyField("self", blank=True)
+    follows = models.ManyToManyField("self", blank=True) 
     friends = models.ManyToManyField("self", blank=True)
-    allow_register = models.BooleanField(null = False, blank = False)
+    allowRegister = models.BooleanField(null = False, blank = False, default=False)
+
 
 
 class RegisterConfig(models.Model):
-    require_register_perms = models.BooleanField(null = False, blank = False)
+    requireRegisterPerms = models.BooleanField(null = False, blank = False)

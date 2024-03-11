@@ -14,7 +14,7 @@ class RegisterConfigForm(forms.ModelForm):
     """A form for configuring optional user registration admin perms"""
     class Meta:
         model = RegisterConfig
-        fields = ('require_register_perms',)
+        fields = ('requireRegisterPerms',)
 
     def save(self):
         if not self.pk and RegisterConfig.objects.exists():
@@ -26,10 +26,10 @@ class UserCreationForm(forms.ModelForm):
     """A form for creating new users. From django documentation."""
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-
+    
     class Meta:
         model = Author
-        fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends")
+        fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "allowRegister")
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -60,7 +60,7 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 class AuthorAdmin(admin.ModelAdmin):
-    fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password")
+    fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password", "allowRegister")
 
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('require_register_perms',)
