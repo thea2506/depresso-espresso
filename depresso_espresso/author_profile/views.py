@@ -64,5 +64,39 @@ def edit_profile(request, authorid):
           author.profileImage = data['profileImage']
           author.save()
           return JsonResponse({"message": "Profile updated successfully"})
+        else:
+          return send_follow_request(request, authorid)
         
     return JsonResponse({"message": "Profile not updated"})
+
+def send_follow_request(request, authorid):
+    requestedAuthor = Author.objects.get(id=authorid)
+    print(request.user, "is sending a follow request to", requestedAuthor)
+    if request.method == "POST":
+        if request.user not in requestedAuthor.followRequests.all():
+          requestedAuthor.followRequests.add(request.user)
+          
+          return JsonResponse({"message": "Follow request sent"})
+        
+    return JsonResponse({"message": "Follow request not sent"})
+
+def respond_to_follow_request(request):
+    data = request.POST
+    username = data["username"]
+    print(username)
+    requestedAuthor = Author.objects.get(username=username)
+    print(request.user, "is sending a follow request to", requestedAuthor)
+    if request.method == "POST":
+        if data["decision"] == "accept":
+          
+          print("Follow request from", requestedAuthor, "accepted by", request.user)
+          return JsonResponse({"message": "Follow request accepted",
+                               "success": True})
+        
+        elif data["decision"] == "declined":
+          
+          print("Follow request from", requestedAuthor, "declined by", request.user)
+          return JsonResponse({"message": "Follow request declined",
+                               "success": True})
+        
+    return JsonResponse({"message": "Follow request not sent"})

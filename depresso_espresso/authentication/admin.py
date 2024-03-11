@@ -29,7 +29,7 @@ class UserCreationForm(forms.ModelForm):
     
     class Meta:
         model = Author
-        fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "follows", "friends", "allowRegister")
+        fields = "__all__"
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -60,7 +60,7 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 class AuthorAdmin(admin.ModelAdmin):
-    fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "follows", "friends", "is_active", "password", "allowRegister")
+    fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "follows", "followRequests", "friends", "is_active", "password", "allowRegister")
 
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('requireRegisterPerms',)

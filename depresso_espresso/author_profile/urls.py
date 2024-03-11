@@ -12,4 +12,6 @@ urlpatterns = [
     path('get_author_posts', post_views.get_author_posts, name='author_posts'),
     path('authors/images/<str:image_file>', views.get_image, name='image_file'),
     path('edit_profile/<str:authorid>', views.edit_profile, name='edit_profile'),
+    path('send_follow_request/<str:authorid>', views.send_follow_request, name='send_follow_request'),
+    path('respond_to_follow_request', views.respond_to_follow_request, name='respond_to_follow_request')
 ]

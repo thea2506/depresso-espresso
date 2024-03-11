@@ -1,6 +1,7 @@
 //#regioin imports
 import defaultImg from "../../assets/images/default_profile.jpg";
 import { Button } from "../Button";
+import axios from "axios";
 //#endregion
 
 //#region interface
@@ -25,8 +26,20 @@ interface NotificationProps {
  */
 const Notification = ({ username, type }: NotificationProps) => {
   //#region functions
-  const handleAccept = () => {
-    console.log("Accepted");
+  const handleAccept = async () => {
+    console.log("Accept clicked");
+
+    const formField = new FormData();
+    formField.append("username", username);
+    formField.append("decision", "accept");
+    try {
+      const response = await axios.post("/respond_to_follow_request", formField );
+      if (response.data.success) {
+        console.log(response.data.message);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
 
   const handleDecline = () => {
