@@ -65,14 +65,21 @@ def make_post(request):
 
 def get_all_posts(request):
   posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+  authors = [Author.objects.get(id=(post.author.id)) for post in posts]
   data = serializers.serialize('json', posts)
-  return HttpResponse(data, content_type='application/json')
+  author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
+  results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  return HttpResponse(results, content_type='application/json')
 
 def get_author_posts(request):
-  posts = Post.objects.filter(author=request.user).order_by('-published')
+  author_id = request.GET.get('authorid')
+  author = [Author.objects.get(id=author_id)]
+  posts = Post.objects.filter(author=author[0]).order_by('-published')
   data = serializers.serialize('json', posts)
-  return HttpResponse(data, content_type='application/json')
+  author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
+  results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  return HttpResponse(results, content_type='application/json')
 
 def toggle_like(request):
   data = json.loads(request.body)

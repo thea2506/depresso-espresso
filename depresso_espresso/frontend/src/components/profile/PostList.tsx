@@ -1,5 +1,6 @@
 //#region imports
 import React from "react";
+import { useState } from "react";
 import { PostModel } from "../data/PostModel";
 import { PostView } from "../data/PostView";
 import { twMerge } from "tailwind-merge";
@@ -18,21 +19,21 @@ interface PostListProps {
 //#endregion
 
 const PostList = ({ posts, refresh, setRefresh, className }: PostListProps) => {
-  const [curUser, setCurUser] = React.useState({} as AuthorModel);
+  const [curUser, setCurUser] = useState({} as AuthorModel);
 
   useEffect(() => {
     const retrieveData = async () => {
       try {
         const response = await axios("/curUser");
         if (response.data.success) {
-          setCurUser(response.data.curUser);
+          setCurUser(response.data);
         }
       } catch (error) {
         console.error(error);
       }
     };
     retrieveData();
-  }, [curUser]);
+  }, []);
 
   return (
     <ul

@@ -1,7 +1,6 @@
-import { AuthorModel } from "./AuthorModel";
-
 export interface PostModel {
-  author: AuthorModel;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  author: any;
   title?: string;
   id: string;
   source?: string;

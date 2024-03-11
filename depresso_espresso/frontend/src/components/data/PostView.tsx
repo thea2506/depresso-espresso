@@ -155,9 +155,9 @@ const PostView = ({
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            username={post.author.displayName}
-            user_img_url={post.author.profileImage}
-            link={`/authors/${post.author.id}`}
+            username={post.author.fields.displayName}
+            user_img_url={post.author.fields.profileImage}
+            link={`/authors/${post.author.pk}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
@@ -200,14 +200,14 @@ const PostView = ({
             </div>
           ))}
 
-          {curUser.id === post.author.id && (
+          {curUser.id === post.author.pk && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {curUser.id === post.author.id && (
+          {curUser.id === post.author.pk && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}

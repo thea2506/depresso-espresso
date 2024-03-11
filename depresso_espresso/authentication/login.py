@@ -14,7 +14,7 @@ class Login(LoginView):
         fields = ("username", "password" )
 
     def post(request):
-        username = request.POST["username"]
+        username = request.POST["displayName"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
         return user

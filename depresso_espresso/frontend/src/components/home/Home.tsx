@@ -7,11 +7,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
 import { PostModel } from "../data/PostModel";
 import PostList from "../profile/PostList";
-import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 const Home = () => {
-  const [author, setAuthor] = useState<AuthorModel>({} as AuthorModel);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [author, setAuthor] = useState<any>({});
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [refresh, setRefresh] = useState(false);
 
@@ -40,15 +40,13 @@ const Home = () => {
     const retrievePosts = async () => {
       try {
         const response = await axios.get("/get_all_posts");
-        const postData = response.data;
+        const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = postData.map((rawpost: any) => {
-          console.log("rawpost", rawpost);
+        const postModels = allData.posts.map((rawpost: any, index: number) => {
+          const author = allData.authors[index];
+          author.fields.id = author.pk;
           return {
-            author: rawpost.fields.author,
-            authorid: rawpost.fields.author.id,
-            username: rawpost.fields.author.displayName,
-            user_img_url: rawpost.fields.author.profileImage,
+            author: author,
 
             id: rawpost.fields.id,
             contenttype: rawpost.fields.contentType,

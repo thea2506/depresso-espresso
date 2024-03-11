@@ -287,7 +287,7 @@ const PostForm = ({
         )}
 
         {/* Options */}
-        <div className="flex items-center justify-between gap-x-4">
+        <div className="flex items-center justify-between w-full gap-x-4">
           <div className="flex gap-x-4">
             <FaLock className="w-6 h-7 text-primary" />
             <select
