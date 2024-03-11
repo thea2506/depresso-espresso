@@ -63,7 +63,7 @@ class AuthorAdmin(admin.ModelAdmin):
     fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password", "allowRegister")
 
 class RegisterConfigAdmin(admin.ModelAdmin):
-    fields = ('require_register_perms',)
+    fields = ('requireRegisterPerms',)
 
     # todo: https://stackoverflow.com/questions/18108521/how-to-show-a-many-to-many-field-with-list-display-in-django-admin
 

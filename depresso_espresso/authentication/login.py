@@ -20,14 +20,14 @@ class Login(LoginView):
         password = request.POST["password"]
 
         unauthenticated_user = Author.objects.filter(username = username)
+        print("authenticated suer:", len(unauthenticated_user.values()))
 
-        if len(unauthenticated_user) == 1:
-            if (unauthenticated_user.values())[0]["allow_register"] == True:
-                user = authenticate(request, username=username, password=password) # if execution reaches this point user exists in the database and was granted registrationa access
-            else:
-                user = authenticate(request, username=username, password="0") # force authenticaiton failure if user is not allowed registration access yet (Could eventually show the user an error)
+        if len(unauthenticated_user.values()) == 1:
+            if (unauthenticated_user.values())[0]["allowRegister"] == False:
+                user = None # force authenticaiton failure if user is not allowed registration access yet (Could eventually show the user an error)
+                return user
+            
                 
-        #if (.values())["require_register_perms"] == True
         user = authenticate(request, username=username, password=password) # if execution reaches this point the user does not exist in database
         return user
         

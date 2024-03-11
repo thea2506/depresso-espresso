@@ -47,8 +47,8 @@ def loginUser(request):
        returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
         user = Login.post(request)
-        login(request, user)
         if user is not None:
+            login(request, user)
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'success': False})

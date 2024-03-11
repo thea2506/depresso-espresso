@@ -23,7 +23,7 @@ class Register(UserCreationForm):
         if len(register_config) == 0:
             register_config = RegisterConfig.objects.create(requireRegisterPerms=False) # create new register config object that has its require_register_perms set to false by default (admin can change this setting)
         
-        if (register_config.values())[0]["requireRegisterPerms"] == False:
+        elif (register_config.values())[0]["requireRegisterPerms"] == False:
             user.allow_register = True
         else:
             user.allow_register = False
