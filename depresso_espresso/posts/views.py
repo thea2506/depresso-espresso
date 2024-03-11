@@ -82,7 +82,7 @@ def get_all_posts(request):
   return HttpResponse(json.dumps(data_dict), content_type='application/json')
 
 def get_author_posts(request):
-  author_id = request.GET.get("id")
+  author_id = request.user.id
   posts = Post.objects.filter(authorid=author_id).order_by('-publishdate')
   data = serializers.serialize('json', posts)
   return HttpResponse(data, content_type='application/json')
