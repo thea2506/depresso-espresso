@@ -54,6 +54,7 @@ def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
 
 def edit_profile(request, authorid):
+    '''Edit the profile of an author'''
     author = Author.objects.get(id=authorid)
     if request.method == "POST":
         data = request.POST
@@ -70,6 +71,7 @@ def edit_profile(request, authorid):
     return JsonResponse({"message": "Profile not updated"})
 
 def send_follow_request(request, authorid):
+    '''Send a follow request to another author'''
     requestedAuthor = Author.objects.get(id=authorid)
     
     if request.method == "POST":
@@ -93,6 +95,7 @@ def send_follow_request(request, authorid):
                          "success": False})
 
 def respond_to_follow_request(request):
+    '''Respond to a follow request from another author'''
     data = request.POST
     username = data["username"]
     requestingAuthor = Author.objects.get(username=username)
@@ -100,10 +103,16 @@ def respond_to_follow_request(request):
     if request.method == "POST":
         if data["decision"] == "accept":
           FollowRequest.objects.filter(requester = requestingAuthor, receiver = request.user).delete()
-          Following.objects.create(authorid = requestingAuthor, followingid = request.user, areFriends = False)
           
-          message = "Follow request from", requestingAuthor.username, "accepted by", request.user.username
+          if Following.objects.filter(authorid = request.user, followingid = requestingAuthor).exists():
+            Following.objects.filter(authorid = request.user, followingid = requestingAuthor).update(areFriends = True)
+            Following.objects.create(authorid = requestingAuthor, followingid = request.user, areFriends = True)
+            message = "Follow request from", requestingAuthor.username, "accepted by", request.user.username, "and they are now friends"
 
+          else:
+            Following.objects.create(authorid = requestingAuthor, followingid = request.user, areFriends = False)
+            message = "Follow request from", requestingAuthor.username, "accepted by", request.user.username
+            
           print(message)
           return JsonResponse({"message": message,
                                "success": True})
@@ -119,6 +128,7 @@ def respond_to_follow_request(request):
     return JsonResponse({"message": "Error responding to follow request",})
 
 def get_followers(request, authorid):
+  '''Get all followers of an author'''
   if request.method == "GET":
     followers = Following.objects.filter(followingid=authorid)
     print(authorid, request.user)
@@ -140,17 +150,43 @@ def get_followers(request, authorid):
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
-# WIP
+def get_friends(request, authorid):
+  '''Get all friends of an author'''
+  if request.method == "GET":
+    friends = Following.objects.filter(authorid=authorid, areFriends=True)
+    data = []
+    for friend in friends:
+      user = Author.objects.get(id=friend.authorid.id)
+      data.append({
+        "type": user.type,
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage
+      })
+    return JsonResponse(data, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+  
 def unfollow(request):
+  '''Unfollow another author'''
   data = request.POST
   username = data["username"]
-  requestingAuthor = Author.objects.get(username=username)
-  print(requestingAuthor, request.user)
-  if request.method == "POST":
-      if data["decision"] == "accept":
-        requestingAuthor.follows.remove(request.user)
-        message = requestingAuthor.username, "unfollowed", request.user.username
+  unfollowedAuthor = Author.objects.get(username=username)
+  print(unfollowedAuthor, request.user)
 
+  if request.method == "POST":
+      if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).exists():
+        message = unfollowedAuthor.username, "unfollowed", request.user.username
+
+        if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).areFriends:
+          Following.objects.filter(authorid = unfollowedAuthor, followingid = request.user).update(areFriends = False)
+          message = unfollowedAuthor.username, "unfollowed", request.user.username, "and they are no longer friends"
+        
+        Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).delete()
         print(message)
         return JsonResponse({"message": message,
                               "success": True})
