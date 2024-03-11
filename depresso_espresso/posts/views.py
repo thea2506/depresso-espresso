@@ -207,5 +207,23 @@ def edit_post(request):
       post.visibility = request.POST.get('visibility')
       post.contenttype = request.POST.get('contenttype')
       post.save()
+
   data['success'] = True
+
+  return JsonResponse(data)
+
+def share_post(request):
+  data = {}
+  postid = request.POST.get('postid')
+  authorid = request.POST.get('authorid')
+
+  post = get_object_or_404(Post, pk=postid)
+  author = get_object_or_404(Author, pk=authorid)
+
+  if request.method == 'POST':
+      if request.user == post.authorid:
+        print("great sharing success (so far)")
+
+  data['success'] = True
+
   return JsonResponse(data)

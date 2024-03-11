@@ -8,7 +8,6 @@ class Post(models.Model):
     postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
     authorname = models.TextField(null = True)
 
-
     title = models.TextField(null = True)
     source = models.TextField(null = True)
     origin = models.TextField(null = True)
@@ -26,6 +25,7 @@ class Post(models.Model):
     visibility = models.TextField(null = True)
     commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)
     liked_by = models.ManyToManyField(Author, related_name='liked_posts')
+    shared_by = models.ManyToManyField(Author, related_name='shared_posts')
 
     class Meta:
         managed = True
