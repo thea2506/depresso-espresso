@@ -24,14 +24,12 @@ const Home = () => {
      */
     const retrieveData = async () => {
       try {
-
         const response = await axios.get("/curUser");
         if (response.data.success == true) {
           const userData = response.data;
           setDisplayName(userData.displayName);
           setImage(userData.profileImage);
         }
-
       } catch (error) {
         console.error(error);
       }
@@ -62,7 +60,6 @@ const Home = () => {
             image_url: rawpost.fields.image_url,
             contenttype: rawpost.fields.contenttype,
             image_file: rawpost.fields.image_file,
-
           };
         });
         console.log("postmodels", postModels);
@@ -72,7 +69,7 @@ const Home = () => {
       }
     };
     retrieveData();
-
+    retrievePosts();
   }, [navigate, refresh]);
 
   //#endregion

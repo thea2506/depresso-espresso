@@ -50,11 +50,11 @@ const CommentList = ({
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("/user_data");
+        const response = await axios.get("/curUser");
         const data = response.data;
 
         if (response.data.success) {
-          setAuthorImg(data.profile_image);
+          setAuthorImg(data.profileImage);
         }
       } catch (error) {
         console.error("An error occurred", error);
