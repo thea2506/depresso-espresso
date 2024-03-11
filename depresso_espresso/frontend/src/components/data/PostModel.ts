@@ -13,6 +13,7 @@ export interface PostModel {
   content: string;
   authorid: string;
   commentcount: number;
+  sharecount: number;
   publishdate: string;
   visibility: string;
   likes?: number;

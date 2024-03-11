@@ -54,6 +54,7 @@ const Home = () => {
             postid: rawpost.pk,
             likes: rawpost.fields.liked_by.length,
             commentcount: rawpost.fields.commentcount,
+            sharecount: rawpost.fields.shared_by.length,
             //username: rawpost.fields.authorname,
             publishdate: rawpost.fields.publishdate,
             visibility: rawpost.fields.visibility,

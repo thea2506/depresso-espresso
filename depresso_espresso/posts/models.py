@@ -24,8 +24,8 @@ class Post(models.Model):
 
     visibility = models.TextField(null = True)
     commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)
-    liked_by = models.ManyToManyField(Author, related_name='liked_posts')
-    shared_by = models.ManyToManyField(Author, related_name='shared_posts')
+    liked_by = models.ManyToManyField(Author, related_name='liked_posts', blank=True)
+    shared_by = models.ManyToManyField(Author, related_name='shared_posts', blank=True)
 
     class Meta:
         managed = True

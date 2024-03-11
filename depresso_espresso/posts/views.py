@@ -47,13 +47,13 @@ def make_post(request):
             naive_datetime = datetime.datetime.now()
             post.publishdate = make_aware(naive_datetime)
             post.commentcount = 0
-           
+
             post.authorname = request.user.displayName
             post.visibility = form.cleaned_data["visibility"]
 
             # images
             post.image_file = form.cleaned_data["image_file"]
-            print("image file add",post.image_file)
+            print("image file add", post.image_file)
 
             form.save(commit = True)
             data['success'] = True  
@@ -195,7 +195,7 @@ def delete_comment(request):
   
 def edit_post(request):
   data = {}
-  postid = request.POST.get('postid') 
+  postid = request.POST.get('postid')
 
   post = get_object_or_404(Post, pk=postid)
   if request.method == 'POST':
@@ -214,15 +214,28 @@ def edit_post(request):
 def share_post(request):
   data = {}
   postid = request.POST.get('postid')
+  postauthorid = request.POST.get('postauthorid')
   authorid = request.POST.get('authorid')
 
-  post = get_object_or_404(Post, pk=postid)
-  author = get_object_or_404(Author, pk=authorid)
+  post = Post.objects.get(pk=postid)
+  author = Author.objects.get(id=authorid)
+  print(request.user, post, postid)
+  print(author, post.shared_by.all(), author in post.shared_by.all())
 
   if request.method == 'POST':
-      if request.user == post.authorid:
-        print("great sharing success (so far)")
+      if authorid == postauthorid:
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Sharing own post"
 
-  data['success'] = True
+      elif author not in post.shared_by.all():
+        print("great sharing success")
+        post.shared_by.add(authorid)
+        data['success'] = True
+
+      elif author in post.shared_by.all():
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Already shared"
 
   return JsonResponse(data)
