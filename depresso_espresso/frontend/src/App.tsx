@@ -6,7 +6,7 @@ import Signin from "./components/auth/Signin.tsx";
 import Signup from "./components/auth/Signup.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
-import InboxPage from "./components/inbox/InboxPage.tsx";
+import NotiPage from "./components/notification/NotiPage.tsx";
 import Discover from "./components/discover/Discover.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 
@@ -67,10 +67,10 @@ function App() {
           }
         />
         <Route
-          path="/inbox"
+          path="/authors/:authorId/inbox"
           element={
             <General>
-              <InboxPage />
+              <NotiPage />
             </General>
           }
         />

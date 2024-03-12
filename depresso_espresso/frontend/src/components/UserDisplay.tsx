@@ -14,7 +14,11 @@ const UserDisplay = ({ username, user_img_url, link }: UserDisplayProps) => {
     >
       <img
         className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
-        src={user_img_url != null ? user_img_url : defaultProfileImage}
+        src={
+          user_img_url && user_img_url != ""
+            ? user_img_url
+            : defaultProfileImage
+        }
         alt="Profile picture"
       />
       <p className="text-primary">{username}</p>

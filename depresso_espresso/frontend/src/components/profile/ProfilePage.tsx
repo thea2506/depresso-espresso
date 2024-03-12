@@ -7,7 +7,6 @@ import { useParams } from "react-router-dom";
 import { Button } from "../Button";
 import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
-import { animated, useSpring } from "@react-spring/web";
 import PostList from "./PostList";
 import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
@@ -33,11 +32,6 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
-  const springs = useSpring({
-    from: { opacity: 0 },
-    to: { opacity: 1 },
-    config: { duration: 1000 },
-  });
 
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -120,10 +114,7 @@ const ProfilePage = () => {
 
   //#endregion
   return (
-    <animated.div
-      className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"
-      style={springs}
-    >
+    <div className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20">
       <Profile
         id={authorId}
         display_name={displayName}
@@ -188,7 +179,7 @@ const ProfilePage = () => {
           No posts yet... or maybe it is loading!
         </div>
       )}
-    </animated.div>
+    </div>
   );
 };
 
