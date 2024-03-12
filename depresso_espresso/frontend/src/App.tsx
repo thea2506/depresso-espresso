@@ -67,7 +67,7 @@ function App() {
           }
         />
         <Route
-          path="/inbox"
+          path="/authors/:authorId/inbox"
           element={
             <General>
               <NotiPage />
