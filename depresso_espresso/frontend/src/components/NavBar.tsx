@@ -121,7 +121,7 @@ const NavBar = () => {
         icon={<LiaSignOutAltSolid />}
         className={twMerge(
           iconStyling,
-          "hidden w-1/4 lg:flex items-end justify-end"
+          "hidden w-1/4 lg:flex items-center justify-center"
         )}
         onClick={handleLogout}
       />

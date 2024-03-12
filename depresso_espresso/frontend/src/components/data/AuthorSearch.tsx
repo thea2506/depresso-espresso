@@ -1,13 +1,15 @@
+//#region imports
 import axios from "axios";
-import React, { FC, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { AuthorModel } from "./AuthorModel";
 import { UserDisplay } from "../UserDisplay";
+import { useNavigate } from "react-router-dom";
+//#endregion
 
-interface AuthorSearchProps {}
-
-const AuthorSearch: FC<AuthorSearchProps> = () => {
+const AuthorSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [authors, setAuthors] = useState<AuthorModel[]>([]);
+  const nav = useNavigate();
 
   useEffect(() => {
     const fetchAuthors = async () => {
@@ -50,28 +52,33 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
   };
 
   return (
-    <div className="max-w-[600px] flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
+    <div className="flex flex-col items-center justify-center w-full gap-y-6 px-[4%] md:px-[8%]">
       <input
-        className="resize-none focus:outline-none w-full p-4 bg-secondary rounded-[1.4rem] overflow-none"
+        className="focus:outline-none w-full p-4 bg-secondary rounded-[1.4rem]"
         type="text"
         value={searchTerm}
         onChange={handleInputChange}
         placeholder="Search for users"
       />
-      <div className="w-full">
+      <div className="flex flex-col w-full gap-y-4">
         {authors &&
-          authors?.map((author) => (
-            <div
-              className="resize-none focus:outline-none w-full p-4 bg-accent-3 rounded-[1.4rem] overflow-none m-2 hover:bg-primary md:hover:bg-secondary-light hover:text-white"
-              onClick={() => (window.location.href = `/authors/${author.id}/`)}
-            >
-              <UserDisplay
-                username={author.displayName}
-                user_img_url={author.profileImage}
-                link={`/authors/${author.id}`}
-              />
-            </div>
-          ))}
+          authors?.map(
+            (author) =>
+              author.displayName &&
+              author.displayName != "" && (
+                <div
+                  className="focus:outline-none w-full px-4 py-6 bg-accent-3 rounded-[1.4rem] hover:bg-secondary-light hover:bg-opacity-40 transition ease-in-out duration-150 cursor-pointer flex"
+                  onClick={() => nav(`/authors/${author.id}`)}
+                >
+                  <UserDisplay
+                    username={author.displayName}
+                    user_img_url={author.profileImage}
+                    link={`/authors/${author.id}`}
+                    className="text-lg font-semibold text-secondary-dark hover:text-white"
+                  />
+                </div>
+              )
+          )}
       </div>
     </div>
   );

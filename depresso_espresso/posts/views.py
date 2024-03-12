@@ -226,3 +226,6 @@ def share_post(request):
         data['message'] = "Already shared"
 
   return JsonResponse(data)
+
+def frontend_explorer(request):
+  return render(request, "index.html")
