@@ -150,7 +150,7 @@ const ProfilePage = () => {
 
       {currentTopic === "GitHub" && !githubLink ? (
         <div className="flex items-center justify-center text-lg opacity-80">
-          Link your Github...
+          No Github link...
         </div>
       ) : null}
 

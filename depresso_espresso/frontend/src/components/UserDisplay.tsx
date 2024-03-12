@@ -4,12 +4,18 @@ interface UserDisplayProps {
   username: string;
   user_img_url: string | undefined;
   link: string;
+  className?: string;
 }
 
-const UserDisplay = ({ username, user_img_url, link }: UserDisplayProps) => {
+const UserDisplay = ({
+  username,
+  user_img_url,
+  link,
+  className,
+}: UserDisplayProps) => {
   return (
     <a
-      className="flex items-center justify-center gap-x-4"
+      className={`flex items-center justify-center gap-x-4 ${className}`}
       href={link}
     >
       <img
