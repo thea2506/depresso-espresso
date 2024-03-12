@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.core import serializers
 from posts.models import Post
 from authentication.models import Author, Following, FollowRequest
 
@@ -222,3 +223,15 @@ def check_follow_status(request):
   
 def front_end_inbox(request, authorid):
     return render(request, 'index.html')
+
+def get_follow_requests(request):
+    '''Get all follow requests for an author'''
+    authorid = request.GET.get("id")
+    if request.method == "GET":
+      follow_requests = FollowRequest.objects.filter(receiver=authorid)
+      requesters = []
+      for follow_request in follow_requests:
+        requester = follow_request.requester
+        requesters.append(requester)
+      res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName"])
+      return HttpResponse(res, content_type="application/json")

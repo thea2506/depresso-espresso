@@ -101,7 +101,7 @@ const Profile = ({
     };
     getCurrentUser();
     getFollowStatus();
-  }, [id, status]);
+  }, [id]);
 
   /**
    * Extracts the new value input by the user and updates the corresponding state.
@@ -166,8 +166,8 @@ const Profile = ({
     try {
       const response = await axios.post(`/send_follow_request/${id}`);
       if (response.data.success === true) {
-        toast.success("Follow request sent", myToast);
         setStatus("pending");
+        toast.update("Follow request sent", myToast);
       }
     } catch (error) {
       toast.error("Failed to send follow request", myToast);

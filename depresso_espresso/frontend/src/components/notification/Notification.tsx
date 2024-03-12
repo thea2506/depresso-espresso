@@ -6,10 +6,9 @@ import axios from "axios";
 
 //#region interface
 interface NotificationProps {
-  username: string;
-  type: "follow" | "share";
-  // This should be either a link to the user's profile or the post that was shared
-  link: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  author: any;
+  type: "follow" | "share" | "post" | "like" | "comment";
 }
 //#endregion
 
@@ -24,16 +23,27 @@ interface NotificationProps {
  *
  * @returns {JSX.Element} The rendered notification component.
  */
-const Notification = ({ username, type }: NotificationProps) => {
+const Notification = ({ author, type }: NotificationProps) => {
+  const messages = {
+    follow: "wants to follow you",
+    share: "shared a post with you",
+    post: "made a post",
+    like: "liked your post",
+    comment: "commented on your post",
+  };
+
   //#region functions
   const handleAccept = async () => {
     console.log("Accept clicked");
 
     const formField = new FormData();
-    formField.append("username", username);
+    formField.append("username", author.username);
     formField.append("decision", "accept");
     try {
-      const response = await axios.post("/respond_to_follow_request", formField );
+      const response = await axios.post(
+        "/respond_to_follow_request",
+        formField
+      );
       if (response.data.success) {
         console.log(response.data.message);
       }
@@ -46,10 +56,13 @@ const Notification = ({ username, type }: NotificationProps) => {
     console.log("Decline clicked");
 
     const formField = new FormData();
-    formField.append("username", username);
+    formField.append("username", author.username);
     formField.append("decision", "decline");
     try {
-      const response = await axios.post("/respond_to_follow_request", formField );
+      const response = await axios.post(
+        "/respond_to_follow_request",
+        formField
+      );
       if (response.data.success) {
         console.log(response.data.message);
       }
@@ -65,12 +78,14 @@ const Notification = ({ username, type }: NotificationProps) => {
       <div className="flex items-center gap-x-4">
         <img
           className="rounded-full w-14 h-14"
-          src={defaultImg}
+          src={author.profileImage || defaultImg}
           alt="Profile Picture"
         />
         <div>
-          <span className="font-semibold text-secondary-dark">{username} </span>
-          {type === "follow" ? "wants to follow you" : "shared a post with you"}
+          <span className="font-semibold text-secondary-dark">
+            {author.username}{" "}
+          </span>
+          {messages[type]}
         </div>
       </div>
 
