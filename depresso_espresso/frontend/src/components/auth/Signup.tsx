@@ -31,7 +31,7 @@ const myToast: ToastOptions = {
  */
 const Signup = () => {
   const inputs: string[] = ["Username", "Display Name", "Password", "Retype Password"];
-  const [username, setUserName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [retypePassword, setRetypePassword] = useState<string>("");
@@ -51,7 +51,7 @@ const Signup = () => {
   const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name == "Username"){
-      setUserName(value);
+      setUsername(value);
     }
     else if (name === "Display Name") {
       setDisplayName(value);

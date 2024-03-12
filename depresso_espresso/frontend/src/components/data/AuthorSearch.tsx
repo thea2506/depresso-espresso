@@ -23,14 +23,13 @@ const AuthorSearch: FC<AuthorSearchProps> = () => {
               url: rawauthor.url,
               host: rawauthor.host,
               displayName: rawauthor.displayName,
+              username: rawauthor.username,
               github: rawauthor.github,
               profileImage: rawauthor.profileImage,
             };
           }
         );
-        console.log("authorModels", authorModels);
         setAuthors(authorModels);
-        console.log("authors", authors);
       } catch (error) {
         console.error(error);
       }

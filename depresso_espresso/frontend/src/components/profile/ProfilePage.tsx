@@ -1,5 +1,5 @@
 //#region imports
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -9,7 +9,9 @@ import { Profile } from "./Profile";
 import { GitHubActionsList } from "../data/GithubActionsList";
 import { animated, useSpring } from "@react-spring/web";
 import PostList from "./PostList";
+import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
+import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 /**
@@ -30,6 +32,7 @@ const ProfilePage = () => {
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
   const [loading, setLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostModel[]>([]);
+  const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const springs = useSpring({
     from: { opacity: 0 },
     to: { opacity: 1 },
@@ -53,7 +56,31 @@ const ProfilePage = () => {
         console.error("An error occurred", error);
       }
     };
-    getData();
+
+    const fetchFollowers = async () => {
+      try {
+        console.log("authorId", authorId);
+        const response = await axios.get(`${authorId}/get_followers`);
+        const data = response.data;
+        console.log("data", data[0]);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const followerModels = data?.map((rawauthor: any) => ({
+          type: rawauthor.type,
+          id: rawauthor.id,
+          url: rawauthor.url,
+          host: rawauthor.host,
+          displayName: rawauthor.displayName,
+          username: rawauthor.username,
+          github: rawauthor.github,
+          profileImage: rawauthor.profileImage,
+        }));
+        setFollowers(followerModels);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchFollowers();
 
     const retrievePosts = async () => {
       try {
@@ -62,21 +89,24 @@ const ProfilePage = () => {
             authorid: authorId,
           },
         });
-        const postData = response.data;
+        const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = postData.map((rawpost: any) => {
+        const postModels = allData.posts.map((rawpost: any) => {
+          const author = allData.authors[0];
+          author.fields.id = author.pk;
           return {
-            authorid: rawpost.fields.authorid,
+            author: author,
+
+            id: rawpost.pk,
+            title: rawpost.fields.title,
+            description: rawpost.fields.description,
+            contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
-            postid: rawpost.pk,
-            likes: rawpost.fields.liked_by.length,
-            commentcount: rawpost.fields.commentcount,
-            username: rawpost.fields.authorname,
-            publishdate: rawpost.fields.publishdate,
+            count: rawpost.fields.count,
+            published: rawpost.fields.published,
             visibility: rawpost.fields.visibility,
-            image_url: rawpost.fields.image_url,
-            image_file: rawpost.fields.image_file,
-            contenttype: rawpost.fields.contenttype,
+
+            likes: rawpost.fields.liked_by.length,
           };
         });
         setPosts(postModels);
@@ -84,11 +114,11 @@ const ProfilePage = () => {
         console.error(error);
       }
     };
+    getData();
     retrievePosts();
-  }, [authorId, loading, displayName, githubLink, profileImage]);
+  }, [authorId, loading]);
 
   //#endregion
-  console.log("posts", posts);
   return (
     <animated.div
       className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"
@@ -120,20 +150,29 @@ const ProfilePage = () => {
       </ul>
 
       {/* Github Topic */}
-      {currentTopic === "GitHub" && githubLink != null && (
+      {currentTopic === "GitHub" && githubLink ? (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
-      )}
+      ) : null}
 
-      {currentTopic === "GitHub" && githubLink == null && (
+      {currentTopic === "GitHub" && !githubLink ? (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
-      )}
+      ) : null}
 
       {/* Followers Topic */}
+      {currentTopic === "Followers" && followers.length > 0 && (
+        <FollowerList followers={followers} />
+      )}
+
+      {currentTopic === "Followers" && followers.length == 0 && (
+        <div className="flex items-center justify-center text-lg opacity-80">
+          No followers yet...
+        </div>
+      )}
 
       {/* Posts Topic */}
       {currentTopic === "Posts" && posts.length > 0 && (
@@ -146,7 +185,7 @@ const ProfilePage = () => {
 
       {currentTopic === "Posts" && posts.length == 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
-          No posts yet...
+          No posts yet... or maybe it is loading!
         </div>
       )}
     </animated.div>

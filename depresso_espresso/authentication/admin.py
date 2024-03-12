@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, RegisterConfig
+from .models import Author, RegisterConfig, Following, FollowRequest
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -29,7 +29,7 @@ class UserCreationForm(forms.ModelForm):
     
     class Meta:
         model = Author
-        fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "allowRegister")
+        fields = "__all__"
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -60,12 +60,20 @@ class UserChangeForm(forms.ModelForm):
         return self.initial["password"]
 
 class AuthorAdmin(admin.ModelAdmin):
-    fields = ("type", "id", "host", "displayName", "url", "github", "profileImage", "follows", "friends", "is_active", "password", "allowRegister")
+    fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "is_active", "password", "allowRegister")
 
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('requireRegisterPerms',)
 
     # todo: https://stackoverflow.com/questions/18108521/how-to-show-a-many-to-many-field-with-list-display-in-django-admin
+
+@admin.register(Following)
+class FollowingAdmin(admin.ModelAdmin):
+    list_display = ('authorid', 'followingid', 'areFriends')
+
+@admin.register(FollowRequest)
+class FollowRequestAdmin(admin.ModelAdmin):
+    list_display = ('requester', 'receiver')
 
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(RegisterConfig, RegisterConfigAdmin)

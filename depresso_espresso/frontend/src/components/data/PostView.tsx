@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { AiOutlineClose } from "react-icons/ai";
-import { Dispatch, useEffect, useState } from "react";
+import { Dispatch, useState } from "react";
 import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
 import Popup from "reactjs-popup";
@@ -16,10 +16,12 @@ import { UserDisplay } from "../UserDisplay";
 import { PostModel } from "./PostModel";
 import CommentList from "../profile/CommentList";
 import { PostForm } from "./PostForm";
+import { AuthorModel } from "./AuthorModel";
 //#endregion
 
 //#region interfaces
 interface CreatePostViewProps {
+  curUser: AuthorModel;
   post: PostModel;
   refresh: boolean;
   setRefresh: Dispatch<React.SetStateAction<boolean>>;
@@ -32,9 +34,12 @@ interface CreatePostViewProps {
  * @param {string} user_img_url - The URL of the user's avatar
  * @returns
  */
-const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
-  const [username, setUsername] = useState("");
-  const [authorId, setAuthorId] = useState("");
+const PostView = ({
+  curUser,
+  post,
+  refresh,
+  setRefresh,
+}: CreatePostViewProps) => {
   const [open, setOpen] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const springs = useSpring({
@@ -49,22 +54,49 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
 
   //#region functions
   const handleCommentClick = () => {
+    console.log("Comments clicked");
     setShowComments(!showComments);
   };
 
-  const handleShareClick = () => {
+  const handleShareClick = async () => {
     console.log("Share clicked");
+
+    const formField = new FormData();
+    formField.append("postid", post.id);
+    formField.append("postauthorid", post.author.pk);
+    formField.append("authorid", curUser.id);
+    try {
+      const response = await axios.post("/share_post", formField);
+      if (response.data.success) {
+        console.log("Post shared");
+        setRefresh(!refresh);
+      } else if (
+        response.data.success === false &&
+        response.data.message === "Already shared"
+      ) {
+        console.log("Post already shared");
+        setRefresh(!refresh);
+      } else if (
+        response.data.success === false &&
+        response.data.message === "Sharing own post"
+      ) {
+        console.log("You are trying to share your own post");
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
 
-  const handleLikeToggle = () => {
+  const handleLikeToggle = async () => {
+    await axios.post("/toggle_like", { postid: post.id });
     setRefresh(!refresh);
-    axios.post("/toggle_like", { postid: post.postid });
   };
 
   const handleDelete = async () => {
     try {
       const response = await axios.post("/delete_post", {
-        postid: post.postid,
+        postid: post.id,
       });
       if (response.data.success) {
         setRefresh(!refresh);
@@ -86,20 +118,6 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     return formattedDate;
   };
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success == true) {
-          setUsername(response.data.displayName);
-          setAuthorId(response.data.id);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getData();
-  }, [authorId]);
   //#endregion
 
   const interactSection = [
@@ -110,13 +128,11 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
     },
     {
       icon: <GoComment />,
-      count: post.commentcount,
+      count: post.count,
       onClick: handleCommentClick,
     },
-    { icon: <GoShare />, onClick: handleShareClick },
+    { icon: <GoShare />, count: post.sharecount, onClick: handleShareClick },
   ];
-  console.log("author", authorId);
-  console.log("author post", post.authorid);
 
   return (
     <animated.div
@@ -145,13 +161,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             />
           </div>
           <PostForm
-            username={username}
+            author={post.author.fields}
+            oldTitle={post.title}
+            oldDescription={post.description}
             oldContent={post.content}
-            oldImageUrl={post.image_url}
-            oldImageFile={post.image_file}
+            oldImageFile={post.content}
             oldVisibility={post.visibility}
-            oldIsMarkdownEnabled={post.contenttype}
-            postId={post.postid}
+            oldContentType={post.contenttype}
+            postId={post.id}
             edit={true}
             refresh={refresh}
             setRefresh={setRefresh}
@@ -167,38 +184,34 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            username={post.username}
-            user_img_url={post.user_img_url}
-            link={`/authors/${post.authorid}`}
+            username={post.author.fields.displayName}
+            user_img_url={post.author.fields.profileImage}
+            link={`/authors/${post.author.pk}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
             <p className="text-sm">
-              {formatDateString(post.publishdate.substring(0, 16))}
+              {formatDateString(post.published.substring(0, 16))}
             </p>
           </div>
         </div>
 
         {/* Content */}
-        {post.contenttype === "markdown" ? (
+        <p className="text-xl font-semibold text-primary">{post.title}</p>
+        <p className="text-secondary-dark">{post.description}</p>
+
+        {post.contenttype === "text/markdown" && (
           <Markdown>{mdContent}</Markdown>
-        ) : (
+        )}
+
+        {post.contenttype === "text/plain" && (
           <p className="text-start">{post.content}</p>
         )}
 
-        {/* Image - need to display currently not saved I think*/}
-        {post.image_url && (
+        {post.contenttype?.includes("image") && (
           <img
-            src={post.image_url}
-            alt="post"
-            className="w-full h-96 object-cover rounded-[1.4rem]"
-          />
-        )}
-
-        {post.image_file && (
-          <img
-            src={post.image_file}
+            src={post.content}
             alt="post"
             className="w-full h-96 object-cover rounded-[1.4rem]"
           />
@@ -221,14 +234,14 @@ const PostView = ({ post, refresh, setRefresh }: CreatePostViewProps) => {
             </div>
           ))}
 
-          {authorId === post.authorid && (
+          {curUser.id === post.author.pk && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {authorId === post.authorid && (
+          {curUser.id === post.author.pk && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}

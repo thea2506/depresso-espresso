@@ -4,28 +4,29 @@ from authentication.models import Author
 
 # Create your models here.
 class Post(models.Model):
-    authorid = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
-    postid = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
-    authorname = models.TextField(null = True)
-
-
+    type = models.CharField(max_length=50, default="post")
     title = models.TextField(null = True)
+    id = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4)
+    published = models.DateTimeField(db_column='editDate', null = True, blank=True)
+    
+    # visibility ["PUBLIC","FRIENDS","UNLISTED"]
+    visibility = models.TextField(null = True)
+    
+    # Origins
     source = models.TextField(null = True)
     origin = models.TextField(null = True)
-    description = models.TextField(null = True)
-    contenttype = models.TextField(db_column='contentType')
-    content = models.TextField(null = True)
-
-    image_url = models.URLField(blank=True, null=True)
-    # linked_img_post = models.TextField("self", blank = True, null = True)
-    image_file = models.ImageField(upload_to='images/', blank=True, null=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     
-    publishdate = models.DateTimeField(db_column='publishDate')
-    editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)
+    # Content
+    description = models.TextField(null = True) 
+    contentType = models.TextField(db_column='contentType', null = True)
+    content = models.TextField(db_column='content', null = True)
 
-    visibility = models.TextField(null = True)
-    commentcount = models.IntegerField(db_column='commentCount', blank=True, null=True)
+    # Interactions tracking
+    count = models.IntegerField(db_column='commentCount', blank=True, null=True, default=0)
+    comments = models.URLField() # URL to first page of comments
     liked_by = models.ManyToManyField(Author, related_name='liked_posts')
+    shared_by = models.ManyToManyField(Author, symmetrical=False, related_name='shared_posts', blank=True)
 
     class Meta:
         managed = True
@@ -42,7 +43,7 @@ class Comment(models.Model):
     editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)
 
     commentlikecount = models.IntegerField(db_column='commentLikeCount', blank=True, null=True)
-    liked_by = models.ManyToManyField(Author, related_name='liked_comments')
+    liked_by = models.ManyToManyField(Author, symmetrical=False, related_name='liked_comments')
 
     class Meta:
         managed = True

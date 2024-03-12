@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -73,6 +75,7 @@ LOGIN_EXEMPT_URLS = (
     r"admin",
     r"api/signin",
     r"curUser",
+    r'make_post',
 )
 
 CORS_ALLOWED_ORIGINS = [

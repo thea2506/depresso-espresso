@@ -21,7 +21,6 @@ def register(request):
        returns: JSON data including success status + errors if applicable'''  
     if request.method == 'POST':  
         data ={}
-        print("HERE")
         form = Register(request.POST)
         
         if form.is_valid():
@@ -31,7 +30,6 @@ def register(request):
         else:
             errors = []
             for error in list(form.errors.values()):              
-                print(request, form.errors.items(), error)
                 errors.append(error)  
 
             data['errors'] = errors   
@@ -59,10 +57,8 @@ def logoutUser(request):
 
     logout(request)
     if request.user.is_authenticated:
-        print("User is still logged in")
         data['success'] = False
     else:
-        print("User is not still logged in")
         data['success'] = True
     return JsonResponse(data)
 
@@ -77,6 +73,7 @@ def curUser(request):
 
             data["type"] = user.type
             data["id"] = user.id
+            data["username"] = user.username
             data["displayName"] = user.displayName
             data["host"] = user.host
             data["url"] = user.url

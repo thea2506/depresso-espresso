@@ -53,7 +53,7 @@ const CommentList = ({
         const response = await axios.get("/curUser");
         const data = response.data;
 
-        if (response.data.success) {
+        if (data.success) {
           setAuthorImg(data.profileImage);
         }
       } catch (error) {
@@ -64,9 +64,8 @@ const CommentList = ({
     const fetchComments = async () => {
       try {
         const response = await axios.post("/get_post_comments", {
-          postId: post.postid,
+          postId: post.id,
         });
-        console.log("comments resp", response.data);
         if (response.status === 200) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const commentModels = response.data.comment.map(
@@ -86,7 +85,6 @@ const CommentList = ({
               };
             }
           );
-          console.log("commentmodels", commentModels);
           setComments(commentModels);
         } else {
           console.error("Failed to fetch comments");
@@ -98,13 +96,13 @@ const CommentList = ({
 
     fetchProfile();
     fetchComments();
-  }, [post.postid, refresh]);
+  }, [post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
       const formField = new FormData();
       formField.append("comment", comment);
-      formField.append("postid", post.postid);
+      formField.append("postid", post.id);
 
       const response = await axios.post("/make_comment", formField);
 

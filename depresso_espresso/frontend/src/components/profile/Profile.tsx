@@ -3,10 +3,11 @@ import { Button } from "../Button";
 import Popup from "reactjs-popup";
 import { ToastContainer, toast, ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import editIcon from "../../assets/icons/edit.svg";
 import defaultPic from "../../assets/images/default_profile.jpg";
+import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 //#region interfaces
@@ -59,12 +60,25 @@ const Profile = ({
   const [newDisplayName, setDisplayName] = useState<string>(display_name);
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
+  const [curUser, setCurUser] = useState<AuthorModel>();
 
   const [open, setOpen] = useState<boolean>(false);
   const closeModal = () => setOpen(false);
   //#endregion
 
   //#region Functions
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const response = await axios.get("/curUser");
+        if (response.data.success == true) setCurUser(response.data);
+      } catch (error) {
+        console.error("Failed to fetch current user in ProfilePage", error);
+      }
+    };
+    getCurrentUser();
+  }, []);
+
   /**
    * Extracts the new value input by the user and updates the corresponding state.
    * @param value The new value input by the user
@@ -72,6 +86,9 @@ const Profile = ({
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
+      case "display_name":
+        setDisplayName(value);
+        break;
       case "github":
         setGithub(value);
         break;
@@ -98,33 +115,10 @@ const Profile = ({
   }
 
   /**
-   * Checks if the given URL is a valid image URL.
-   * @param {string} imageURL - The URL of the image to check.
-   */
-  const checkImageURL = (imageURL: string) => {
-    const img = new Image();
-    img.src = imageURL;
-    if (img.complete) {
-      return true;
-    } else {
-      img.onload = () => {
-        return true;
-      };
-      img.onerror = () => {
-        return false;
-      };
-    }
-  };
-
-  /**
    * Saves the new profile information to the database.
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
-      .then(() => {
-        const validImage = checkImageURL(newImageURL);
-        if (!validImage) throw new Error("Invalid image URL");
-      })
       .then(() => {
         toast.success("Profile updated successfully", myToast);
         closeModal();
@@ -137,7 +131,7 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("displayName", newDisplayName);
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
-    await axios.post(`/edit_profile/${id}`, formField);
+    await axios.post(`${id}/edit_profile`, formField);
     setLoading(!loading);
   };
   //#endregion
@@ -154,12 +148,15 @@ const Profile = ({
           />
         </div>
 
-        <Button
-          buttonType="icon"
-          icon={editIcon}
-          className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
-          onClick={() => setOpen(true)}
-        ></Button>
+        {/* Edit button */}
+        {curUser?.id === id ? (
+          <Button
+            buttonType="icon"
+            icon={editIcon}
+            className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
+            onClick={() => setOpen(true)}
+          ></Button>
+        ) : null}
 
         {/* Edit popup screen */}
         <Popup
@@ -196,7 +193,6 @@ const Profile = ({
                   id={field.value}
                   defaultValue={field.placeholder}
                   className="flex-grow px-4 py-4 bg-accent-3 rounded-xl"
-                  disabled={field.value === "display_name"}
                   onChange={(e) => extractValue(e.target.value, field.value)}
                 />
               </div>
