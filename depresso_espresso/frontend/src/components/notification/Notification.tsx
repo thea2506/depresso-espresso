@@ -9,6 +9,8 @@ interface NotificationProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   author: any;
   type: "follow" | "share" | "post" | "like" | "comment";
+  refresh?: boolean;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
 }
 //#endregion
 
@@ -23,7 +25,12 @@ interface NotificationProps {
  *
  * @returns {JSX.Element} The rendered notification component.
  */
-const Notification = ({ author, type }: NotificationProps) => {
+const Notification = ({
+  author,
+  type,
+  refresh,
+  setRefresh,
+}: NotificationProps): JSX.Element => {
   const messages = {
     follow: "wants to follow you",
     share: "shared a post with you",
@@ -34,8 +41,6 @@ const Notification = ({ author, type }: NotificationProps) => {
 
   //#region functions
   const handleAccept = async () => {
-    console.log("Accept clicked");
-
     const formField = new FormData();
     formField.append("username", author.username);
     formField.append("decision", "accept");
@@ -45,6 +50,7 @@ const Notification = ({ author, type }: NotificationProps) => {
         formField
       );
       if (response.data.success) {
+        setRefresh(!refresh);
         console.log(response.data.message);
       }
     } catch (error) {
@@ -53,8 +59,6 @@ const Notification = ({ author, type }: NotificationProps) => {
   };
 
   const handleDecline = async () => {
-    console.log("Decline clicked");
-
     const formField = new FormData();
     formField.append("username", author.username);
     formField.append("decision", "decline");
@@ -64,6 +68,7 @@ const Notification = ({ author, type }: NotificationProps) => {
         formField
       );
       if (response.data.success) {
+        setRefresh(!refresh);
         console.log(response.data.message);
       }
     } catch (error) {
@@ -75,7 +80,10 @@ const Notification = ({ author, type }: NotificationProps) => {
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}
-      <div className="flex items-center gap-x-4">
+      <a
+        className="flex items-center gap-x-4"
+        href={author.url}
+      >
         <img
           className="rounded-full w-14 h-14"
           src={author.profileImage || defaultImg}
@@ -87,7 +95,7 @@ const Notification = ({ author, type }: NotificationProps) => {
           </span>
           {messages[type]}
         </div>
-      </div>
+      </a>
 
       {/* Buttons - Follow only */}
       {type === "follow" && (

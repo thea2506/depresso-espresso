@@ -167,7 +167,6 @@ const Profile = ({
       const response = await axios.post(`/send_follow_request/${id}`);
       if (response.data.success === true) {
         setStatus("pending");
-        toast.update("Follow request sent", myToast);
       }
     } catch (error) {
       toast.error("Failed to send follow request", myToast);
@@ -180,7 +179,6 @@ const Profile = ({
     try {
       const response = await axios.post(`/unfollow/${id}`);
       if (response.data.success === true) {
-        toast.success("Unfollowed", myToast);
         setStatus("stranger");
       }
     } catch (error) {
@@ -293,12 +291,12 @@ const Profile = ({
       </div>
       {/* Display profile info */}
       <div className="flex flex-col items-center">
-        <div>
+        <div className="flex items-center justify-center gap-x-4">
           <p className="text-xl font-semibold md:text-2xl opacity-95">
             {display_name}
           </p>
           {status === "friend" && (
-            <GoCodeOfConduct className="w-12 h-12 text-primary" />
+            <GoCodeOfConduct className="w-6 h-6 text-primary" />
           )}
         </div>
         {github && (

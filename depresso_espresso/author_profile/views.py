@@ -132,7 +132,6 @@ def get_followers(request, authorid):
   '''Get all followers of an author'''
   if request.method == "GET":
     followers = Following.objects.filter(followingid=authorid)
-    print(authorid, request.user)
     data = []
     for follower in followers:
       user = Author.objects.get(id=follower.authorid.id)
@@ -146,7 +145,6 @@ def get_followers(request, authorid):
         "github": user.github,
         "profileImage": user.profileImage
       })
-    print("Followers data", data)
     return JsonResponse(data, safe=False)
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -172,17 +170,15 @@ def get_friends(request, authorid):
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
   
-def unfollow(request):
+def unfollow(request, authorid):
   '''Unfollow another author'''
-  data = request.POST
-  id = data["id"]
-  unfollowedAuthor = Author.objects.get(id=id)
+  unfollowedAuthor = Author.objects.get(id=authorid)
 
   if request.method == "POST":
       if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).exists():
         message = unfollowedAuthor.username, "unfollowed", request.user.username
 
-        if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).areFriends:
+        if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor)[0].areFriends:
           Following.objects.filter(authorid = unfollowedAuthor, followingid = request.user).update(areFriends = False)
           message = unfollowedAuthor.username, "unfollowed", request.user.username, "and they are no longer friends"
         
@@ -202,7 +198,7 @@ def check_follow_status(request):
   if request.method == "GET":
     # follow
     if Following.objects.filter(authorid = request.user, followingid = author).exists():
-      if Following.objects.filter(authorid = request.user, followingid = author).areFriends:
+      if Following.objects.filter(authorid = request.user, followingid = author)[0].areFriends:
         result["status"] = "friend"
       else:
         result["status"] = "follower"
@@ -215,8 +211,6 @@ def check_follow_status(request):
     else:
       result["status"] = "stranger"
     result["success"] = True
-
-    print(result)
     return JsonResponse(result)
   else:
     return JsonResponse({"success" : False})
@@ -233,5 +227,5 @@ def get_follow_requests(request):
       for follow_request in follow_requests:
         requester = follow_request.requester
         requesters.append(requester)
-      res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName"])
+      res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName", "url"])
       return HttpResponse(res, content_type="application/json")

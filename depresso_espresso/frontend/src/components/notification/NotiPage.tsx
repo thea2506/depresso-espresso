@@ -7,6 +7,7 @@ import { AuthorModel } from "../data/AuthorModel";
 const NotiPage = () => {
   const [curUser, setCurUser] = useState<AuthorModel>();
   const [followRequests, setFollowRequests] = useState<[]>();
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     // Get the current user's ID
@@ -35,9 +36,8 @@ const NotiPage = () => {
 
     getCurUser();
     getFollowRequests();
-  }, [curUser?.id]);
+  }, [curUser?.id, refresh]);
 
-  console.log(followRequests);
   return (
     <div className="flex flex-col justify-center mx-8 sm:mx-12 lg:mx-[20%] gap-y-8 md:item-center">
       <div className="flex items-center justify-between text-secondary-dark">
@@ -47,6 +47,8 @@ const NotiPage = () => {
       {followRequests?.map((request: any, index: number) => (
         <div key={index}>
           <Notification
+            refresh={refresh}
+            setRefresh={setRefresh}
             author={request.fields}
             type="follow"
           />
