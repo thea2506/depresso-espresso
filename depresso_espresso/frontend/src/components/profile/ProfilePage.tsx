@@ -1,5 +1,5 @@
 //#region imports
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
@@ -56,7 +56,6 @@ const ProfilePage = () => {
         console.error("An error occurred", error);
       }
     };
-    getData();
 
     const fetchFollowers = async () => {
       try {
@@ -65,6 +64,7 @@ const ProfilePage = () => {
         const data = response.data;
         console.log("data", data[0]);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const followerModels = data?.map((rawauthor: any) => ({
           type: rawauthor.type,
           id: rawauthor.id,
@@ -89,22 +89,24 @@ const ProfilePage = () => {
             authorid: authorId,
           },
         });
-        const postData = response.data;
+        const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = postData.map((rawpost: any) => {
+        const postModels = allData.posts.map((rawpost: any) => {
+          const author = allData.authors[0];
+          author.fields.id = author.pk;
           return {
-            authorid: rawpost.fields.authorid,
+            author: author,
+
+            id: rawpost.pk,
+            title: rawpost.fields.title,
+            description: rawpost.fields.description,
+            contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
-            postid: rawpost.pk,
-            likes: rawpost.fields.liked_by.length,
-            commentcount: rawpost.fields.commentcount,
-            sharecount: rawpost.fields.shared_by.length,
-            username: rawpost.fields.authorname,
-            publishdate: rawpost.fields.publishdate,
+            count: rawpost.fields.count,
+            published: rawpost.fields.published,
             visibility: rawpost.fields.visibility,
-            image_url: rawpost.fields.image_url,
-            image_file: rawpost.fields.image_file,
-            contenttype: rawpost.fields.contenttype,
+
+            likes: rawpost.fields.liked_by.length,
           };
         });
         setPosts(postModels);
@@ -112,11 +114,11 @@ const ProfilePage = () => {
         console.error(error);
       }
     };
+    getData();
     retrievePosts();
-  }, [authorId, loading, displayName, githubLink, profileImage]);
+  }, [authorId, loading]);
 
   //#endregion
-  console.log("posts", posts);
   return (
     <animated.div
       className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20"
@@ -148,24 +150,22 @@ const ProfilePage = () => {
       </ul>
 
       {/* Github Topic */}
-      {currentTopic === "GitHub" && githubLink != null && (
+      {currentTopic === "GitHub" && githubLink ? (
         <GitHubActionsList
           github={githubLink}
           displayName={displayName}
         />
-      )}
+      ) : null}
 
-      {currentTopic === "GitHub" && githubLink == null && (
+      {currentTopic === "GitHub" && !githubLink ? (
         <div className="flex items-center justify-center text-lg opacity-80">
           Link your Github...
         </div>
-      )}
+      ) : null}
 
       {/* Followers Topic */}
       {currentTopic === "Followers" && followers.length > 0 && (
-        <FollowerList
-          followers={followers}
-        />
+        <FollowerList followers={followers} />
       )}
 
       {currentTopic === "Followers" && followers.length == 0 && (
@@ -185,7 +185,7 @@ const ProfilePage = () => {
 
       {currentTopic === "Posts" && posts.length == 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
-          No posts yet...
+          No posts yet... or maybe it is loading!
         </div>
       )}
     </animated.div>

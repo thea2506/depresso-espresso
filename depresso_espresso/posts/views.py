@@ -22,7 +22,8 @@ class PostView(forms.ModelForm):
         return render(request, "index.html")
     class Meta:
         model = Post
-        fields = ("content", "image_url", "visibility", "contenttype", "image_file")
+        # all_fields = ("type", "title", "id", "published", "visibility", "source", "origin", "author", "description", "contentType", "content", "count", "comments", "liked_by")
+        fields = ("title", "visibility", "description", "contentType", "content")
 
 class CommentView(forms.ModelForm):
     template_name = "comments/comments.html"
@@ -35,57 +36,56 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
-    if request.method == 'POST':
-        form = PostView(request.POST, request.FILES)
+    if request.method == 'POST':  
+        form = PostView(request.POST)
+      
         if form.is_valid():
-            post = form.save(commit=False)
-            post.content = form.cleaned_data["content"]
-            post.image_url = form.cleaned_data["image_url"]
-            post.contenttype = form.cleaned_data["contenttype"]
-            post.authorid = request.user
-            naive_datetime = datetime.datetime.now()
-            post.publishdate = make_aware(naive_datetime)
-            post.commentcount = 0
+          post = form.save(commit=False)
+          
+          post.type = "post"
+          post.title = form.cleaned_data["title"]
+          post.description = form.cleaned_data["description"]
+          post.contentType = form.cleaned_data["contentType"]
+          post.content = form.cleaned_data["content"]
+          post.author = request.user
+          post.visibility = form.cleaned_data["visibility"]
+          post.published = make_aware(datetime.datetime.now())
 
-            post.authorname = request.user.displayName
-            post.visibility = form.cleaned_data["visibility"]
-
-            # images
-            post.image_file = form.cleaned_data["image_file"]
-
-            form.save(commit = True)
-            data['success'] = True  
-            post.save()
-            return JsonResponse(data) 
+          # images
+          form.save(commit = True)
+          data['success'] = True  
+          post.save()
+          return JsonResponse(data) 
         else:
-            data['success'] = False  
-            return JsonResponse(data) 
+          print("form is not valid", form.errors)
+          data['success'] = False  
+        return JsonResponse(data) 
 
     return render(request, "index.html")
 
 def get_all_posts(request):
-  posts = Post.objects.filter(visibility="public").order_by('-publishdate')
-  data_dict = json.loads(serializers.serialize('json', posts))
-  
-  for model in data_dict:
-     author_of_post = Author.objects.filter(id = model["fields"]["authorid"])
-     author_of_post_json = json.loads(serializers.serialize('json', author_of_post))
-     model["fields"]["author_profile_image"] = author_of_post_json[0]["fields"]["profileImage"]
-     model["fields"]["author_username"] = author_of_post_json[0]["fields"]["username"]
-
-  return HttpResponse(json.dumps(data_dict), content_type='application/json')
+  posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
+  authors = [Author.objects.get(id=(post.author.id)) for post in posts]
+  data = serializers.serialize('json', posts)
+  author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
+  results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  return HttpResponse(results, content_type='application/json')
 
 def get_author_posts(request):
-  author_id = request.user.id
-  posts = Post.objects.filter(authorid=author_id).order_by('-publishdate')
+  author_id = request.GET.get('authorid')
+  author = [Author.objects.get(id=author_id)]
+  posts = Post.objects.filter(author=author[0]).order_by('-published')
   data = serializers.serialize('json', posts)
-  return HttpResponse(data, content_type='application/json')
+  author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
+  results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  print(results)
+  return HttpResponse(results, content_type='application/json')
 
 def toggle_like(request):
   data = json.loads(request.body)
   postid = data.get('postid')
-  
+
   post = Post.objects.get(pk=postid)
  
   if request.user in post.liked_by.all():
@@ -111,7 +111,7 @@ def make_comment(request):
 
             post = form.cleaned_data.get("postid")
             comment.postid = post
-            post.commentcount = F('commentcount') + 1
+            post.count = F('count') + 1
             post.save()
 
             form.save(commit = True)
@@ -153,7 +153,7 @@ def delete_post(request):
   postid = data.get('postid')
   post = Post.objects.get(pk=postid)
 
-  if request.user == post.authorid:
+  if request.user == post.author:
     post.delete()
     data['success'] = True  
     return JsonResponse(data) 
@@ -186,12 +186,11 @@ def edit_post(request):
 
   post = get_object_or_404(Post, pk=postid)
   if request.method == 'POST':
-      if request.FILES.get('image_file'):
-        post.image_file = request.FILES.get('image_file')
+      post.title = request.POST.get('title')
+      post.description = request.POST.get('description')
       post.content = request.POST.get('content')
-      post.image_url = request.POST.get('image_url')
       post.visibility = request.POST.get('visibility')
-      post.contenttype = request.POST.get('contenttype')
+      post.contentType = request.POST.get('contentType')
       post.save()
 
   data['success'] = True

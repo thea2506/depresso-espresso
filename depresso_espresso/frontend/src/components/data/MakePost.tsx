@@ -62,7 +62,6 @@ const MakePost = () => {
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      toast.success("Here now", myToast);
       const formField = new FormData();
       formField.append("content", content);
       formField.append("image_url", image_url);
