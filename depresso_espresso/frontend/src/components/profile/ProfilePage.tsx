@@ -185,7 +185,7 @@ const ProfilePage = () => {
 
       {currentTopic === "Posts" && posts.length == 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
-          No posts yet...
+          No posts yet... or maybe it is loading!
         </div>
       )}
     </animated.div>

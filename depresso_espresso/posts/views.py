@@ -111,7 +111,7 @@ def make_comment(request):
 
             post = form.cleaned_data.get("postid")
             comment.postid = post
-            post.commentcount = F('commentcount') + 1
+            post.count = F('count') + 1
             post.save()
 
             form.save(commit = True)
