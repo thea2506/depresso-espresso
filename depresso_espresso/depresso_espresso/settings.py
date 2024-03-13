@@ -38,6 +38,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 
 INSTALLED_APPS = [
 
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -54,7 +55,6 @@ INSTALLED_APPS = [
     'home',
     'author_profile',
     'posts',
-    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
