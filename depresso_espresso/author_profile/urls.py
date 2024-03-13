@@ -15,5 +15,9 @@ urlpatterns = [
     path('send_follow_request/<str:authorid>', views.send_follow_request, name='send_follow_request'),
     path('respond_to_follow_request', views.respond_to_follow_request, name='respond_to_follow_request'),
     path('authors/<str:authorid>/get_followers', views.get_followers, name='get_followers'),
-    path('unfollow', views.unfollow, name='unfollow')
+    path('unfollow/<str:authorid>', views.unfollow, name='unfollow'),
+
+    path('check_follow_status', views.check_follow_status, name='check_follow_request'),
+    path("authors/<str:authorid>/inbox", views.front_end_inbox, name="front_end_inbox"),
+    path("get_follow_requests", views.get_follow_requests, name="get_follow_requests"),
 ]

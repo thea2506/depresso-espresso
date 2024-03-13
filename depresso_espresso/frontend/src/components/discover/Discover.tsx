@@ -15,7 +15,7 @@ const Discover = () => {
 
   //#endregion
   return (
-    <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
+    <div className="flex flex-col items-center justify-center w-full">
       <AuthorSearch></AuthorSearch>
     </div>
   );

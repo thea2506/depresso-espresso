@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.core import serializers
 from posts.models import Post
 from authentication.models import Author, Following, FollowRequest, Node
 from rest_framework.decorators import api_view
@@ -426,16 +427,13 @@ def get_friends(request, authorid):
   
 """ def unfollow(request):
   '''Unfollow another author'''
-  data = request.POST
-  username = data["username"]
-  unfollowedAuthor = Author.objects.get(username=username)
-  print(unfollowedAuthor, request.user)
+  unfollowedAuthor = Author.objects.get(id=authorid)
 
   if request.method == "POST":
       if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).exists():
         message = unfollowedAuthor.username, "unfollowed", request.user.username
 
-        if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).areFriends:
+        if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor)[0].areFriends:
           Following.objects.filter(authorid = unfollowedAuthor, followingid = request.user).update(areFriends = False)
           message = unfollowedAuthor.username, "unfollowed", request.user.username, "and they are no longer friends"
         
@@ -443,3 +441,46 @@ def get_friends(request, authorid):
         print(message)
         return JsonResponse({"message": message,
                               "success": True}) """
+      
+def check_follow_status(request):
+  '''Check the follow status between two authors'''
+  data = request.GET
+  authorid = data["id"]
+  author = Author.objects.get(id=authorid)
+
+  result = {}
+
+  if request.method == "GET":
+    # follow
+    if Following.objects.filter(authorid = request.user, followingid = author).exists():
+      if Following.objects.filter(authorid = request.user, followingid = author)[0].areFriends:
+        result["status"] = "friend"
+      else:
+        result["status"] = "follower"
+    
+    # follow pending
+    elif FollowRequest.objects.filter(requester = request.user, receiver = author ).exists():
+      result["status"] = "pending"
+    
+    # not following
+    else:
+      result["status"] = "stranger"
+    result["success"] = True
+    return JsonResponse(result)
+  else:
+    return JsonResponse({"success" : False})
+  
+def front_end_inbox(request, authorid):
+    return render(request, 'index.html')
+
+def get_follow_requests(request):
+    '''Get all follow requests for an author'''
+    authorid = request.GET.get("id")
+    if request.method == "GET":
+      follow_requests = FollowRequest.objects.filter(receiver=authorid)
+      requesters = []
+      for follow_request in follow_requests:
+        requester = follow_request.requester
+        requesters.append(requester)
+      res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName", "url"])
+      return HttpResponse(res, content_type="application/json")

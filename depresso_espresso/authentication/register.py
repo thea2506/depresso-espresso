@@ -31,7 +31,7 @@ class Register(UserCreationForm):
         user.displayName = self.cleaned_data["displayName"]
         user.host = f"http://{host}/"
         user.set_password(self.cleaned_data["password1"])
-        user.url = f"http://{host}/author/{user.id}"
+        user.url = f"http://{host}/authors/{user.id}"
         
         if commit:
             user.save()

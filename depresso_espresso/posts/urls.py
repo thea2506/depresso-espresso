@@ -13,7 +13,10 @@ urlpatterns = [
     path("get_post_comments", views.get_post_comments, name="get_post_comments"),
     path("delete_post", views.delete_post, name="delete_post"),
     path("delete_comment", views.delete_comment, name="delete_comment"),
-    path("share_post", views.share_post, name="share_post")
+    path("share_post", views.share_post, name="share_post"),
+
+    # explorer
+    path("discover", views.frontend_explorer, name="frontend_explorer"),
 ]
 
 

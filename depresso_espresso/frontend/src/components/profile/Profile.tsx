@@ -6,6 +6,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import editIcon from "../../assets/icons/edit.svg";
+import {
+  GoPlusCircle,
+  GoCheckCircle,
+  GoCodeOfConduct,
+  GoClock,
+} from "react-icons/go";
 import defaultPic from "../../assets/images/default_profile.jpg";
 import { AuthorModel } from "../data/AuthorModel";
 //#endregion
@@ -62,6 +68,9 @@ const Profile = ({
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
   const [curUser, setCurUser] = useState<AuthorModel>();
 
+  // Follow
+  const [status, setStatus] = useState<string>();
+
   const [open, setOpen] = useState<boolean>(false);
   const closeModal = () => setOpen(false);
   //#endregion
@@ -76,8 +85,23 @@ const Profile = ({
         console.error("Failed to fetch current user in ProfilePage", error);
       }
     };
+
+    const getFollowStatus = async () => {
+      try {
+        const response = await axios.get("/check_follow_status", {
+          params: { id: id },
+        });
+
+        if (response.data.success === true) {
+          setStatus(response.data.status);
+        }
+      } catch (error) {
+        console.error("Failed to fetch follow status in ProfilePage", error);
+      }
+    };
     getCurrentUser();
-  }, []);
+    getFollowStatus();
+  }, [id]);
 
   /**
    * Extracts the new value input by the user and updates the corresponding state.
@@ -134,6 +158,33 @@ const Profile = ({
     await axios.put(`${id}/author_profile`, formField);
     setLoading(!loading);
   };
+
+  /**
+   * Sends a follow request to the user.
+   */
+  const handleFollowRequest = async () => {
+    try {
+      const response = await axios.post(`/send_follow_request/${id}`);
+      if (response.data.success === true) {
+        setStatus("pending");
+      }
+    } catch (error) {
+      toast.error("Failed to send follow request", myToast);
+    }
+  };
+  /**
+   * Unfollow a user
+   */
+  const handleUnffollowRequest = async () => {
+    try {
+      const response = await axios.post(`/unfollow/${id}`);
+      if (response.data.success === true) {
+        setStatus("stranger");
+      }
+    } catch (error) {
+      toast.error("Failed to unfollow", myToast);
+    }
+  };
   //#endregion
 
   return (
@@ -155,6 +206,35 @@ const Profile = ({
             icon={editIcon}
             className="absolute top-0 right-0 w-12 h-12 p-2 rounded-full"
             onClick={() => setOpen(true)}
+          ></Button>
+        ) : null}
+
+        {/* Follow button */}
+        {curUser?.id !== id && status === "stranger" ? (
+          <Button
+            buttonType="icon"
+            icon={<GoPlusCircle className="w-8 h-8" />}
+            className="absolute top-0 right-0 p-2 font-semibold rounded-full"
+            onClick={handleFollowRequest}
+          ></Button>
+        ) : null}
+
+        {/* Pending */}
+        {curUser?.id !== id && status === "pending" ? (
+          <Button
+            buttonType="icon"
+            icon={<GoClock className="w-8 h-8" />}
+            className="absolute top-0 right-0 p-2 font-semibold rounded-full cursor-default"
+          ></Button>
+        ) : null}
+
+        {/* Unfollow button */}
+        {curUser?.id !== id && status !== "stranger" && status !== "pending" ? (
+          <Button
+            buttonType="icon"
+            icon={<GoCheckCircle className="w-8 h-8" />}
+            className="absolute top-0 right-0 p-2 font-semibold rounded-full"
+            onClick={handleUnffollowRequest}
           ></Button>
         ) : null}
 
@@ -211,9 +291,14 @@ const Profile = ({
       </div>
       {/* Display profile info */}
       <div className="flex flex-col items-center">
-        <p className="text-xl font-semibold md:text-2xl opacity-95">
-          {display_name}
-        </p>
+        <div className="flex items-center justify-center gap-x-4">
+          <p className="text-xl font-semibold md:text-2xl opacity-95">
+            {display_name}
+          </p>
+          {status === "friend" && (
+            <GoCodeOfConduct className="w-6 h-6 text-primary" />
+          )}
+        </div>
         {github && (
           <a
             className="text-sm md:text-base text-secondary-dark"
@@ -226,5 +311,4 @@ const Profile = ({
     </div>
   );
 };
-
 export { Profile };

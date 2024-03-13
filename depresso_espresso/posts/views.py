@@ -79,7 +79,6 @@ def get_author_posts(request):
   author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
-  print(results)
   return HttpResponse(results, content_type='application/json')
 
 def toggle_like(request):
@@ -227,3 +226,6 @@ def share_post(request):
         data['message'] = "Already shared"
 
   return JsonResponse(data)
+
+def frontend_explorer(request):
+  return render(request, "index.html")
