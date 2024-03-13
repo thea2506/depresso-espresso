@@ -17,6 +17,13 @@ class Author(AbstractUser):
 class RegisterConfig(models.Model):
     requireRegisterPerms = models.BooleanField(null = False, blank = False)
 
+class Node(models.Model):
+    ourUsername = models.CharField(max_length=50) # username for their node to authenticate with ours 
+    ourPassword = models.CharField(max_length=50) # password for their node to authenticate with ours 
+    thierUsername = models.CharField(max_length=50) # username for our node to authenticate with theirs
+    theirPassword = models.CharField(max_length=50) # password for our node to authenticate with theirs
+    baseUrl = models.URLField()
+
 class Following(models.Model):
     authorid = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="following")
     followingid = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="followers")
@@ -32,3 +39,5 @@ class FollowRequest(models.Model):
 
     class Meta:
         managed = True
+
+

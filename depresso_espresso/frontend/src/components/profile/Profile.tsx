@@ -131,7 +131,7 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("displayName", newDisplayName);
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
-    await axios.post(`${id}/edit_profile`, formField);
+    await axios.put(`${id}/author_profile`, formField);
     setLoading(!loading);
   };
   //#endregion
