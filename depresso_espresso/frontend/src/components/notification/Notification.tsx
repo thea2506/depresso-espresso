@@ -46,7 +46,7 @@ const Notification = ({
     formField.append("decision", "accept");
     try {
       const response = await axios.post(
-        "/respond_to_follow_request",
+        "/respond_to_follow_request/from/",
         formField
       );
       if (response.data.success) {

@@ -41,8 +41,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        console.log("authorId", authorId);
-        const response = await axios.get(`/authors/${authorId}`);
+        const response = await axios.get(`/espresso-api/authors/${authorId}`);
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);
@@ -55,7 +54,7 @@ const ProfilePage = () => {
     const fetchFollowers = async () => {
       try {
         console.log("authorId", authorId);
-        const response = await axios.get(`${authorId}/get_followers`);
+        const response = await axios.get(`/authors/${authorId}/followers/`);
         const data = response.data;
         console.log("data", data[0]);
 

@@ -70,8 +70,6 @@ const Signin = () => {
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
-        console.log(response.data.id)
-        localStorage.setItem('id', response.data.id)
         nav("/");
       } else {
         toast.error("Login failed", myToast);

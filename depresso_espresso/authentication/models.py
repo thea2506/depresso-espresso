@@ -35,7 +35,8 @@ class Following(models.Model):
         unique_together = ('authorid', 'followingid')
         
 class FollowRequest(models.Model):
-    requester = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="follow_requests_sent")
+    # Assuming receivers will only ever be stored on our server but requesters can come from external authors
+    requester = models.CharField(max_length=200)
     receiver = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="follow_requests_received")
 
     class Meta:
