@@ -1,13 +1,11 @@
 export interface CommentModel {
-  postid: any;
   id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   author: any;
-  
+
   contenttype: string | null;
   comment: string;
 
-  publishdate: string;
-  
-  visibility: string;
-  profile_image: string;
+  published: string;
+  profileImage: string;
 }

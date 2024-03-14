@@ -105,6 +105,7 @@ def get_post_comments(request, authorid, postid):
     for comment in comments:
         author = Author.objects.get(pk=comment.author.id)
         author_data = {
+            "username": author.username,
             "type": author.type,
             "id": str(author.id),
             "url": author.url,
@@ -138,6 +139,7 @@ def get_post_comment(request, authorid, postid, commentid):
         "url": author.url,
         "host": author.host,
         "displayName": author.displayName,
+        "username": author.username,
         "github": author.github,
         "profileImage": author.profileImage
     }

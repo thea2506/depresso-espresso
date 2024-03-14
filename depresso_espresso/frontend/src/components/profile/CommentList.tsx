@@ -63,24 +63,26 @@ const CommentList = ({
 
     const fetchComments = async () => {
       try {
-        const response = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments`);
-        if (response.status === 200) {
+        const response = await axios.post(
+          `/authors/${post.author.pk}/posts/${post.id}/comments`
+        );
+        console.log(response);
+        console.log(response.data);
+        if (response.status === 200 && response.data.length > 0) {
           if (response.data.length > 0) {
-            const commentModels = response.data.comment.map((rawcomment: any, index: number) => {
-              return {
-                postid: rawcomment.fields.postid,
-                id: rawcomment.fields.id,
-                author: rawcomment.fields.author,
-
-                contenttype: rawcomment.fields.contenttype,
-                comment: rawcomment.fields.comment,
-
-                publishdate: rawcomment.fields.publishdate,
-                
-                visibility: rawcomment.fields.visibility,
-                profile_image: response.data.author[index].fields.profile_image,
-              };
-            });
+            const commentModels = response.data.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (rawcomment: any) => {
+                return {
+                  type: "comment",
+                  author: rawcomment.author,
+                  comment: rawcomment.comment,
+                  contenttype: rawcomment.contenttype,
+                  published: rawcomment.published,
+                  id: rawcomment.id,
+                };
+              }
+            );
             setComments(commentModels);
           } else {
             console.log("No comments found");
@@ -96,7 +98,7 @@ const CommentList = ({
 
     fetchProfile();
     fetchComments();
-  }, [post.id, refresh]);
+  }, [post.author.pk, post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
@@ -105,7 +107,7 @@ const CommentList = ({
       formField.append("postid", post.id);
 
       const response = await axios.post("/make_comment", formField);
-      
+
       if (response.data.success) {
         console.log("Comment creation successful");
         setRefresh(!refresh);
@@ -145,11 +147,11 @@ const CommentList = ({
             <div className="flex items-center justify-between">
               <UserDisplay
                 username={comment.author.username}
-                user_img_url={comment.profile_image}
-                link={`/authors/${comment.author.id}/posts/${comment.postid.id}/comments/${comment.id}`}
+                user_img_url={comment.author.profileImage}
+                link={comment.author.url}
               />
               <p className="text-sm opacity-70">
-                {formatDateString(comment.publishdate.substring(0, 16))}
+                {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
             <p className="text-start">{comment.comment}</p>
