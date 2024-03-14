@@ -1,12 +1,13 @@
 export interface CommentModel {
-  authorid: string;
-  authorname: string;
-  comment: string;
-  commentlikecount: number | null;
+  postid: any;
+  id: string;
+  author: any;
+  
   contenttype: string | null;
-  editdate: string | null;
-  liked_by: string[];
-  postid: string;
+  comment: string;
+
   publishdate: string;
+  
+  visibility: string;
   profile_image: string;
 }

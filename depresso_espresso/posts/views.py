@@ -1,8 +1,7 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Post
-from .models import Comment
+from .models import Post, Comment, Like, Share
 from authentication.models import Author
 from django.http import JsonResponse
 from django import forms
@@ -16,17 +15,17 @@ from django.shortcuts import get_object_or_404
 
 
 class PostView(forms.ModelForm):
-    template_name = "posts/posts.html"
+    template_name = "post/post.html"
 
     def get(self, request):
         return render(request, "index.html")
     class Meta:
         model = Post
-        # all_fields = ("type", "title", "id", "published", "visibility", "source", "origin", "author", "description", "contentType", "content", "count", "comments", "liked_by")
+        # fields = ("type", "title", "id", "source", "origin", "description", "contentType", "content", "count", "comments", "published", "visibility")
         fields = ("title", "visibility", "description", "contentType", "content")
 
 class CommentView(forms.ModelForm):
-    template_name = "comments/comments.html"
+    template_name = "comment/comment.html"
 
     def get(self, request):
         return render(request, "index.html")
@@ -36,30 +35,31 @@ class CommentView(forms.ModelForm):
   
 def make_post(request):
     data ={}
-    if request.method == 'POST':  
+    if request.method == 'POST':
         form = PostView(request.POST)
-      
         if form.is_valid():
           post = form.save(commit=False)
           
           post.type = "post"
           post.title = form.cleaned_data["title"]
+          post.author = request.user
+
           post.description = form.cleaned_data["description"]
           post.contentType = form.cleaned_data["contentType"]
           post.content = form.cleaned_data["content"]
-          post.author = request.user
-          post.visibility = form.cleaned_data["visibility"]
-          post.published = make_aware(datetime.datetime.now())
 
+          post.published = make_aware(datetime.datetime.now())
+          post.visibility = form.cleaned_data["visibility"]
+          
           # images
           form.save(commit = True)
-          data['success'] = True  
+          data['success'] = True
           post.save()
-          return JsonResponse(data) 
+          return JsonResponse(data)
         else:
           print("form is not valid", form.errors)
-          data['success'] = False  
-        return JsonResponse(data) 
+          data['success'] = False
+        return JsonResponse(data)
 
     return render(request, "index.html")
 
@@ -67,30 +67,104 @@ def get_all_posts(request):
   posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
   authors = [Author.objects.get(id=(post.author.id)) for post in posts]
   data = serializers.serialize('json', posts)
+  # author_data = serializers.serialize('json', authors, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
+
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
+
   return HttpResponse(results, content_type='application/json')
 
-def get_author_posts(request):
-  author_id = request.GET.get('authorid')
-  author = [Author.objects.get(id=author_id)]
+def get_author_posts(request, authorid):
+  '''Get all posts by an author'''
+  author = [Author.objects.get(id=authorid)]
+  
   posts = Post.objects.filter(author=author[0]).order_by('-published')
   data = serializers.serialize('json', posts)
+  # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
   return HttpResponse(results, content_type='application/json')
 
-def toggle_like(request):
-  data = json.loads(request.body)
-  postid = data.get('postid')
+def get_author_post(request, authorid, postid):
+  '''Get a single post by an author'''
+  author = [Author.objects.get(id=authorid)]
+  post = Post.objects.get(id=postid)
+  # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
+  author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
+  results = '{"post": ', post, ', "author": ', author_data, '}'
+  return HttpResponse(results, content_type='application/json')
+
+def get_post_comments(request, authorid, postid):
+    '''Get all comments on a post'''
+    post = Post.objects.get(pk=postid)
+    comments = Comment.objects.filter(postid=post)
+
+    merged_data = []
+    for comment in comments:
+        author = Author.objects.get(pk=comment.author.id)
+        author_data = {
+            "type": author.type,
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        comment_data = {
+            "author": author_data,
+            "comment": comment.comment,
+            "contentType": comment.contenttype,
+            "published": comment.publishdate.isoformat(),
+            "id": str(comment.id)
+        }
+        merged_data.append(comment_data)
+
+    data = json.dumps(merged_data, indent=4)
+
+    return HttpResponse(data, content_type='application/json')
+
+def get_post_comment(request, authorid, postid, commentid):
+    '''Get a single comment on a post'''
+    comment = Comment.objects.get(id=commentid)
+
+    merged_data = []
+    author = Author.objects.get(pk=comment.author.id)
+    author_data = {
+        "type": author.type,
+        "id": str(author.id),
+        "url": author.url,
+        "host": author.host,
+        "displayName": author.displayName,
+        "github": author.github,
+        "profileImage": author.profileImage
+    }
+    comment_data = {
+        "author": author_data,
+        "comment": comment.comment,
+        "contentType": comment.contenttype,
+        "published": comment.publishdate.isoformat(),
+        "id": str(comment.id)
+    }
+    merged_data.append(comment_data)
+
+    data = json.dumps(merged_data, indent=4)
+
+    return HttpResponse(data, content_type='application/json')
+
+def toggle_like(request, authorid, postid):
+  '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
  
-  if request.user in post.liked_by.all():
-    post.liked_by.remove(request.user)
+  if not Like.objects.filter(author = request.user, post = post).exists():
+      Like.objects.create(author = request.user, post = post)
+      post.likecount = F('likecount') + 1
+
   else:
-    post.liked_by.add(request.user)
+      Like.objects.get(author=request.user, post=post).delete()
+      post.likecount = F('likecount') - 1
 
   post.save()
   return HttpResponse("Success")
@@ -99,17 +173,18 @@ def make_comment(request):
     data ={}
     if request.method == 'POST':
         form = CommentView(request.POST)
-        
+        print(form, form.errors)
         if form.is_valid():  
             comment = form.save(commit=False)
             comment.comment = form.cleaned_data["comment"]
-            comment.authorid = request.user
+            comment.author = request.user
             naive_datetime = datetime.datetime.now()
             comment.publishdate = make_aware(naive_datetime)
-            comment.authorname = request.user.displayName
 
-            post = form.cleaned_data.get("postid")
-            comment.postid = post
+            postid = form.cleaned_data.get("postid")
+            post = Post.objects.get(pk=postid.id)
+            comment.post = post
+            comment.visibility = post.visibility
             post.count = F('count') + 1
             post.save()
 
@@ -123,26 +198,6 @@ def make_comment(request):
 
     rend = CommentView().get(request)
     return rend
-
-def get_post_comments(request):
-  '''Get all comments for a post'''
-
-  data = json.loads(request.body)
-  postid = data.get('postId')
-  comments = Comment.objects.filter(postid=postid)
-  commentData = serializers.serialize('json', comments)
-  authorData = []
-  for comment in comments:
-    author = Author.objects.get(username=(comment.authorid))
-    authorData.append(author)
-  authorData = serializers.serialize("json", authorData, fields=["id", "profileImage", "displayName", "github", "displayName"])
-
-  list_a = json.loads(commentData)
-  list_b = json.loads(authorData)
-  merged = {"author": list_b, "comment": list_a}
-  data = json.dumps(merged)
-
-  return HttpResponse(data, content_type='application/json')
 
 def delete_post(request):
   '''Delete a post'''
@@ -166,10 +221,10 @@ def delete_comment(request):
   data = {}
 
   data = json.loads(request.body)
-  commentid = data.get('commentid')
-  comment = Comment.objects.filter(commentid=commentid)
+  commentid = data.get('id')
+  comment = Comment.objects.filter(id=commentid)
 
-  if request.user == comment.authorid.user:
+  if request.user == comment.author:
     comment.delete()
     data['success'] = True  
     return JsonResponse(data) 
@@ -196,31 +251,31 @@ def edit_post(request):
 
   return JsonResponse(data)
 
-def share_post(request):
+def share_post(request, authorid, postid):
   '''Share a post'''
   data = {}
   
-  postid = request.POST.get('postid')
-  postauthorid = request.POST.get('postauthorid')
-  authorid = request.POST.get('authorid')
-
   post = Post.objects.get(pk=postid)
-  author = Author.objects.get(id=authorid)
-  print(request.user, post, postid)
-  print(author, post.shared_by.all(), author in post.shared_by.all())
+  postAuthor = Author.objects.get(id=authorid)
+
+  sharingAuthor = request.user
+
+  print("yyyeeeeeeeeeeeeeeeeee", request.user, post, postid, postAuthor, sharingAuthor)
 
   if request.method == 'POST':
-      if authorid == postauthorid:
+      if sharingAuthor == postAuthor:
         print("horrible sharing failure")
         data['success'] = False
         data['message'] = "Sharing own post"
 
-      elif author not in post.shared_by.all():
+      elif not Share.objects.filter(author = request.user, post = post).exists():
         print("great sharing success")
-        post.shared_by.add(authorid)
+        Share.objects.create(author = request.user, post = post)
+        post.sharecount = F('sharecount') + 1
+        post.save()
         data['success'] = True
 
-      elif author in post.shared_by.all():
+      elif Share.objects.filter(author = request.user, post = post).exists():
         print("horrible sharing failure")
         data['success'] = False
         data['message'] = "Already shared"
@@ -229,3 +284,30 @@ def share_post(request):
 
 def frontend_explorer(request):
   return render(request, "index.html")
+
+def get_post_likes(request, authorid, postid):
+    '''Get all likes for a post'''
+
+    likes = Like.objects.filter(pk=postid)
+
+    merged_data = []
+    for like in likes:
+        author = Author.objects.get(pk=like.author.id)
+        author_data = {
+            "type": "author",
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        like_data = {
+            "post": like.post.id,
+            "author": author_data,
+        }
+        merged_data.append(like_data)
+
+    data = json.dumps(merged_data, indent=4)
+
+    return HttpResponse(data, content_type='application/json')

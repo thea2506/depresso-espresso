@@ -53,10 +53,8 @@ const ProfilePage = () => {
 
     const fetchFollowers = async () => {
       try {
-        console.log("authorId", authorId);
         const response = await axios.get(`${authorId}/get_followers`);
         const data = response.data;
-        console.log("data", data[0]);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const followerModels = data?.map((rawauthor: any) => ({
@@ -78,29 +76,30 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_author_posts", {
-          params: {
-            authorid: authorId,
-          },
-        });
+        const response = await axios.get(`/authors/${authorId}/posts`);
         const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = allData.posts.map((rawpost: any) => {
           const author = allData.authors[0];
           author.fields.id = author.pk;
           return {
+            // type: rawpost.fields.type,
+            title: rawpost.fields.title,
+            id: rawpost.pk,
+
             author: author,
 
-            id: rawpost.pk,
-            title: rawpost.fields.title,
             description: rawpost.fields.description,
             contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
+
             count: rawpost.fields.count,
+
             published: rawpost.fields.published,
             visibility: rawpost.fields.visibility,
 
-            likes: rawpost.fields.liked_by.length,
+            likecount: rawpost.fields.likecount,
+            sharecount: rawpost.fields.sharecount,
           };
         });
         setPosts(postModels);
