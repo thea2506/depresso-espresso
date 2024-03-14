@@ -66,8 +66,6 @@ const CommentList = ({
         const response = await axios.post(
           `/authors/${post.author.pk}/posts/${post.id}/comments`
         );
-        console.log(response);
-        console.log(response.data);
         if (response.status === 200 && response.data.length > 0) {
           if (response.data.length > 0) {
             const commentModels = response.data.map(
