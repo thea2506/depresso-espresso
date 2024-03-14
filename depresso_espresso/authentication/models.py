@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 class Author(AbstractUser):
     type = models.CharField(max_length=50, default="author")
     id = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4)
+    #uuid = models.UUIDField(unique = True, db_column='authorID', primary_key= True, default=uuid.uuid4)
     host = models.URLField(null = True, blank = True)
     displayName = models.CharField(null=False, blank=False, max_length=50)
     username = models.CharField(unique=True, null=False, blank=False, max_length=50)

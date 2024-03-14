@@ -39,23 +39,6 @@ const MakePost = () => {
     }
   };
 
-  /** 
-    const checkImageURL = (imageURL: string) => {
-      const img = new Image();
-      img.src = imageURL;
-      if (img.complete) {
-        return true;
-      } else {
-        img.onload = () => {
-          return true;
-        };
-        img.onerror = () => {
-          return false;
-        };
-      }
-    };
-    */
-
   /**
    * Posts the inputs to the backend.
    */
@@ -65,7 +48,7 @@ const MakePost = () => {
       const formField = new FormData();
       formField.append("content", content);
       formField.append("image_url", image_url);
-      const response = await axios.post("/make_post", formField);
+      const response = await axios.post("/new_post/", formField);
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);

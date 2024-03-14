@@ -39,7 +39,7 @@ const Home = () => {
      */
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_all_posts");
+        const response = await axios.get("/get_all_posts/");
         const allData = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = allData.posts.map((rawpost: any, index: number) => {

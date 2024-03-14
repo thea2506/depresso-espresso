@@ -88,7 +88,8 @@ const Profile = ({
 
     const getFollowStatus = async () => {
       try {
-        const response = await axios.get("/check_follow_status", {
+        console.log("Authorid:", id)
+        const response = await axios.get("/check_follow_status/", {
           params: { id: id },
         });
 
@@ -164,7 +165,7 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`/send_follow_request/${id}`);
+      const response = await axios.post(`create_follow_request/from/${JSON.stringify(localStorage.getItem('id'))}/to/${JSON.stringify(id)}`);
       if (response.data.success === true) {
         setStatus("pending");
       }

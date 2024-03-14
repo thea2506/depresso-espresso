@@ -41,7 +41,8 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/api/authors/${authorId}`);
+        console.log("authorId", authorId);
+        const response = await axios.get(`/authors/${authorId}`);
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);

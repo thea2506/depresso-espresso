@@ -50,7 +50,9 @@ def loginUser(request):
         user = Login.post(request)
         if user is not None:
             login(request, user)
-            return JsonResponse({'success': True})
+            print("user id:", user.id)
+            return JsonResponse({'success': True, 'id': user.id})
+        
         else:
             return JsonResponse({'success': False})
     return render(request, "index.html")

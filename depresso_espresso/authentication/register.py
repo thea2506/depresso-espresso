@@ -32,6 +32,7 @@ class Register(UserCreationForm):
         user.host = f"http://{host}/"
         user.set_password(self.cleaned_data["password1"])
         user.url = f"http://{host}/authors/{user.id}"
+
         
         if commit:
             user.save()

@@ -8,10 +8,12 @@ from django.http import JsonResponse
 from django import forms
 import datetime
 from django.db.models import F
+from rest_framework.decorators import api_view
 from django.utils.timezone import make_aware
 from django.core import serializers
 import json
 from django.shortcuts import get_object_or_404
+from django.contrib.sessions.models import Session
 # Create your views here.
 
 
@@ -33,8 +35,16 @@ class CommentView(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ("comment", "postid")
-  
-def make_post(request):
+
+@api_view(['POST'])
+def new_post(request):
+    if request.session.session_key is not None:
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
+
     data ={}
     if request.method == 'POST':  
         form = PostView(request.POST)
@@ -47,7 +57,7 @@ def make_post(request):
           post.description = form.cleaned_data["description"]
           post.contentType = form.cleaned_data["contentType"]
           post.content = form.cleaned_data["content"]
-          post.author = request.user
+          post.author = user
           post.visibility = form.cleaned_data["visibility"]
           post.published = make_aware(datetime.datetime.now())
 

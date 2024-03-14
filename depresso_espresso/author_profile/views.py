@@ -6,6 +6,7 @@ from authentication.models import Author, Following, FollowRequest, Node
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
 import requests
+from django.contrib.sessions.models import Session
 
 
 
@@ -14,20 +15,29 @@ def author_profile(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
         LOCAL PUT ://service/authors/{AUTHOR_ID}: Updates the profile information for authorid'''
     
+    if request.session.session_key is not None:
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
+    
+
     if request.method == "GET":
         
-        if request.user.is_authenticated == False:
+        if user.is_authenticated == False:
           node = checkBasic(request)
           if not node:
              return JsonResponse({"message:" "External Auth Failed"}, status=401)
           
         if Author.objects.filter(id = authorid).exists():
+          print("requesting author from our server")
           if request.META["HTTP_HOST"] in authorid: # if the author is saved on our server:
              author = Author.objects.get(id = authorid)
              author_data = author.values()[0]
              
           else:
-
+             print("requesting author from their server")
              response = requests.get(authorid) # send get request to node to retrieve external author info
              author_data = response.json()      
           
@@ -46,7 +56,9 @@ def author_profile(request, authorid):
           return JsonResponse(data)
         
         else: 
-           return JsonResponse({"message:" "Author not found"}, status=404)
+           return JsonResponse({"message": "Author not found"}, status=404, safe=False)
+        
+    
           
     
     if request.method == "PUT":
@@ -62,6 +74,9 @@ def author_profile(request, authorid):
               author.profileImage = data['profileImage']
             author.save()
             return JsonResponse({"message": "Profile updated successfully"})
+          
+    else:
+       return render(request, "index.html")
           
 
 
@@ -103,6 +118,9 @@ def get_authors(request):
 
     return JsonResponse(data, safe=False)
   
+
+
+
 
 
 @api_view(['GET'])
@@ -345,13 +363,16 @@ def create_follow_request(request, authorid, foreignid):
       Use this endpoint to send a follow request to an author's inbox 
       Sent to inbox of "object"'''
     
+    
     if request.method == 'POST':
     
       send_external = None
 
       if request.META["HTTP_HOST"] in authorid: # if the author is saved on our server:
+          print("HEREEEEEEEEEEEEEE")
           author = Author.objects.get(id = authorid)
           author_data = author.values()[0]
+          
           
       else:
           split_id = authorid.split("authors")
@@ -492,8 +513,11 @@ def get_friends(request, authorid):
 
 def check_follow_status(request):
   '''Check the follow status between two authors'''
+
+  
   data = request.GET
   authorid = data["id"]
+  print("AUTHORID:", authorid)
   author = Author.objects.get(id=authorid)
 
   result = {}
