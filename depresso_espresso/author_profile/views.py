@@ -25,7 +25,6 @@ def author_profile(request, authorid):
           user = Author.objects.get(id=uid)
 
     if request.method == "PUT":
-        print("EDITING PROFILE:")
         if user.is_authenticated == True:
           author = get_object_or_404(Author, pk=authorid)
           data = json.loads(request.body)
@@ -40,8 +39,6 @@ def author_profile(request, authorid):
             return JsonResponse({"message": "Profile updated successfully"})
 
     if request.method == "GET":
-        print("Methodget")
-        
         if user.is_authenticated == False:
           node = checkBasic(request)
           if not node:
@@ -121,7 +118,6 @@ def get_followers(request, authorid):
   ''' LOCAL and REMOTE   
       GET ://service/authors/{AUTHOR_ID}/followers: Get all followers of an author'''
   
-
   if request.session.session_key is not None:
       session = Session.objects.get(session_key=request.session.session_key)
       if session:
@@ -362,8 +358,7 @@ def create_follow_request(request, foreignid):
     '''LOCAL
       Use this endpoint to send a follow request to an author's inbox 
       Sent to inbox of "object"'''
-
-    print("FOREIGNID:", foreignid)
+    
     if request.method == 'POST':
       
       if request.session.session_key is not None:
@@ -537,10 +532,9 @@ def front_end_inbox(request, authorid):
 
 
 
-def get_follow_requests(request): # Can this be extended to be inbox?
+def get_follow_requests(request):
     '''Get all follow requests for an author'''
     
-
     if request.method == "GET":
       authorid = request.GET.get("id")
       if authorid:
@@ -578,29 +572,8 @@ def front_end(request, authorid):
 def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
 
-    
 
-# edit profile has been merged with author profile as a PUT request to match requirements
-""" def edit_profile(request, authorid):
-    '''Edit the profile of an author'''
-    author = Author.objects.get(id=authorid)
-    if request.method == "POST":
-        data = request.POST
-        if request.user == author:
-          if data.get('displayName') != None:
-            author.displayName = data['displayName']
-          author.github = data['github']
-          author.profileImage = data['profileImage']
-          author.save()
-          return JsonResponse({"message": "Profile updated successfully"})
-        else:
-          return send_follow_request(request, authorid)
-        
-    return JsonResponse({"message": "Profile not updated"}) """
-
-
-
-""" def unfollow(request):
+def unfollow(request):
   '''Unfollow another author'''
   unfollowedAuthor = Author.objects.get(id=authorid)
 
@@ -615,4 +588,4 @@ def get_image(request, image_file):
         Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).delete()
         print(message)
         return JsonResponse({"message": message,
-                              "success": True}) """
+                              "success": True})

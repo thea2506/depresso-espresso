@@ -56,9 +56,8 @@ const ProfilePage = () => {
         console.log("authorId", authorId);
         const response = await axios.get(`/authors/${authorId}/followers/`);
         const data = response.data;
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const followerModels = data?.map((rawauthor: any) => ({
+        const followerModels = data?.items?.map((rawauthor: any) => ({
           type: rawauthor.type,
           id: rawauthor.id,
           url: rawauthor.url,
@@ -84,7 +83,6 @@ const ProfilePage = () => {
           const author = allData.authors[0];
           author.fields.id = author.pk;
           return {
-            // type: rawpost.fields.type,
             title: rawpost.fields.title,
             id: rawpost.pk,
 
