@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#regioin imports
 import defaultImg from "../../assets/images/default_profile.jpg";
 import { Button } from "../Button";
@@ -6,8 +7,8 @@ import axios from "axios";
 
 //#region interface
 interface NotificationProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   author: any;
+  authorid: any;
   type: "follow" | "share" | "post" | "like" | "comment";
   refresh?: boolean;
   setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
@@ -19,7 +20,7 @@ interface NotificationProps {
  * @component
  *
  * @param {Object} props - The component props.
- * @param {string} props.username - The username associated with the notification.
+ * @param {string} props.id - The username associated with the notification.
  * @param {"follow" | "share"} props.type - The type of notification.
  * @param {string} props.link - The link to the user's profile or the shared post.
  *
@@ -27,6 +28,7 @@ interface NotificationProps {
  */
 const Notification = ({
   author,
+  authorid,
   type,
   refresh,
   setRefresh,
@@ -42,12 +44,15 @@ const Notification = ({
   //#region functions
   const handleAccept = async () => {
     const formField = new FormData();
-    formField.append("username", author.username);
+    formField.append("id", authorid);
     formField.append("decision", "accept");
+
+    const data = { id: authorid, decision: "accept" };
+
     try {
-      const response = await axios.post(
-        "/respond_to_follow_request",
-        formField
+      const response = await axios.put(
+        "/respond_to_follow_request/from/" + authorid,
+        data
       );
       if (response.data.success) {
         setRefresh(!refresh);
@@ -60,12 +65,15 @@ const Notification = ({
 
   const handleDecline = async () => {
     const formField = new FormData();
-    formField.append("username", author.username);
+    formField.append("id", authorid);
     formField.append("decision", "decline");
+
+    const data = { id: authorid, decision: "decline" };
+
     try {
-      const response = await axios.post(
-        "/respond_to_follow_request",
-        formField
+      const response = await axios.put(
+        "/respond_to_follow_request/from/" + authorid,
+        data
       );
       if (response.data.success) {
         setRefresh(!refresh);

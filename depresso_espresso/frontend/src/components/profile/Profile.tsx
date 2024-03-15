@@ -88,7 +88,7 @@ const Profile = ({
 
     const getFollowStatus = async () => {
       try {
-        const response = await axios.get("/check_follow_status", {
+        const response = await axios.get("/check_follow_status/", {
           params: { id: id },
         });
 
@@ -155,7 +155,11 @@ const Profile = ({
     if (newDisplayName !== "") formField.append("displayName", newDisplayName);
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
-    await axios.post(`${id}/edit_profile`, formField);
+
+    const data = {"displayName": newDisplayName, "github": newGithub, "profileImage": newImageURL}
+
+    console.log("SENDING PUT REQUEST TO EDIT: ID:", id)
+    await axios.put(`/espresso-api/authors/${id}`, data);
     setLoading(!loading);
   };
 
@@ -164,7 +168,7 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`/send_follow_request/${id}`);
+      const response = await axios.post(`/authors/create_follow_request/to/${id}`);
       if (response.data.success === true) {
         setStatus("pending");
       }

@@ -189,7 +189,17 @@ django_on_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'authentication.Author' # User model to use in migration
 
-REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
+#REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
 
 MEDIA_ROOT =  ""
 MEDIA_URL = ""
+
+# reference: https://swesadiqul.medium.com/basic-authentication-in-django-rest-framework-bd9900bdb413 Md Sadiqul Islam 3/11/24
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, RegisterConfig, Following, FollowRequest
+from .models import Author, RegisterConfig, Following, FollowRequest, Node
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -9,6 +9,15 @@ from django.core.exceptions import ValidationError
 # User registration: https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Admin_site 2/17/2024
 # https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#a-full-example 2/19/2024
 # For only allowing 1 RegisterConfiguration: https://stackoverflow.com/questions/39412968/allow-only-one-instance-of-a-model-in-django answer from Ivan Semochkin 3/9/2024
+
+
+class NodeConfigForm(forms.ModelForm):
+    """A form for configuring optional node to node connections"""
+    class Meta:
+            model = Node
+            fields = ('ourUsername', 'ourPassword', 'theirUsername', 'theirPassword', 'baseUrl')
+ 
+    
 
 class RegisterConfigForm(forms.ModelForm):
     """A form for configuring optional user registration admin perms"""
@@ -65,7 +74,8 @@ class AuthorAdmin(admin.ModelAdmin):
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('requireRegisterPerms',)
 
-    # todo: https://stackoverflow.com/questions/18108521/how-to-show-a-many-to-many-field-with-list-display-in-django-admin
+class NodeAdmin(admin.ModelAdmin):
+    fields = ('ourUsername', 'ourPassword', 'theirUsername', 'theirPassword', 'baseUrl')
 
 @admin.register(Following)
 class FollowingAdmin(admin.ModelAdmin):
@@ -77,3 +87,4 @@ class FollowRequestAdmin(admin.ModelAdmin):
 
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(RegisterConfig, RegisterConfigAdmin)
+admin.site.register(Node, NodeAdmin)
