@@ -11,11 +11,6 @@ from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.contrib.sessions.models import Session
 from authentication.models import Author
-from django.core import serializers
-from .models import RegisterConfig
-from rest_framework.decorators import api_view
-
-
 
 def register(request):
     ''' LOCAL ONLY

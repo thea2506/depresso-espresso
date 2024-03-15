@@ -28,7 +28,8 @@ const NotiPage = () => {
         const response = await axios.get("/get_follow_requests", {
           params: { id: curUser?.id },
         });
-        setFollowRequests(response.data);
+        if (response.data.message != "No new requests")
+          setFollowRequests(response.data);
       } catch (error) {
         console.error("An error occurred", error);
       }

@@ -114,10 +114,6 @@ def get_authors(request):
       })
 
     return JsonResponse(data, safe=False)
-  
-
-
-
 
 
 @api_view(['GET'])
@@ -361,17 +357,13 @@ def foreign_author_follow(request, authorid, foreignid):
 
 
 
-
-
-
-
 @api_view(['POST'])  
 def create_follow_request(request, foreignid):
     '''LOCAL
       Use this endpoint to send a follow request to an author's inbox 
       Sent to inbox of "object"'''
-    
-    
+
+    print("FOREIGNID:", foreignid)
     if request.method == 'POST':
       
       if request.session.session_key is not None:
@@ -380,76 +372,68 @@ def create_follow_request(request, foreignid):
               session_data = session.get_decoded()
               uid = session_data.get('_auth_user_id')
               user = Author.objects.get(id=uid)
-              authorid = user.id
     
       send_external = None
 
       if  Author.objects.filter(id = foreignid).exists(): # if the foreign author is saved on our server:
-          foreign_author = Author.objects.filter(id = foreignid)
-          foreign_data = foreign_author.values()[0]
+          foreign_author = Author.objects.get(id = foreignid)
         
-      else:
-          split_id = foreignid.split("authors")
-          node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
-          username = node["theirUsername"]
-          password = node["theirPassword"]
-          response = requests.get(foreignid, auth=(username, password)) # send get request to node to retrieve external author info
-          foreign_data = response.json()  
-          send_external = "foreign"
+      # else:
+      #     split_id = foreignid.split("authors")
+      #     node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
+      #     username = node["theirUsername"]
+      #     password = node["theirPassword"]
+      #     response = requests.get(foreignid, auth=(username, password)) # send get request to node to retrieve external author info
+      #     foreign_data = response.json()  
+      #     send_external = "foreign"
 
-      if Following.objects.filter(authorid = foreignid, followingid = authorid ).exists():
+      if Following.objects.filter(authorid = user, followingid = foreign_author).exists():
           
         return JsonResponse({"message": "You are already following this author"}, status=405)
 
-
-      elif FollowRequest.objects.filter(requester = authorid, receiver = foreignid).exists():
-        message = user.displayName, "has already sent a follow request to", foreign_data["diaplayName"]
-        print(message)
+      elif FollowRequest.objects.filter(requester = user, receiver = foreign_author).exists():
+        message = user.displayName, "has already sent a follow request to", foreign_author.displayName
         
         return JsonResponse({"message": message, "success": False}, status=405)
       
-      elif not FollowRequest.objects.filter(requester = authorid, receiver = foreignid).exists():
+      elif not FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
           
-        data = {
-            "type": "Follow",      
-            "summary": user.displayName + " wants to follow " + foreign_data["displayName"],
-            "actor":{ 
-                      "type": "author",
-                      "id": authorid,
-                      "url": user.url,
-                      "host": user.host,
-                      "displayName": user.displayName,
-                      "github": user.github,
-                      "profileImage": user.profileImage},
+        # data = {
+        #     "type": "Follow",      
+        #     "summary": user.displayName + " wants to follow " + foreign_author.displayName,
+        #     "actor":{ 
+        #               "type": "author",
+        #               "id": user.id,
+        #               "url": user.url,
+        #               "host": user.host,
+        #               "displayName": user.displayName,
+        #               "github": user.github,
+        #               "profileImage": user.profileImage},
                     
-            "object":{
-                      "type": "author",
-                      "id": foreign_data["id"],
-                      "url": foreign_data["url"],
-                      "host": foreign_data["host"],
-                      "displayName": foreign_data["displayName"],
-                      "github": foreign_data["github"],
-                      "profileImage": foreign_data["profileImage"]
+        #     "object":{
+        #               "type": "author",
+        #               "id": foreign_data["id"],
+        #               "url": foreign_data["url"],
+        #               "host": foreign_data["host"],
+        #               "displayName": foreign_data["displayName"],
+        #               "github": foreign_data["github"],
+        #               "profileImage": foreign_data["profileImage"]
                     
-            }
-        }
+        #     }
+        # }
 
-        if send_external == None: # if the follow request's receiver is on local server
-            requests.post(foreign_data["host"] +"/"+ foreignid + "/inbox/", data) # data sent to local author's inbox
-            FollowRequest.objects.create(requester = user.id, receiver = Author.objects.get(id = foreignid))
+        # if send_external == None: # if the follow request's receiver is on local server
+        #     requests.post(foreign_data["host"] +"/"+ foreignid + "/inbox/", data) # data sent to local author's inbox
+        FollowRequest.objects.create(requester = user.id, receiver = Author.objects.get(id = foreignid))
         
-        elif send_external == "foreign":
-          response = requests.post(foreignid +"/inbox", data, auth=(username, password)) # data sent to foreign author's inbox
-          if response.status != 200:
-             return JsonResponse({"message": "Could not sent request to external node", "success": False}, status=response.status)
-      
-             
+        # elif send_external == "foreign":
+        #   response = requests.post(foreignid +"/inbox", data, auth=(username, password)) # data sent to foreign author's inbox
+        #   if response.status != 200:
+        #      return JsonResponse({"message": "Could not sent request to external node", "success": False}, status=response.status)
         
-        message = user.displayName, "sent a follow request to", foreign_data["displayName"]
+        message = user.displayName, "sent a follow request to", foreign_author.displayName
           
         return JsonResponse({"message": message, "success": True})
-  
-
 
 
 
@@ -458,28 +442,33 @@ def respond_to_follow_request(request, foreignid):
     ''' LOCAL 
         Respond to a follow request from another author'''
     
+    foreign_author = Author.objects.get(id=foreignid)
+
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
-            authorid = user.id
 
     if request.method == "PUT":
         data = json.loads(request.body)
         print(data)
         if data["decision"] == "accept":
-          FollowRequest.objects.filter(requester = foreignid, receiver = authorid).delete()
+          FollowRequest.objects.filter(requester = foreign_author.id, receiver = user.id).delete()
+
+          if Following.objects.filter(authorid = user, followingid = foreign_author).exists():
+            Following.objects.filter(authorid = user, followingid = foreign_author).update(areFriends = True)
+            Following.objects.create(authorid = foreign_author, followingid = user, areFriends = True)
+          else:
+            Following.objects.create(authorid = foreign_author, followingid = user, areFriends = False)
+          message = "Follow request accepted"
           #foreign_author_follow(request, authorid, foreignid)
       
         elif data["decision"] == "decline":
-          FollowRequest.objects.filter(requester = foreignid, receiver = authorid).delete()
-
-          #message = "Follow request from", requestingAuthor.username, "declined by", request.user.username
+          FollowRequest.objects.filter(requester = foreignid, receiver = user.id).delete()
           message = "Follow request declined"
-          print("HEREEEEEEEEEE")
-          return JsonResponse({"message": message,"success": True})
+        return JsonResponse({"message": message,"success": True})
         
     return JsonResponse({"message": "Error responding to follow request",})
 
@@ -575,7 +564,7 @@ def get_follow_requests(request): # Can this be extended to be inbox?
         print("res:", res)
         
         return HttpResponse(res, content_type="application/json")
-      #return JsonResponse({"message": "No new requests"})
+      return JsonResponse({"message": "No new requests"})
     
 
 
