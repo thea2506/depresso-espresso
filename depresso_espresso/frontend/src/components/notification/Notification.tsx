@@ -91,7 +91,7 @@ const Notification = ({
         />
         <div>
           <span className="font-semibold text-secondary-dark">
-            {author.username}{" "}
+            {author.displayName}{" "}
           </span>
           {messages[type]}
         </div>
