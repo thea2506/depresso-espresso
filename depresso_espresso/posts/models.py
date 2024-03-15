@@ -7,44 +7,63 @@ class Post(models.Model):
     type = models.CharField(max_length=50, default="post")
     title = models.TextField(null = True)
     id = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4)
-    published = models.DateTimeField(db_column='editDate', null = True, blank=True)
-    
-    # visibility ["PUBLIC","FRIENDS","UNLISTED"]
-    visibility = models.TextField(null = True)
-    
+
     # Origins
-    source = models.TextField(null = True)
-    origin = models.TextField(null = True)
+    source = models.TextField(blank=True, null = True)
+    origin = models.TextField(blank=True, null = True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     
     # Content
-    description = models.TextField(null = True) 
+    description = models.TextField(null = True)
     contentType = models.TextField(db_column='contentType', null = True)
     content = models.TextField(db_column='content', null = True)
 
     # Interactions tracking
     count = models.IntegerField(db_column='commentCount', blank=True, null=True, default=0)
-    comments = models.URLField() # URL to first page of comments
-    liked_by = models.ManyToManyField(Author, related_name='liked_posts')
-    shared_by = models.ManyToManyField(Author, symmetrical=False, related_name='shared_posts', blank=True)
+    likecount = models.IntegerField(db_column='likeCount', blank=True, null=True, default=0)
+    sharecount = models.IntegerField(db_column='sharecount', blank=True, null=True, default=0)
+    comments = models.URLField(blank=True, null=True) # URL to first page of comments
+
+    published = models.DateTimeField(db_column='publishDate', null = True, blank=True)
+    
+    # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
+    visibility = models.TextField(null = True)
 
     class Meta:
         managed = True
 
 class Comment(models.Model):
-    postid = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='postID') 
-    commentid = models.UUIDField(db_column='commentID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
-    authorid = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
-    authorname = models.TextField(null = True)
+    # postid is still a post object and not postid
+    # current name is just to account for django's oppressive naming convention
+    postid = models.ForeignKey(Post, on_delete=models.CASCADE) 
+    
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    id = models.UUIDField(db_column='commentID', primary_key=True, default=uuid.uuid4) # Maybe make read-only?
 
     contenttype = models.TextField(db_column='contentType', null = True, blank=True)
     comment = models.TextField()
-    publishdate = models.DateTimeField(db_column='publishDate')
-    editdate = models.DateTimeField(db_column='editDate', null = True, blank=True)
 
-    commentlikecount = models.IntegerField(db_column='commentLikeCount', blank=True, null=True)
-    liked_by = models.ManyToManyField(Author, symmetrical=False, related_name='liked_comments')
+    publishdate = models.DateTimeField(db_column='publishDate')
+
+    # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
+    visibility = models.TextField(null = True)
 
     class Meta:
         managed = True
         db_table = 'comments'
+
+class Like(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="liking_author")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="liked_post")
+
+    class Meta:
+        managed = True
+        unique_together = ("post", "author")
+
+class Share(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="sharing_author")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="shared_post")
+
+    class Meta:
+        managed = True
+        unique_together = ("post", "author")
