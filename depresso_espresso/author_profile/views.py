@@ -4,6 +4,7 @@ from posts.models import Post
 from authentication.models import Author, Following, FollowRequest, Node
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
+from django.core import serializers
 import requests
 from django.contrib.sessions.models import Session
 import json
@@ -174,6 +175,7 @@ def foreign_author_follow(request, authorid, foreignid):
       
              
     else:
+        # They (other servers) will have to send a json string of the foreing author's data. I do not think we need to do this to retrieve external author info
         split_id = authorid.split("authors")
         node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
         username = node["theirUsername"]
@@ -343,8 +345,6 @@ def foreign_author_follow(request, authorid, foreignid):
         return JsonResponse({"message": message,"success": True})
       
 
-
-
 @api_view(['POST'])  
 def create_follow_request(request, foreignid):
     '''LOCAL
@@ -390,7 +390,7 @@ def create_follow_request(request, foreignid):
 
 @api_view(['PUT']) 
 def respond_to_follow_request(request, foreignid):
-    ''' LOCAL 
+    ''' LOCAL/REMOTE 
         Respond to a follow request from another author'''
     
     # Foreign author should exist in our database, since we created it when the follow request was sent
@@ -485,6 +485,25 @@ def check_follow_status(request):
 
 def front_end_inbox(request, authorid):
     return render(request, 'index.html')
+
+def get_follow_requests(request): # Can this be extended to be inbox?
+    '''Get all follow requests for an author'''
+    
+
+    if request.method == "GET":
+      authorid = request.GET.get("id")
+      if authorid:
+        follow_requests = FollowRequest.objects.filter(receiver=authorid)
+        requesters = []
+        for follow_request in follow_requests:
+          # include logic here that checks if requester has an external host
+          requester = Author.objects.get(id=follow_request.requester)
+          requesters.append(requester)
+
+        res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName", "url"])
+        
+        return HttpResponse(res, content_type="application/json")
+      return JsonResponse({"message": "No new requests"})
 
 def user_posts(request, username):
     user_posts = Post.objects.filter(authorid__username=username)

@@ -20,4 +20,5 @@ urlpatterns = [
     path('authors/images/<str:image_file>', views.get_image, name='image_file'),
     path('check_follow_status/', views.check_follow_status, name='check_follow_request'),
     path("authors/<str:authorid>/inbox", views.front_end_inbox, name="front_end_inbox"),
+    path("get_follow_requests", views.get_follow_requests, name="get_follow_requests"),
 ]
