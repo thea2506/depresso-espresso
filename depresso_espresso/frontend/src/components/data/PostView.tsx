@@ -54,19 +54,12 @@ const PostView = ({
 
   //#region functions
   const handleCommentClick = () => {
-    console.log("Comments clicked");
     setShowComments(!showComments);
   };
 
   const handleShareClick = async () => {
-    console.log("Share clicked");
-
-    const formField = new FormData();
-    formField.append("postid", post.id);
-    formField.append("postauthorid", post.author.pk);
-    formField.append("authorid", curUser.id);
     try {
-      const response = await axios.post("/share_post", formField);
+      const response = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/share_post`);
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
@@ -89,7 +82,7 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    await axios.post("/toggle_like", { postid: post.id });
+    await axios.post(`authors/${post.author.pk}/posts/${post.id}/toggle_like`);
     setRefresh(!refresh);
   };
 
@@ -123,7 +116,7 @@ const PostView = ({
   const interactSection = [
     {
       icon: <GoHeart />,
-      count: post.likes,
+      count: post.likecount,
       onClick: handleLikeToggle,
     },
     {
@@ -131,7 +124,11 @@ const PostView = ({
       count: post.count,
       onClick: handleCommentClick,
     },
-    { icon: <GoShare />, count: post.sharecount, onClick: handleShareClick },
+    {
+      icon: <GoShare />,
+      count: post.sharecount,
+      onClick: handleShareClick
+    },
   ];
 
   return (

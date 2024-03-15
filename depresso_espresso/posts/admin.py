@@ -1,5 +1,4 @@
-from .models import Post
-from .models import Comment
+from .models import Post, Comment, Like, Share
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -36,7 +35,7 @@ class CommentCreationForm(forms.ModelForm):
     """A form for creating new comments."""
     class Meta:
         model = Comment
-        fields = ('postid', 'authorid', 'publishdate', 'comment')
+        fields = ('postid', 'author', 'publishdate', 'comment')
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -51,10 +50,18 @@ class CommentChangeForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ('postid', 'authorid', 'publishdate', 'comment')
+        fields = ('postid', 'author', 'publishdate', 'comment')
 
 class CommentsAdmin(admin.ModelAdmin):
-    list_display = ('postid', 'authorid', 'publishdate', 'comment', "commentid")
+    list_display = ('postid', 'author', 'publishdate', 'comment', "id")
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post')
+
+@admin.register(Share)
+class ShareAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post')
 
 admin.site.register(Post, PostsAdmin)
 admin.site.register(Comment, CommentsAdmin)
