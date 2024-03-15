@@ -1,9 +1,6 @@
 from . import views
 from django.urls import path
 
-from posts import views as post_views
-
-
 urlpatterns = [
 
     # authors
@@ -20,7 +17,6 @@ urlpatterns = [
 
     path('authors/<str:authorid>', views.front_end, name ='frontend'),
     path('user/<str:username>/', views.user_posts, name='user_posts'),
-    path('get_author_posts', post_views.get_author_posts, name='author_posts'),
     path('authors/images/<str:image_file>', views.get_image, name='image_file'),
     path('check_follow_status/', views.check_follow_status, name='check_follow_request'),
     path("authors/<str:authorid>/inbox", views.front_end_inbox, name="front_end_inbox"),

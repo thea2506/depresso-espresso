@@ -9,10 +9,11 @@ class Author(AbstractUser):
     #uuid = models.UUIDField(unique = True, db_column='authorID', primary_key= True, default=uuid.uuid4)
     host = models.URLField(null = True, blank = True)
     displayName = models.CharField(null=False, blank=False, max_length=50)
-    username = models.CharField(unique=True, null=False, blank=False, max_length=50)
     url = models.URLField(null = True, blank = True)
     github = models.URLField(null = True, blank = True)
     profileImage = models.URLField(null = True, blank = True)
+
+    username = models.CharField(unique=True, null=False, blank=False, max_length=50)
     allowRegister = models.BooleanField(null = False, blank = False, default=False)
 
 class RegisterConfig(models.Model):

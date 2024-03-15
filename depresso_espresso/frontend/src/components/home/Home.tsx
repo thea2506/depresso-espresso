@@ -41,23 +41,29 @@ const Home = () => {
       try {
         const response = await axios.get("/get_all_posts/");
         const allData = response.data;
+        
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = allData.posts.map((rawpost: any, index: number) => {
           const author = allData.authors[index];
           author.fields.id = author.pk;
           return {
+            // type: rawpost.fields.type,
+            title: rawpost.fields.title,
+            id: rawpost.pk,
+
             author: author,
 
-            id: rawpost.pk,
-            title: rawpost.fields.title,
             description: rawpost.fields.description,
             contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
+
             count: rawpost.fields.count,
+
             published: rawpost.fields.published,
             visibility: rawpost.fields.visibility,
 
-            likes: rawpost.fields.liked_by.length,
+            likecount: rawpost.fields.likecount,
+            sharecount: rawpost.fields.sharecount,
           };
         });
         setPosts(postModels);

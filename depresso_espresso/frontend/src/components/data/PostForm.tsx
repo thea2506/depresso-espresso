@@ -147,7 +147,6 @@ const PostForm = ({
       if (contentType.includes("image") && imageFile) {
         formData.append("content", base64Image);
       } else formData.append("content", content);
-      // count is default to 0
 
       if (edit && postId) formData.append("postid", postId);
 

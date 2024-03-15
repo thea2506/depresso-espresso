@@ -63,40 +63,40 @@ const CommentList = ({
 
     const fetchComments = async () => {
       try {
-        const response = await axios.post("/get_post_comments", {
-          postId: post.id,
-        });
-        if (response.status === 200) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const commentModels = response.data.comment.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (rawcomment: any, index: number) => {
-              return {
-                authorid: rawcomment.fields.authorid,
-                authorname: rawcomment.fields.authorname,
-                comment: rawcomment.fields.comment,
-                commentlikecount: rawcomment.fields.commentlikecount,
-                contenttype: rawcomment.fields.contenttype,
-                editdate: rawcomment.fields.editdate,
-                liked_by: rawcomment.fields.liked_by,
-                postid: rawcomment.fields.postid,
-                publishdate: rawcomment.fields.publishdate,
-                profile_image: response.data.author[index].fields.profile_image,
-              };
-            }
-          );
-          setComments(commentModels);
+        const response = await axios.post(
+          `/authors/${post.author.pk}/posts/${post.id}/comments`
+        );
+        if (response.status === 200 && response.data.length > 0) {
+          if (response.data.length > 0) {
+            const commentModels = response.data.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (rawcomment: any) => {
+                return {
+                  type: "comment",
+                  author: rawcomment.author,
+                  comment: rawcomment.comment,
+                  contenttype: rawcomment.contenttype,
+                  published: rawcomment.published,
+                  id: rawcomment.id,
+                };
+              }
+            );
+            setComments(commentModels);
+          } else {
+            console.log("No comments found");
+            setComments([]);
+          }
         } else {
           console.error("Failed to fetch comments");
         }
       } catch (error) {
-        console.error("An error occurred");
+        console.error("An error occurred", error);
       }
     };
 
     fetchProfile();
     fetchComments();
-  }, [post.id, refresh]);
+  }, [post.author.pk, post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
@@ -144,12 +144,12 @@ const CommentList = ({
           >
             <div className="flex items-center justify-between">
               <UserDisplay
-                username={comment.authorname}
-                user_img_url={comment.profile_image}
-                link={`/authors/${comment.authorid}`}
+                username={comment.author.username}
+                user_img_url={comment.author.profileImage}
+                link={comment.author.url}
               />
               <p className="text-sm opacity-70">
-                {formatDateString(comment.publishdate.substring(0, 16))}
+                {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
             <p className="text-start">{comment.comment}</p>
