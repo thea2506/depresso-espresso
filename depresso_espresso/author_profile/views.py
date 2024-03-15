@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 
 
-@require_http_methods(["GET","PUT"])
+@api_view(["GET","PUT"])
 def author_profile(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
         LOCAL PUT ://service/authors/{AUTHOR_ID}: Updates the profile information for authorid'''
@@ -461,29 +461,32 @@ def create_follow_request(request, foreignid):
 
 
 
-
-
-
-
-
-
 @api_view(['PUT']) 
-def respond_to_follow_request(request, authorid, foreignid):
+def respond_to_follow_request(request, foreignid):
     ''' LOCAL 
         Respond to a follow request from another author'''
+    
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            user = Author.objects.get(id=uid)
+            authorid = user.id
 
     if request.method == "PUT":
-        data = request.PUT
+        data = json.loads(request.body)
+        print(data)
         if data["decision"] == "accept":
           FollowRequest.objects.filter(requester = foreignid, receiver = authorid).delete()
-          foreign_author_follow(request, authorid, foreignid)
+          #foreign_author_follow(request, authorid, foreignid)
       
         elif data["decision"] == "decline":
           FollowRequest.objects.filter(requester = foreignid, receiver = authorid).delete()
 
           #message = "Follow request from", requestingAuthor.username, "declined by", request.user.username
           message = "Follow request declined"
-
+          print("HEREEEEEEEEEE")
           return JsonResponse({"message": message,"success": True})
         
     return JsonResponse({"message": "Error responding to follow request",})
@@ -555,25 +558,32 @@ def front_end_inbox(request, authorid):
 
 def get_follow_requests(request): # Can this be extended to be inbox?
     '''Get all follow requests for an author'''
-    authorid = request.GET.get("id")
-    author = Author.objects.get(id=authorid)
+    
 
     if request.method == "GET":
-      print("Here, id:", authorid)
-      print("author is:", author)
-      follow_requests = FollowRequest.objects.filter(receiver=author)
-      requesters = []
-      
-      for follow_request in follow_requests:
-        print("FOLLOW REQUESTER ID:", follow_request.id)
-        # include logic here that checks if requester has an external host
-        requester = Author.objects.get(id=follow_request.requester)
-        requesters.append(requester)
+      authorid = request.GET.get("id")
+      if authorid:
 
-      print("requesters:", requesters)
-      res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName", "url"])
-      
-      return HttpResponse(res, content_type="application/json")
+        author = Author.objects.get(id=authorid)
+        print("Here, id:", authorid)
+        print("author is:", author)
+        follow_requests = FollowRequest.objects.filter(receiver=author)
+        requesters = []
+        
+        for follow_request in follow_requests:
+          
+          # include logic here that checks if requester has an external host
+          requester = Author.objects.get(id=follow_request.requester)
+          print("FOLLOW REQUESTER ID:", requester.id)
+          requesters.append(requester)
+
+        print("requesters:", requesters)
+        res = serializers.serialize("json", requesters, fields=["profileImage", "username", "github", "displayName", "url"])
+    
+        print("res:", res)
+        
+        return HttpResponse(res, content_type="application/json")
+      #return JsonResponse({"message": "No new requests"})
     
 
 

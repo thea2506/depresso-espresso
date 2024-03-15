@@ -50,6 +50,7 @@ const NotiPage = () => {
             refresh={refresh}
             setRefresh={setRefresh}
             author={request.fields}
+            authorid={request.pk}
             type="follow"
           />
         </div>
