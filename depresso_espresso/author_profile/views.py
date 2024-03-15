@@ -77,18 +77,8 @@ def author_profile(request, authorid):
         else: 
            return JsonResponse({"message": "Author not found"}, status=404, safe=False)
         
-    
-          
-    
-    
-          
     else:
        return render(request, "index.html")
-          
-
-
-
-
 
 
 @api_view(['GET'])
@@ -143,9 +133,6 @@ def get_followers(request, authorid):
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
   
-
-
-  
   if request.method == "GET":
 
     if user.is_authenticated == False:
@@ -186,16 +173,21 @@ def foreign_author_follow(request, authorid, foreignid):
         LOCAL PUT ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
         LOCAL DELETE ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Unfollow another author'''
     
-    if request.user.is_authenticated == False:
-        node = checkBasic(request)
-        if not node:
-            return JsonResponse({"message:" "External Auth Failed"}, status=401)
-        
+
+    if request.session.session_key is not None:
+          session = Session.objects.get(session_key=request.session.session_key)
+          if session:
+              session_data = session.get_decoded()
+              uid = session_data.get('_auth_user_id')
+              user = Author.objects.get(id=uid)
+              authorid = user.id
+    
     send_external = None
-        
-    if request.META["HTTP_HOST"] in authorid: # if the author is saved on our server:
-             author = Author.objects.get(id = authorid)
-             author_data = author.values()[0]
+
+    if  Author.objects.filter(id = authorid).exists(): # if the foreign author is saved on our server:
+        author = Author.objects.filter(id = author)
+        author_data = author.values()[0]
+      
              
     else:
         split_id = authorid.split("authors")
