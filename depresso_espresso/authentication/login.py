@@ -3,10 +3,11 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from django.contrib.auth import authenticate
-from .models import RegisterConfig
 from .models import Author
 
-class Login(LoginView):
+from rest_framework.views import APIView
+
+class Login(APIView, LoginView):
     permission_classes = (permissions.AllowAny)
     template_name = "login.html"
     redirect_authenticated_user = True
