@@ -67,6 +67,7 @@ const Profile = ({
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
   const [curUser, setCurUser] = useState<AuthorModel>();
+  const [otherUser, setOtherUser] = useState<AuthorModel>();
 
   // Follow
   const [status, setStatus] = useState<string>();
@@ -86,6 +87,16 @@ const Profile = ({
       }
     };
 
+    const getOtherUser = async () => {
+      try {
+        const response = await axios.get(`/espresso-api/authors/${id}`);
+        const data = response.data;
+        setOtherUser(data);
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+
     const getFollowStatus = async () => {
       try {
         const response = await axios.get("/check_follow_status/", {
@@ -100,6 +111,7 @@ const Profile = ({
       }
     };
     getCurrentUser();
+    getOtherUser();
     getFollowStatus();
   }, [id]);
 
@@ -156,9 +168,13 @@ const Profile = ({
     formField.append("github", newGithub);
     formField.append("profileImage", newImageURL);
 
-    const data = {"displayName": newDisplayName, "github": newGithub, "profileImage": newImageURL}
+    const data = {
+      displayName: newDisplayName,
+      github: newGithub,
+      profileImage: newImageURL,
+    };
 
-    console.log("SENDING PUT REQUEST TO EDIT: ID:", id)
+    console.log("SENDING PUT REQUEST TO EDIT: ID:", id);
     await axios.put(`/espresso-api/authors/${id}`, data);
     setLoading(!loading);
   };
@@ -168,7 +184,15 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`/authors/create_follow_request/to/${id}`);
+      const response = await axios.post(
+        `/authors/create_follow_request/to/${id}`,
+        {
+          type: "Follow",
+          summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
+          actor: curUser,
+          object: otherUser,
+        }
+      );
       if (response.data.success === true) {
         setStatus("pending");
       }
@@ -190,7 +214,6 @@ const Profile = ({
     }
   };
   //#endregion
-
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
       <ToastContainer />
