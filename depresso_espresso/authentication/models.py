@@ -22,9 +22,12 @@ class RegisterConfig(models.Model):
 class Node(models.Model):
     ourUsername = models.CharField(max_length=50) # username for their node to authenticate with ours 
     ourPassword = models.CharField(max_length=50) # password for their node to authenticate with ours 
-    thierUsername = models.CharField(max_length=50) # username for our node to authenticate with theirs
+    theirUsername = models.CharField(max_length=50) # username for our node to authenticate with theirs
     theirPassword = models.CharField(max_length=50) # password for our node to authenticate with theirs
     baseUrl = models.URLField()
+
+    def __str__(self): # Reference: https://stackoverflow.com/questions/9336463/django-xxxxxx-object-display-customization-in-admin-action-sidebar
+        return self.baseUrl
 
 class Following(models.Model):
     authorid = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="following")
