@@ -65,7 +65,7 @@ const MakePost = () => {
       const formField = new FormData();
       formField.append("content", content);
       formField.append("image_url", image_url);
-      const response = await axios.post("/make_post", formField);
+      const response = await axios.post("/new_post/", formField);
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);
