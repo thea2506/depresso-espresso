@@ -9,13 +9,8 @@ def create_notification(request):
     data = json.loads(request.body)
     type = data['type']
     author = Author.objects.get(id=data["authorid"])
-
-    message = ""
-
-    if type == "post":
-        message = f"{author.displayName} has made a new post"
     
-    Notification.objects.create(author=author, message=message)
+    Notification.objects.create(author=author, type=type)
     return HttpResponse("Notification created")
 
 def get_notifications(request, authorid):
@@ -32,7 +27,7 @@ def get_notifications(request, authorid):
                 "github": notification.author.github,
                 "profileImage": notification.author.profileImage,
             },
-            "message": notification.message,
             "created_at": notification.created_at,
+            "type": notification.type,
         })
     return JsonResponse(data, safe=False)

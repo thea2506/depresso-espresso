@@ -93,7 +93,7 @@ const NotiPage = () => {
               setRefresh={setRefresh}
               author={notification.author}
               authorid={notification.author.id}
-              type="post"
+              type={notification.type}
               createdAt={notification.created_at}
             />
           </div>

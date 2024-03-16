@@ -3,6 +3,6 @@ from .models import Notification
 
 # Register your models here.
 class NotificationModel(admin.ModelAdmin):
-    fields = ("author", "message", "is_read")
+    fields = ("author", "type")
 
 admin.site.register(Notification, NotificationModel)
