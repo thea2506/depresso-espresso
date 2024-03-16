@@ -2,15 +2,18 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Post, Comment, LikePost, LikeComment, Share
-from authentication.models import Author
+from authentication.models import Author, Node
 from django.http import JsonResponse
 from django import forms
 import datetime
 from django.db.models import F
+from rest_framework.decorators import api_view
 from django.utils.timezone import make_aware
 from django.core import serializers
-import json
+import json, requests
 from django.shortcuts import get_object_or_404
+from django.contrib.sessions.models import Session
+
 # Create your views here.
 
 
@@ -32,8 +35,57 @@ class CommentView(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ("comment", "postid")
-  
-def make_post(request):
+
+
+
+@api_view(['GET', 'DELETE', 'PUT'])
+def author_post(request, authorid, postid):
+
+  if request.session.session_key is not None:
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
+    
+      local_author = Author.objects.filter(id = authorid).exists()
+
+  if  not local_author: # if the author of the post is not saved on our server:
+      split_id = authorid.split("authors")
+      node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
+      username = node["theirUsername"]
+      password = node["theirPassword"]
+      response = requests.get(authorid, auth=(username, password)) # send get request to node to retrieve external author info
+      author_data = response.json()
+
+  else: # if the author of the post is saved on our server
+      author = Author.objects.filter(id = author)
+      author_data = author.values()[0]
+
+
+  if request.method == 'GET': # Deal with this later to make it work with foreign authors
+    '''Get a single post by an author'''
+
+    author = [Author.objects.get(id=authorid)]
+    post = Post.objects.get(id=postid)
+    # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
+    author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
+
+    results = '{"post": ', post, ', "author": ', author_data, '}'
+    return HttpResponse(results, content_type='application/json')
+
+
+
+
+@api_view(['POST'])
+def new_post(request):
+    if request.session.session_key is not None:
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
+
     data ={}
     if request.method == 'POST':
         form = PostView(request.POST)
@@ -42,7 +94,7 @@ def make_post(request):
           
           post.type = "post"
           post.title = form.cleaned_data["title"]
-          post.author = request.user
+          post.author = user
 
           post.description = form.cleaned_data["description"]
           post.contentType = form.cleaned_data["contentType"]
@@ -86,15 +138,7 @@ def get_author_posts(request, authorid):
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
   return HttpResponse(results, content_type='application/json')
 
-def get_author_post(request, authorid, postid):
-  '''Get a single post by an author'''
-  author = [Author.objects.get(id=authorid)]
-  post = Post.objects.get(id=postid)
-  # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
-  author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-  results = '{"post": ', post, ', "author": ', author_data, '}'
-  return HttpResponse(results, content_type='application/json')
 
 def get_post_comments(request, authorid, postid):
     '''Get all comments on a post'''

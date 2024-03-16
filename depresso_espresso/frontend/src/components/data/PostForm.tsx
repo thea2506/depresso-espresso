@@ -152,7 +152,7 @@ const PostForm = ({
 
       setForm("");
 
-      const url = edit ? "/edit_post" : "/make_post";
+      const url = edit ? "/edit_post" : "/new_post/";
       const response = await axios.post(url, formData);
 
       if (response.data.success) {

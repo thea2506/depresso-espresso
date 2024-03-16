@@ -38,6 +38,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 
 INSTALLED_APPS = [
 
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -54,7 +55,6 @@ INSTALLED_APPS = [
     'home',
     'author_profile',
     'posts',
-    'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
@@ -110,21 +110,19 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+ 
+# commented out to work with heroku-postgres
 
-'''   
-commented out to work with heroku-postgres
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SocialDistribution',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
-'''
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'SocialDistribution',
+#         'USER': 'postgres',
+#         'PASSWORD': '',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
 
 DATABASES = {
     'default': {
@@ -132,8 +130,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
 
 
 # Password validation
@@ -193,7 +189,17 @@ django_on_heroku.settings(locals())
 
 AUTH_USER_MODEL = 'authentication.Author' # User model to use in migration
 
-REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
+#REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
 
 MEDIA_ROOT =  ""
 MEDIA_URL = ""
+
+# reference: https://swesadiqul.medium.com/basic-authentication-in-django-rest-framework-bd9900bdb413 Md Sadiqul Islam 3/11/24
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ]
+}

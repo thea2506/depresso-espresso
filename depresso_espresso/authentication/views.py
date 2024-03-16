@@ -11,14 +11,11 @@ from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.contrib.sessions.models import Session
 from authentication.models import Author
-from django.core import serializers
-from .models import RegisterConfig
-
-
 
 def register(request):
-    '''Handles a form submission POST request to register
-       returns: JSON data including success status + errors if applicable'''  
+    ''' LOCAL ONLY
+        Handles a form submission POST request to register
+        returns: JSON data including success status + errors if applicable'''  
     if request.method == 'POST':  
         data ={}
         form = Register(request.POST)
@@ -41,20 +38,26 @@ def register(request):
     return render(request, "index.html")
     
 def loginUser(request):
-    '''Handles a form submission POST request to login
-       returns: JSON data including success status + errors if applicable'''
+    ''' LOCAL ONLY
+        Handles a form submission POST request to login
+        returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
         user = Login.post(request)
         if user is not None:
             login(request, user)
-            return JsonResponse({'success': True})
+            print("user id:", user.id)
+            return JsonResponse({'success': True, 'id': user.id})
+        
         else:
             return JsonResponse({'success': False})
     return render(request, "index.html")
 
 def logoutUser(request):
+    ''' LOCAL ONLY
+        Handles a form submission POST request to login
+        returns: JSON data including success status '''
+    
     data = {}
-
     logout(request)
     if request.user.is_authenticated:
         data['success'] = False
@@ -63,6 +66,7 @@ def logoutUser(request):
     return JsonResponse(data)
 
 def curUser(request):
+    '''LOCAL ONLY '''
     data = {} 
     if request.method == 'GET' and request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
@@ -82,3 +86,6 @@ def curUser(request):
             data["success"] = True
         return JsonResponse(data)
     return JsonResponse({'success': False})
+
+
+

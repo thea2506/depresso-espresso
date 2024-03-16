@@ -41,7 +41,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/api/authors/${authorId}`);
+        const response = await axios.get(`/espresso-api/authors/${authorId}`);
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);
@@ -53,11 +53,11 @@ const ProfilePage = () => {
 
     const fetchFollowers = async () => {
       try {
-        const response = await axios.get(`${authorId}/get_followers`);
+        console.log("authorId", authorId);
+        const response = await axios.get(`/authors/${authorId}/followers/`);
         const data = response.data;
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const followerModels = data?.map((rawauthor: any) => ({
+        const followerModels = data?.items?.map((rawauthor: any) => ({
           type: rawauthor.type,
           id: rawauthor.id,
           url: rawauthor.url,
@@ -83,7 +83,6 @@ const ProfilePage = () => {
           const author = allData.authors[0];
           author.fields.id = author.pk;
           return {
-            // type: rawpost.fields.type,
             title: rawpost.fields.title,
             id: rawpost.pk,
 
