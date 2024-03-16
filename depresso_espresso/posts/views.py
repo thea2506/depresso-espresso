@@ -14,8 +14,6 @@ import json, requests
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 
-# Create your views here.
-
 
 class PostView(forms.ModelForm):
     template_name = "post/post.html"

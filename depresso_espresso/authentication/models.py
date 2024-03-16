@@ -2,10 +2,9 @@ from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
 class Author(AbstractUser):
 
-    # Identifiers, can't be changed by user
+    # Identifiers, can't be modified by the user
     id = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4)
     username = models.CharField(unique=True, null=False, blank=False, max_length=50)
     url = models.URLField(null = True, blank = True)

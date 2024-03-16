@@ -11,14 +11,11 @@ class StreamView(TemplateView):
     def get(self, request):
         return render(request, "index.html")
 
-# Create your views here.
-
 @login_required
 def stream(request):
     '''Shows the user their stream page'''
     rend = StreamView().get(request)
     return rend
-
 
 
 """
@@ -28,9 +25,4 @@ def search(request):
     SearchView()
     return render(request, "index.html")
     
-
-    
 """
-
-
-
