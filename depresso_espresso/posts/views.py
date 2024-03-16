@@ -265,8 +265,8 @@ def delete_post(request):
 
   if request.user == post.author:
     post.delete()
-    data['success'] = True  
-    return JsonResponse(data) 
+    data['success'] = True
+    return JsonResponse(data)
   
   else:
     data['success'] = False
@@ -282,7 +282,7 @@ def delete_comment(request):
 
   if request.user == comment.author:
     comment.delete()
-    data['success'] = True  
+    data['success'] = True
     return JsonResponse(data) 
   
   else:
@@ -336,7 +336,7 @@ def share_post(request, authorid, postid):
         data['success'] = False
         data['message'] = "Post not shareable"
 
-      elif Share.objects.filter(author = request.user, post = post).exists() and post.visibility == "PUBLIC":
+      elif Share.objects.filter(author = request.user, post = post).exists():
         print("horrible sharing failure")
         data['success'] = False
         data['message'] = "Already shared"

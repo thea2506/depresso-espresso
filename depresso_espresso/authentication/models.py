@@ -4,18 +4,27 @@ from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class Author(AbstractUser):
-    type = models.CharField(max_length=50, default="author")
+
+    # Identifiers, can't be changed by user
     id = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4)
-    #uuid = models.UUIDField(unique = True, db_column='authorID', primary_key= True, default=uuid.uuid4)
-    host = models.URLField(null = True, blank = True)
-    displayName = models.CharField(null=False, blank=False, max_length=50)
+    username = models.CharField(unique=True, null=False, blank=False, max_length=50)
     url = models.URLField(null = True, blank = True)
+    host = models.URLField(null = True, blank = True)
+    type = models.CharField(max_length=50, default="author")
+
+    # These can be modified by the user
+    displayName = models.CharField(null=False, blank=False, max_length=50)
     github = models.URLField(null = True, blank = True)
     profileImage = models.URLField(null = True, blank = True)
 
-    username = models.CharField(unique=True, null=False, blank=False, max_length=50)
+    # For US.08.02. When admin changes requireRegisterPerms, this field
+    # will be changed so that users need an OK to login after registering
     allowRegister = models.BooleanField(null = False, blank = False, default=False)
 
+    # Identifier to separate local and external authors
+    isExternalAuthor = models.BooleanField(null = False, blank = False, default=False)
+
+# For US.08.02. When admin changes requireRegisterPerms, users need an OK to login after registering
 class RegisterConfig(models.Model):
     requireRegisterPerms = models.BooleanField(null = False, blank = False)
 
