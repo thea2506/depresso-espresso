@@ -84,7 +84,19 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    await axios.post(`authors/${post.author.pk}/posts/${post.id}/toggle_like`);
+    console.log("Like clicked");
+    const response = await axios.post(
+      `authors/${post.author.pk}/posts/${post.id}/toggle_like`
+    );
+    if (response.data.already_liked == false) {
+      await axios.post("/create_notification", {
+        type: "like",
+        sender_id: curUser.id,
+        receiver_id: post.author.pk,
+        post_id: post.id,
+      });
+    }
+
     setRefresh(!refresh);
   };
 

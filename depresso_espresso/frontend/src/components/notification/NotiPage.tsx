@@ -39,23 +39,9 @@ const NotiPage = () => {
     // get the notifications
     const getNotifications = async () => {
       try {
-        const response = await axios.get("/get_follow_list", {
-          params: { id: curUser?.id },
-        });
-
-        if (response.data.success == true) {
-          const authorList = response.data.data;
-          const newNotifications = [];
-          for (let i = 0; i < authorList.length; i++) {
-            const response = await axios.get(
-              `/get_notifications/${authorList[i].id}`
-            );
-            for (let j = 0; j < response.data.length; j++) {
-              if (response.data[j].created_at > authorList[i].followedFrom)
-                newNotifications.push(response.data[j]);
-            }
-          }
-          setNotifications(newNotifications);
+        const response = await axios.get(`/get_notifications/${curUser?.id}`);
+        if (response.data.length > 0) {
+          setNotifications(response.data);
         }
       } catch (error) {
         console.error("An error occurred", error);

@@ -106,6 +106,7 @@ def new_post(request):
           # images
           form.save(commit = True)
           data['success'] = True
+          data["id"] = post.id
           post.save()
           return JsonResponse(data)
         else:
@@ -203,17 +204,18 @@ def get_post_comment(request, authorid, postid, commentid):
 def toggle_like(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
+  data = {}
  
   if not Like.objects.filter(author = request.user, post = post).exists():
       Like.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1
-
+      data["already_liked"] = False
   else:
       Like.objects.get(author=request.user, post=post).delete()
       post.likecount = F('likecount') - 1
-
+      data["already_liked"] = True
   post.save()
-  return HttpResponse("Success")
+  return JsonResponse(data = data)
 
 def make_comment(request):
     data ={}

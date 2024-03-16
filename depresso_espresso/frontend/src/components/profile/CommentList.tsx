@@ -8,6 +8,7 @@ import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
+import { AuthorModel } from "../data/AuthorModel";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -31,7 +32,7 @@ const CommentList = ({
 }) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
-  const [, setAuthorImg] = useState("");
+  const [curUser, setCurUser] = useState<AuthorModel>();
 
   //#region functions
   const formatDateString = (inputDateString: string) => {
@@ -54,7 +55,7 @@ const CommentList = ({
         const data = response.data;
 
         if (data.success) {
-          setAuthorImg(data.profileImage);
+          setCurUser(data);
         }
       } catch (error) {
         console.error("An error occurred", error);
@@ -105,6 +106,13 @@ const CommentList = ({
       formField.append("postid", post.id);
 
       const response = await axios.post("/make_comment", formField);
+
+      await axios.post("/create_notification", {
+        type: "comment",
+        sender_id: curUser!.id,
+        receiver_id: post.author.pk,
+        post_id: post.id,
+      });
 
       if (response.data.success) {
         console.log("Comment creation successful");

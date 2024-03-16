@@ -159,7 +159,8 @@ const PostForm = ({
       if (url == "/new_post/" && visibility.toLowerCase() != "private")
         await axios.post("/create_notification", {
           type: "post",
-          authorid: author.id,
+          sender_id: author.id,
+          post_id: response.data.id,
         });
 
       if (response.data.success) {
