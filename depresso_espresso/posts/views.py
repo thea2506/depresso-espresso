@@ -59,7 +59,7 @@ def author_post(request, authorid, postid):
       author_data = response.json()
 
   else: # if the author of the post is saved on our server
-      author = Author.objects.filter(id = author)
+      author = Author.objects.filter(id = authorid)
       author_data = author.values()[0]
 
 
@@ -67,14 +67,12 @@ def author_post(request, authorid, postid):
     '''Get a single post by an author'''
 
     author = [Author.objects.get(id=authorid)]
-    post = Post.objects.get(id=postid)
-    # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
+    post = [Post.objects.get(id=postid)]
+    post_data = serializers.serialize('json', post)
     author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-    results = '{"post": ', post, ', "author": ', author_data, '}'
+    results = '{"post": ', post_data, ', "author": ', author_data, '}'
     return HttpResponse(results, content_type='application/json')
-
-
 
 
 @api_view(['POST'])
@@ -120,10 +118,10 @@ def get_all_posts(request):
   posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
   authors = [Author.objects.get(id=(post.author.id)) for post in posts]
   data = serializers.serialize('json', posts)
-  # author_data = serializers.serialize('json', authors, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  print(results)
 
   return HttpResponse(results, content_type='application/json')
 
@@ -308,8 +306,6 @@ def share_post(request, authorid, postid):
 
   sharingAuthor = request.user
 
-  print("yyyeeeeeeeeeeeeeeeeee", request.user, post, postid, postAuthor, sharingAuthor)
-
   if request.method == 'POST':
       if sharingAuthor == postAuthor:
         print("horrible sharing failure")
@@ -330,7 +326,7 @@ def share_post(request, authorid, postid):
 
   return JsonResponse(data)
 
-def frontend_explorer(request):
+def frontend_explorer(request, **kwargs):
   return render(request, "index.html")
 
 def get_post_likes(request, authorid, postid):

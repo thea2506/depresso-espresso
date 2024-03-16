@@ -22,7 +22,7 @@ def create_notification(request):
 def get_notifications(request, authorid):
     data = []
     
-    # like/comment/share
+    # like / comment / share
     notifications = Notification.objects.filter(receiver_id=authorid)
     for notification in notifications:
         author = Author.objects.get(id=notification.sender_id)
@@ -38,6 +38,7 @@ def get_notifications(request, authorid):
             },
             "post" : {
                 "id": post.id,
+                "authorid": post.author.id, 
             },
             "created_at": notification.created_at,
             "type": notification.type,
@@ -47,7 +48,6 @@ def get_notifications(request, authorid):
     follow_list = Following.objects.filter(authorid=authorid)
     for each in follow_list:
         notifications = Notification.objects.filter(type="post", sender_id=each.followingid)
-        print(notifications)
         for notification in notifications:
             author = Author.objects.get(id=notification.sender_id)
             post = Post.objects.get(id=notification.post_id)
@@ -63,9 +63,9 @@ def get_notifications(request, authorid):
 
                 "post" : {
                     "id": post.id,
+                    "authorid": post.author.id, 
                 },
                 "created_at": notification.created_at,
                 "type": notification.type,
             })
-    print(data)
     return JsonResponse(data, safe=False)
