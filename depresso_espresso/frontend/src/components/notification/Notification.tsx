@@ -10,6 +10,7 @@ interface NotificationProps {
   author: any;
   authorid: any;
   type: "follow" | "share" | "post" | "like" | "comment";
+  createdAt?: string;
   refresh?: boolean;
   setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -30,6 +31,7 @@ const Notification = ({
   author,
   authorid,
   type,
+  createdAt,
   refresh,
   setRefresh,
 }: NotificationProps): JSX.Element => {
@@ -39,6 +41,17 @@ const Notification = ({
     post: "made a post",
     like: "liked your post",
     comment: "commented on your post",
+  };
+  const formatDateString = (inputDateString: string) => {
+    const date = new Date(inputDateString);
+    const formattedDate = date.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+    return formattedDate;
   };
 
   //#region functions
@@ -106,7 +119,7 @@ const Notification = ({
       </a>
 
       {/* Buttons - Follow only */}
-      {type === "follow" && (
+      {type === "follow" ? (
         <div className="flex items-center gap-x-4">
           <Button
             buttonType="text"
@@ -123,6 +136,8 @@ const Notification = ({
             Decline
           </Button>
         </div>
+      ) : (
+        <div className="text-sm opacity-95">{formatDateString(createdAt!)}</div>
       )}
     </div>
   );

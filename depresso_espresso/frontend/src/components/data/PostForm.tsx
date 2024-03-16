@@ -155,6 +155,13 @@ const PostForm = ({
       const url = edit ? "/edit_post" : "/new_post/";
       const response = await axios.post(url, formData);
 
+      // create notification
+      if (url == "/new_post/" && visibility.toLowerCase() != "private")
+        await axios.post("/create_notification", {
+          type: "post",
+          authorid: author.id,
+        });
+
       if (response.data.success) {
         setRefresh(!refresh);
         setIsOpen(false);

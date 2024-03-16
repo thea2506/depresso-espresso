@@ -448,13 +448,35 @@ def get_friends(request, authorid):
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
   
-
+def get_follow_list(request):
+  ''' LOCAL
+      Get all authors that an author is following'''
+  
+  if request.method == "GET":
+    following = Following.objects.filter(authorid=request.user.id)
+    data = []
+    for follow in following:
+      user = Author.objects.get(id=follow.followingid)
+      data.append({
+        "type": "author",
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage,
+        "friend" : follow.areFriends,
+        "followedFrom": follow.created_at,
+      })
+    return JsonResponse({"data" : data, "success": True }, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
 def check_follow_status(request):
   '''Check the follow status between two authors'''
 
-  
   data = request.GET
   authorid = data["id"]
   author = Author.objects.get(id=authorid)
@@ -480,7 +502,6 @@ def check_follow_status(request):
     return JsonResponse(result)
   else:
     return JsonResponse({"success" : False})
-  
 
 
 def front_end_inbox(request, authorid):
@@ -489,7 +510,6 @@ def front_end_inbox(request, authorid):
 def get_follow_requests(request): # Can this be extended to be inbox?
     '''Get all follow requests for an author'''
     
-
     if request.method == "GET":
       authorid = request.GET.get("id")
       if authorid:

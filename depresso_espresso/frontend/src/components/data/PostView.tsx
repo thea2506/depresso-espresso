@@ -59,7 +59,9 @@ const PostView = ({
 
   const handleShareClick = async () => {
     try {
-      const response = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/share_post`);
+      const response = await axios.post(
+        `/authors/${post.author.pk}/posts/${post.id}/share_post`
+      );
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
@@ -127,7 +129,7 @@ const PostView = ({
     {
       icon: <GoShare />,
       count: post.sharecount,
-      onClick: handleShareClick
+      onClick: handleShareClick,
     },
   ];
 

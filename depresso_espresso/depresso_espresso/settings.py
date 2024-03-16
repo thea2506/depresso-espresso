@@ -46,8 +46,6 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     
-    
-
     # Our apps
     'rest_framework',
     'corsheaders',
@@ -55,6 +53,7 @@ INSTALLED_APPS = [
     'home',
     'author_profile',
     'posts',
+    "inbox",
 ]
 
 MIDDLEWARE = [
