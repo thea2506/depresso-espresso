@@ -63,17 +63,17 @@ const PostView = ({
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Already shared"
-      ) {
+      }
+      else if (response.data.success === false && response.data.message === "Already shared") {
         console.log("Post already shared");
         setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Sharing own post"
-      ) {
+      }
+      else if (response.data.success === false && response.data.message === "Sharing own post") {
         console.log("You are trying to share your own post");
+        setRefresh(!refresh);
+      }
+      else if (response.data.success === false && response.data.message === "Post not shareable") {
+        console.log("Post not shareable");
         setRefresh(!refresh);
       }
     } catch (error) {

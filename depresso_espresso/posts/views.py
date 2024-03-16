@@ -37,7 +37,6 @@ class CommentView(forms.ModelForm):
         fields = ("comment", "postid")
 
 
-
 @api_view(['GET', 'DELETE', 'PUT'])
 def author_post(request, authorid, postid):
 
@@ -62,7 +61,6 @@ def author_post(request, authorid, postid):
       author = Author.objects.filter(id = author)
       author_data = author.values()[0]
 
-
   if request.method == 'GET': # Deal with this later to make it work with foreign authors
     '''Get a single post by an author'''
 
@@ -73,8 +71,6 @@ def author_post(request, authorid, postid):
 
     results = '{"post": ', post, ', "author": ', author_data, '}'
     return HttpResponse(results, content_type='application/json')
-
-
 
 
 @api_view(['POST'])
@@ -137,7 +133,6 @@ def get_author_posts(request, authorid):
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
   return HttpResponse(results, content_type='application/json')
-
 
 
 def get_post_comments(request, authorid, postid):
@@ -329,14 +324,19 @@ def share_post(request, authorid, postid):
         data['success'] = False
         data['message'] = "Sharing own post"
 
-      elif not Share.objects.filter(author = request.user, post = post).exists():
+      elif not Share.objects.filter(author = request.user, post = post).exists() and post.visibility == "PUBLIC":
         print("great sharing success")
         Share.objects.create(author = request.user, post = post)
         post.sharecount = F('sharecount') + 1
         post.save()
         data['success'] = True
 
-      elif Share.objects.filter(author = request.user, post = post).exists():
+      elif not Share.objects.filter(author = request.user, post = post).exists() and post.visibility != "PUBLIC":
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Post not shareable"
+
+      elif Share.objects.filter(author = request.user, post = post).exists() and post.visibility == "PUBLIC":
         print("horrible sharing failure")
         data['success'] = False
         data['message'] = "Already shared"
