@@ -8,4 +8,6 @@ export interface CommentModel {
 
   published: string;
   profileImage: string;
+
+  likecount: number;
 }
