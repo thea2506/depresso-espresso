@@ -65,6 +65,7 @@ const PostView = ({
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
+<<<<<<< HEAD
 
         await axios.post("/create_notification", {
           type: "share",
@@ -76,13 +77,19 @@ const PostView = ({
         response.data.success === false &&
         response.data.message === "Already shared"
       ) {
+=======
+      }
+      else if (response.data.success === false && response.data.message === "Already shared") {
+>>>>>>> 676c34bc31d699d858ce54e80bdb8c9f47c5532f
         console.log("Post already shared");
         setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Sharing own post"
-      ) {
+      }
+      else if (response.data.success === false && response.data.message === "Sharing own post") {
         console.log("You are trying to share your own post");
+        setRefresh(!refresh);
+      }
+      else if (response.data.success === false && response.data.message === "Post not shareable") {
+        console.log("Post not shareable");
         setRefresh(!refresh);
       }
     } catch (error) {
@@ -91,6 +98,7 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
+<<<<<<< HEAD
     console.log("Like clicked");
     const response = await axios.post(
       `authors/${post.author.pk}/posts/${post.id}/toggle_like`
@@ -104,6 +112,9 @@ const PostView = ({
       });
     }
 
+=======
+    await axios.post(`authors/${post.author.pk}/posts/${post.id}/like_post`);
+>>>>>>> 676c34bc31d699d858ce54e80bdb8c9f47c5532f
     setRefresh(!refresh);
   };
 

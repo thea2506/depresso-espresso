@@ -1,7 +1,7 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Post, Comment, Like, Share
+from .models import Post, Comment, LikePost, LikeComment, Share
 from authentication.models import Author, Node
 from django.http import JsonResponse
 from django import forms
@@ -37,7 +37,6 @@ class CommentView(forms.ModelForm):
         fields = ("comment", "postid")
 
 
-
 @api_view(['GET', 'DELETE', 'PUT'])
 def author_post(request, authorid, postid):
 
@@ -61,7 +60,6 @@ def author_post(request, authorid, postid):
   else: # if the author of the post is saved on our server
       author = Author.objects.filter(id = authorid)
       author_data = author.values()[0]
-
 
   if request.method == 'GET': # Deal with this later to make it work with foreign authors
     '''Get a single post by an author'''
@@ -140,7 +138,6 @@ def get_author_posts(request, authorid):
   return HttpResponse(results, content_type='application/json')
 
 
-
 def get_post_comments(request, authorid, postid):
     '''Get all comments on a post'''
     post = Post.objects.get(pk=postid)
@@ -201,21 +198,36 @@ def get_post_comment(request, authorid, postid, commentid):
 
     return HttpResponse(data, content_type='application/json')
 
-def toggle_like(request, authorid, postid):
+def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
   data = {}
  
-  if not Like.objects.filter(author = request.user, post = post).exists():
-      Like.objects.create(author = request.user, post = post)
+  if not LikePost.objects.filter(author = request.user, post = post).exists():
+      LikePost.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1
       data["already_liked"] = False
   else:
-      Like.objects.get(author=request.user, post=post).delete()
+      LikePost.objects.get(author=request.user, post=post).delete()
       post.likecount = F('likecount') - 1
       data["already_liked"] = True
   post.save()
   return JsonResponse(data = data)
+
+def like_comment(request, authorid, postid, commentid):
+  '''Like or unlike a post'''
+  comment = Comment.objects.get(pk=commentid)
+ 
+  if not LikeComment.objects.filter(author = request.user, comment = comment).exists():
+      LikeComment.objects.create(author = request.user, comment = comment)
+      comment.likecount = F('likecount') + 1
+
+  else:
+      LikeComment.objects.get(author=request.user, comment=comment).delete()
+      comment.likecount = F('likecount') - 1
+
+  comment.save()
+  return HttpResponse("Success")
 
 def make_comment(request):
     data ={}
@@ -257,8 +269,8 @@ def delete_post(request):
 
   if request.user == post.author:
     post.delete()
-    data['success'] = True  
-    return JsonResponse(data) 
+    data['success'] = True
+    return JsonResponse(data)
   
   else:
     data['success'] = False
@@ -274,7 +286,7 @@ def delete_comment(request):
 
   if request.user == comment.author:
     comment.delete()
-    data['success'] = True  
+    data['success'] = True
     return JsonResponse(data) 
   
   else:
@@ -314,12 +326,17 @@ def share_post(request, authorid, postid):
         data['success'] = False
         data['message'] = "Sharing own post"
 
-      elif not Share.objects.filter(author = request.user, post = post).exists():
+      elif not Share.objects.filter(author = request.user, post = post).exists() and post.visibility == "PUBLIC":
         print("great sharing success")
         Share.objects.create(author = request.user, post = post)
         post.sharecount = F('sharecount') + 1
         post.save()
         data['success'] = True
+
+      elif not Share.objects.filter(author = request.user, post = post).exists() and post.visibility != "PUBLIC":
+        print("horrible sharing failure")
+        data['success'] = False
+        data['message'] = "Post not shareable"
 
       elif Share.objects.filter(author = request.user, post = post).exists():
         print("horrible sharing failure")
@@ -334,7 +351,7 @@ def frontend_explorer(request, **kwargs):
 def get_post_likes(request, authorid, postid):
     '''Get all likes for a post'''
 
-    likes = Like.objects.filter(pk=postid)
+    likes = LikePost.objects.filter(pk=postid)
 
     merged_data = []
     for like in likes:
@@ -350,6 +367,54 @@ def get_post_likes(request, authorid, postid):
         }
         like_data = {
             "post": like.post.id,
+            "author": author_data,
+        }
+        merged_data.append(like_data)
+
+    data = json.dumps(merged_data, indent=4)
+
+    return HttpResponse(data, content_type='application/json')
+
+def get_author_liked(request, authorid):
+    '''Get all likes from an author'''
+
+    author = Author.objects.get(pk=authorid)
+    merged_data = []
+
+    likes = LikePost.objects.filter(author=author)
+
+    for like in likes:
+        author = Author.objects.get(pk=like.author.id)
+        author_data = {
+            "type": "author",
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        like_data = {
+            "post": str(like.post.id),
+            "author": author_data,
+        }
+        merged_data.append(like_data)
+
+    likes = LikeComment.objects.filter(author=author)
+
+    for like in likes:
+        author = Author.objects.get(pk=like.author.id)
+        author_data = {
+            "type": "author",
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        like_data = {
+            "comment": str(like.comment.id),
             "author": author_data,
         }
         merged_data.append(like_data)
