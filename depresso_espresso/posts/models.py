@@ -47,18 +47,27 @@ class Comment(models.Model):
 
     # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
     visibility = models.TextField(null = True)
+    likecount = models.IntegerField(db_column='likeCount', blank=True, null=True, default=0)
 
     class Meta:
         managed = True
         db_table = 'comments'
 
-class Like(models.Model):
-    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="liking_author")
+class LikePost(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="post_liking_author")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="liked_post")
 
     class Meta:
         managed = True
         unique_together = ("post", "author")
+
+class LikeComment(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="comment_liking_author")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="liked_comment")
+
+    class Meta:
+        managed = True
+        unique_together = ("comment", "author")
 
 class Share(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="sharing_author")

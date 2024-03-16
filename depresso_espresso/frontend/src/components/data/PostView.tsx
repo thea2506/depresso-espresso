@@ -82,7 +82,7 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    await axios.post(`authors/${post.author.pk}/posts/${post.id}/toggle_like`);
+    await axios.post(`authors/${post.author.pk}/posts/${post.id}/like_post`);
     setRefresh(!refresh);
   };
 

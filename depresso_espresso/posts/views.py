@@ -1,7 +1,7 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Post, Comment, Like, Share
+from .models import Post, Comment, LikePost, LikeComment, Share
 from authentication.models import Author
 from django.http import JsonResponse
 from django import forms
@@ -156,19 +156,34 @@ def get_post_comment(request, authorid, postid, commentid):
 
     return HttpResponse(data, content_type='application/json')
 
-def toggle_like(request, authorid, postid):
+def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
  
-  if not Like.objects.filter(author = request.user, post = post).exists():
-      Like.objects.create(author = request.user, post = post)
+  if not LikePost.objects.filter(author = request.user, post = post).exists():
+      LikePost.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1
 
   else:
-      Like.objects.get(author=request.user, post=post).delete()
+      LikePost.objects.get(author=request.user, post=post).delete()
       post.likecount = F('likecount') - 1
 
   post.save()
+  return HttpResponse("Success")
+
+def like_comment(request, authorid, postid, commentid):
+  '''Like or unlike a post'''
+  comment = Comment.objects.get(pk=commentid)
+ 
+  if not LikeComment.objects.filter(author = request.user, comment = comment).exists():
+      LikeComment.objects.create(author = request.user, comment = comment)
+      comment.likecount = F('likecount') + 1
+
+  else:
+      LikeComment.objects.get(author=request.user, comment=comment).delete()
+      comment.likecount = F('likecount') - 1
+
+  comment.save()
   return HttpResponse("Success")
 
 def make_comment(request):
@@ -290,7 +305,7 @@ def frontend_explorer(request):
 def get_post_likes(request, authorid, postid):
     '''Get all likes for a post'''
 
-    likes = Like.objects.filter(pk=postid)
+    likes = LikePost.objects.filter(pk=postid)
 
     merged_data = []
     for like in likes:
@@ -306,6 +321,54 @@ def get_post_likes(request, authorid, postid):
         }
         like_data = {
             "post": like.post.id,
+            "author": author_data,
+        }
+        merged_data.append(like_data)
+
+    data = json.dumps(merged_data, indent=4)
+
+    return HttpResponse(data, content_type='application/json')
+
+def get_author_liked(request, authorid):
+    '''Get all likes from an author'''
+
+    author = Author.objects.get(pk=authorid)
+    merged_data = []
+
+    likes = LikePost.objects.filter(author=author)
+
+    for like in likes:
+        author = Author.objects.get(pk=like.author.id)
+        author_data = {
+            "type": "author",
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        like_data = {
+            "post": str(like.post.id),
+            "author": author_data,
+        }
+        merged_data.append(like_data)
+
+    likes = LikeComment.objects.filter(author=author)
+
+    for like in likes:
+        author = Author.objects.get(pk=like.author.id)
+        author_data = {
+            "type": "author",
+            "id": str(author.id),
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+        }
+        like_data = {
+            "comment": str(like.comment.id),
             "author": author_data,
         }
         merged_data.append(like_data)

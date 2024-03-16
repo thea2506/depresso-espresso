@@ -77,6 +77,7 @@ const CommentList = ({
                   comment: rawcomment.comment,
                   contenttype: rawcomment.contenttype,
                   published: rawcomment.published,
+                  likecount: rawcomment.likecount,
                   id: rawcomment.id,
                 };
               }

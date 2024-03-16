@@ -7,7 +7,8 @@ urlpatterns = [
     path("make_post", views.make_post, name="make_post"),
     path("edit_post", views.edit_post, name="edit_post"),
     path("get_all_posts", views.get_all_posts, name="get_all_posts"),
-    path("authors/<str:authorid>/posts/<str:postid>/toggle_like", views.toggle_like, name="toggle_like"),
+    path("authors/<str:authorid>/posts/<str:postid>/like_post", views.like_post, name="like_post"),
+    path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>/like_comment", views.like_comment, name="like_comment"),
     path("authors/<str:authorid>/posts", views.get_author_posts, name="get_author_posts"),
     path("authors/<str:authorid>/posts/<str:postid>", views.get_author_post, name="get_author_post"),
     path("authors/<str:authorid>/posts/<str:postid>/comments", views.get_post_comments, name="get_post_comments"),
@@ -17,6 +18,7 @@ urlpatterns = [
     path("delete_comment", views.delete_comment, name="delete_comment"),
     path("authors/<str:authorid>/posts/<str:postid>/share_post", views.share_post, name="share_post"),
     path("authors/<str:authorid>/posts/<str:postid>/likes", views.get_post_likes, name="get_post_likes"),
+    path("authors/<str:authorid>/liked", views.get_author_liked, name="get_author_liked"),
     # explorer
     path("discover", views.frontend_explorer, name="frontend_explorer"),
 ]
