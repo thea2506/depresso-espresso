@@ -190,7 +190,7 @@ const PostView = ({
 
       <div
         className={
-          "w-full p-3 md:p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-8"
+          "w-full p-3 md:p-8 bg-accent-3 rounded-[1.4rem] flex flex-col gap-y-4"
         }
       >
         <div className="flex items-center justify-between">
@@ -209,27 +209,40 @@ const PostView = ({
         </div>
 
         {/* Content */}
-        <p className="text-xl font-semibold text-primary">{post.title}</p>
-        <p className="text-secondary-dark">{post.description}</p>
+        <div className="flex flex-col gap-y-2 text-start">
+          <p className="font-semibold text-primary">Title</p>
+          <p className="p-4 bg-white text-secondary-dark rounded-xl">
+            {post.title}
+          </p>
+        </div>
+        <div className="flex flex-col gap-y-2 text-start">
+          <p className="font-semibold text-primary">Description</p>
+          <p className="p-4 bg-white text-secondary-dark rounded-xl">
+            {post.description}
+          </p>
+        </div>
 
-        {post.contenttype === "text/markdown" && (
-          <Markdown>{mdContent}</Markdown>
-        )}
-
-        {post.contenttype === "text/plain" && (
-          <p className="text-start">{post.content}</p>
-        )}
-
-        {post.contenttype?.includes("image") && (
-          <img
-            src={post.content}
-            alt="post"
-            className="w-full h-96 object-cover rounded-[1.4rem]"
-          />
-        )}
+        <div className="flex flex-col gap-y-2 text-start">
+          <p className="font-semibold text-primary">Content</p>
+          {post.contenttype === "text/markdown" && (
+            <Markdown className="p-4 bg-white text-start rounded-xl">
+              {mdContent}
+            </Markdown>
+          )}
+          {post.contenttype === "text/plain" && (
+            <p className="p-4 bg-white text-start rounded-xl">{post.content}</p>
+          )}
+          {post.contenttype?.includes("image") && (
+            <img
+              src={post.content}
+              alt="post"
+              className="w-full h-96 object-cover rounded-[1.4rem]"
+            />
+          )}
+        </div>
 
         {/* Like, Comment, Share Section */}
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full mt-2">
           {interactSection.map((item, index) => (
             <div
               key={index}

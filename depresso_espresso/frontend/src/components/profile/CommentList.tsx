@@ -160,7 +160,9 @@ const CommentList = ({
                 {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
-            <p className="text-start">{comment.comment}</p>
+            <p className="p-4 bg-white text-start rounded-xl">
+              {comment.comment}
+            </p>
           </div>
         ))}
       </div>

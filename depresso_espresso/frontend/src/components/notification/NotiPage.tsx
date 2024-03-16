@@ -79,8 +79,10 @@ const NotiPage = () => {
               setRefresh={setRefresh}
               author={notification.author}
               authorid={notification.author.id}
+              authorpostid={notification.post.authorid}
               type={notification.type}
               createdAt={notification.created_at}
+              postid={notification.post.id}
             />
           </div>
         ))}
