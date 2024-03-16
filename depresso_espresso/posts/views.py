@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Post, Comment, Like, Share
-from authentication.models import Author, Node
+from authentication.models import Author, Node, Following
 from django.http import JsonResponse
 from django import forms
 import datetime
@@ -78,6 +78,7 @@ def author_post(request, authorid, postid):
 
 
 @api_view(['POST'])
+
 def new_post(request):
     if request.session.session_key is not None:
       session = Session.objects.get(session_key=request.session.session_key)
@@ -88,6 +89,7 @@ def new_post(request):
 
     data ={}
     if request.method == 'POST':
+        
         form = PostView(request.POST)
         if form.is_valid():
           post = form.save(commit=False)
@@ -102,18 +104,83 @@ def new_post(request):
 
           post.published = make_aware(datetime.datetime.now())
           post.visibility = form.cleaned_data["visibility"]
+          post.url = user.url + '/posts/' + post.id
           
           # images
           form.save(commit = True)
           data['success'] = True
           post.save()
-          return JsonResponse(data)
+
+          post_data = {
+             
+             "type": "post",
+             "title": post.title,
+             "id": post.id,
+             "source": post.source,
+             "origin": post.origin,
+             "description": post.description,
+             "contentType": post.contentType,
+             "content": post.content,
+             "author": {
+                "type": "author",
+                "id": user.id,
+                "host": user.host,
+                "displayName": user.displayName,
+                "url": user.url,
+                "github": user.github,
+                "profileImage": user.profileImage
+             },
+             "count":0,
+             "comments": None,
+             "published": post.published,
+             "visibility": "PUBLIC"
+
+          }
+
+          if post.visibility == "PUBLIC":
+
+            following = Following.objects.filter(authorid=user.id) # Users who will receive this post in their inbox
+
+            for following_user in following:
+              url = following_user.get("url")
+              host = following_user.get("host")   # get the host from the id
+              node = Node.objects.get(baseUrl = host)
+
+              if node:
+                username = node["theirUsername"]
+                password = node["theirPassword"]
+                requests.post(url + '/inbox/', post_data,  auth=(username,password)) # Send to external author
+
+              else:
+                 requests.post(url + '/inbox/', post_data) # Send to our author
+                 
+               
+            return JsonResponse(data)
+          elif post.visibility == "FRIENDS":
+             
+             following = Following.objects.filter(authorid=user.id) # Users who will receive this post in their inbox
+
+             for following_user in following:
+              url = following_user.get("url")
+              host = following_user.get("host")   # get the host from the id
+              node = Node.objects.get(baseUrl = host)
+
+              if node:
+                username = node["theirUsername"]
+                password = node["theirPassword"]
+                requests.post(url + '/inbox/', data,  auth=(username,password)) # Send to external author
+
+              else:
+                 requests.post(url + '/inbox/', data) # Send to our author
+          
         else:
           print("form is not valid", form.errors)
           data['success'] = False
         return JsonResponse(data)
 
     return render(request, "index.html")
+
+
 
 def get_all_posts(request):
   posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')

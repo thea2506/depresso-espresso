@@ -6,7 +6,8 @@ from authentication.models import Author
 class Post(models.Model):
     type = models.CharField(max_length=50, default="post")
     title = models.TextField(null = True)
-    id = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4)
+    url = models.CharField(db_column='postID', primary_key=True, max_length=200)
+    id = models.UUIDField(db_column='postUUID', primary_key=True, default=uuid.uuid4)
 
     # Origins
     source = models.TextField(blank=True, null = True)

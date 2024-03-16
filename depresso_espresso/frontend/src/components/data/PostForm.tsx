@@ -134,6 +134,7 @@ const PostForm = ({
     event.preventDefault();
     try {
       const formData = new FormData();
+      formData.append("inbox", "No");
       formData.append("title", title);
       formData.append("description", description);
 
