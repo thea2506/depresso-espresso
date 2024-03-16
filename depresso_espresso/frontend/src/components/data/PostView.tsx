@@ -65,6 +65,13 @@ const PostView = ({
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
+
+        await axios.post("/create_notification", {
+          type: "share",
+          sender_id: curUser.id,
+          receiver_id: post.author.pk,
+          post_id: post.id,
+        });
       } else if (
         response.data.success === false &&
         response.data.message === "Already shared"

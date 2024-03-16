@@ -67,12 +67,15 @@ def author_post(request, authorid, postid):
     '''Get a single post by an author'''
 
     author = [Author.objects.get(id=authorid)]
-    post = [Post.objects.get(id=postid)]
-    post_data = serializers.serialize('json', post)
-    author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
+    if not Post.objects.filter(id=postid).exists():
+        return HttpResponse(status=404)
+    else:
+      post = [Post.objects.get(id=postid)]
+      post_data = serializers.serialize('json', post)
+      author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-    results = '{"post": ', post_data, ', "author": ', author_data, '}'
-    return HttpResponse(results, content_type='application/json')
+      results = '{"post": ', post_data, ', "author": ', author_data, '}'
+      return HttpResponse(results, content_type='application/json')
 
 
 @api_view(['POST'])
@@ -121,7 +124,6 @@ def get_all_posts(request):
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
-  print(results)
 
   return HttpResponse(results, content_type='application/json')
 

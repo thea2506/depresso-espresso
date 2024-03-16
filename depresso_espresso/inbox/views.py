@@ -22,34 +22,11 @@ def create_notification(request):
 def get_notifications(request, authorid):
     data = []
     
-    # like / comment / share
+    # like / comment
     notifications = Notification.objects.filter(receiver_id=authorid)
     for notification in notifications:
         author = Author.objects.get(id=notification.sender_id)
-        post = Post.objects.get(id=notification.post_id)
-        data.append({
-            "author": {
-                "id": author.id,
-                "displayName": author.displayName,
-                "url": author.url,
-                "host": author.host,
-                "github": author.github,
-                "profileImage": author.profileImage,
-            },
-            "post" : {
-                "id": post.id,
-                "authorid": post.author.id, 
-            },
-            "created_at": notification.created_at,
-            "type": notification.type,
-        }) 
-
-    # post
-    follow_list = Following.objects.filter(authorid=authorid)
-    for each in follow_list:
-        notifications = Notification.objects.filter(type="post", sender_id=each.followingid)
-        for notification in notifications:
-            author = Author.objects.get(id=notification.sender_id)
+        if Post.objects.filter(id=notification.post_id).exists():
             post = Post.objects.get(id=notification.post_id)
             data.append({
                 "author": {
@@ -60,12 +37,40 @@ def get_notifications(request, authorid):
                     "github": author.github,
                     "profileImage": author.profileImage,
                 },
-
                 "post" : {
                     "id": post.id,
                     "authorid": post.author.id, 
                 },
                 "created_at": notification.created_at,
                 "type": notification.type,
-            })
+            }) 
+
+    # share/post
+    follow_list = Following.objects.filter(authorid=authorid)
+    for each in follow_list:
+        notifications_post = Notification.objects.filter(type="post", sender_id=each.followingid)
+        notifications_share = Notification.objects.filter(type="share", sender_id=each.followingid)
+
+        notifications = [*notifications_post, *notifications_share]
+        for notification in notifications:
+            author = Author.objects.get(id=notification.sender_id)
+            if Post.objects.filter(id=notification.post_id).exists():
+                post = Post.objects.get(id=notification.post_id)
+                data.append({
+                    "author": {
+                        "id": author.id,
+                        "displayName": author.displayName,
+                        "url": author.url,
+                        "host": author.host,
+                        "github": author.github,
+                        "profileImage": author.profileImage,
+                    },
+
+                    "post" : {
+                        "id": post.id,
+                        "authorid": post.author.id, 
+                    },
+                    "created_at": notification.created_at,
+                    "type": notification.type,
+                })
     return JsonResponse(data, safe=False)
