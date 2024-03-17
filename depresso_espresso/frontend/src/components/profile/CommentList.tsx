@@ -153,7 +153,7 @@ const CommentList = ({
           >
             <div className="flex items-center justify-between">
               <UserDisplay
-                username={comment.author.username}
+                displayName={comment.author.displayName}
                 user_img_url={comment.author.profileImage}
                 link={comment.author.url}
               />

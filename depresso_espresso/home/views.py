@@ -26,7 +26,6 @@ def stream(request):
     return rend
 
 
-
 @api_view(["POST", "GET"])
 def handle_inbox(request, authorid):
     """ LOCAL REMOTE

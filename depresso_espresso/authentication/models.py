@@ -3,10 +3,9 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 import datetime
 
-# Create your models here.
 class Author(AbstractUser):
 
-    # Identifiers, can't be changed by user
+    # Identifiers, can't be modified by the user
     id = models.UUIDField(db_column='authorID', primary_key=True, default=uuid.uuid4)
     username = models.CharField(unique=True, null=False, blank=False, max_length=50)
     url = models.URLField(null = True, blank = True)
@@ -40,6 +39,7 @@ class Node(models.Model):
         return self.baseUrl
 
 class Following(models.Model):
+    
     authorid = models.CharField(max_length=200)
     followingid = models.CharField(max_length=200)
     areFriends = models.BooleanField(null = False, blank = False, default=False)

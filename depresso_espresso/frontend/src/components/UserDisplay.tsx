@@ -1,14 +1,14 @@
 import defaultProfileImage from "../assets/images/default_profile.jpg";
 
 interface UserDisplayProps {
-  username: string;
+  displayName: string;
   user_img_url: string | undefined;
   link: string;
   className?: string;
 }
 
 const UserDisplay = ({
-  username,
+  displayName,
   user_img_url,
   link,
   className,
@@ -27,7 +27,7 @@ const UserDisplay = ({
         }
         alt="Profile picture"
       />
-      <p className="text-primary">{username}</p>
+      <p className="text-primary">{displayName}</p>
     </a>
   );
 };

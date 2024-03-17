@@ -15,8 +15,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
 
-# Create your views here.
-
 
 class PostView(forms.ModelForm):
     template_name = "post/post.html"
@@ -337,6 +335,7 @@ def like_post(request, authorid, postid):
   post = Post.objects.get(pk=postid)
   data = {}
  
+
   if not LikePost.objects.filter(author = request.user, post = post).exists():
       LikePost.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1

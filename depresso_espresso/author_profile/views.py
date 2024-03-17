@@ -10,7 +10,6 @@ from django.contrib.sessions.models import Session
 import json
 
 
-
 @api_view(["GET","PUT"])
 def author_profile(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
@@ -475,7 +474,7 @@ def front_end_inbox(request, authorid):
 
 def get_follow_requests(request): # Can this be extended to be inbox?
     '''Get all follow requests for an author'''
-    
+
     if request.method == "GET":
       authorid = request.GET.get("id")
       if authorid:
@@ -500,21 +499,3 @@ def front_end(request, authorid):
 
 def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
-
-
-# def unfollow(request):
-#   '''Unfollow another author'''
-#   unfollowedAuthor = Author.objects.get(id=authorid)
-
-#   if request.method == "POST":
-#       if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).exists():
-#         message = unfollowedAuthor.username, "unfollowed", request.user.username
-
-#         if Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor)[0].areFriends:
-#           Following.objects.filter(authorid = unfollowedAuthor, followingid = request.user).update(areFriends = False)
-#           message = unfollowedAuthor.username, "unfollowed", request.user.username, "and they are no longer friends"
-        
-#         Following.objects.filter(authorid = request.user, followingid = unfollowedAuthor).delete()
-#         print(message)
-#         return JsonResponse({"message": message,
-#                               "success": True})

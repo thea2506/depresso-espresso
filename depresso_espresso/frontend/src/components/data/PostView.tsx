@@ -183,7 +183,7 @@ const PostView = ({
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            username={post.author.fields.displayName}
+            displayName={post.author.fields.displayName}
             user_img_url={post.author.fields.profileImage}
             link={`/authors/${post.author.pk}`}
           />

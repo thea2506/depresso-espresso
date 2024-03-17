@@ -15,7 +15,7 @@ const FollowerList = ({ followers }: FollowerListProps) => {
             onClick={() => (window.location.href = `${follower.id}`)}
           >
             <UserDisplay
-              username={follower.username}
+              displayName={follower.displayName}
               user_img_url={follower.profileImage}
               link={follower.url}
               className="text-lg font-semibold text-secondary-dark hover:text-white"
