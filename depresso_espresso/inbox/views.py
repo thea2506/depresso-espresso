@@ -21,7 +21,7 @@ def create_notification(request):
 
 def get_notifications(request, authorid):
     data = []
-    
+
     # like / comment
     notifications = Notification.objects.filter(receiver_id=authorid)
     for notification in notifications:
@@ -54,7 +54,7 @@ def get_notifications(request, authorid):
         notifications = [*notifications_post, *notifications_share]
         for notification in notifications:
             author = Author.objects.get(id=notification.sender_id)
-            if Post.objects.filter(id=notification.post_id).exists():
+            if notification.created_at > each.created_at and Post.objects.filter(id=notification.post_id).exists():
                 post = Post.objects.get(id=notification.post_id)
                 data.append({
                     "author": {
