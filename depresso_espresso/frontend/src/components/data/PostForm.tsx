@@ -141,10 +141,7 @@ const PostForm = ({
 
       // TODO: source and origin and comments not covered
 
-      // content
       formData.append("contentType", contentType);
-
-      console.log("visibility", visibility);
       formData.append("visibility", visibility);
       formData.append("authorId", author.id);
 
@@ -300,23 +297,25 @@ const PostForm = ({
 
         {/* Options */}
         <div className="flex items-center justify-between w-full gap-x-4">
-          <div className="flex items-center gap-x-4">
-            <FaLock className="w-6 h-7 text-primary" />
-            <select
-              id="privacy"
-              className="p-2 bg-white rounded-md cursor-default focus:outline-none"
-              onChange={(e) => setVisibility(e.target.value.toUpperCase())}
-            >
-              {["Public", "Friends", "Unlisted"].map((option, index) => (
-                <option
-                  key={index}
-                  value={option}
-                >
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+          {!edit ? (
+            <div className="flex items-center gap-x-4">
+              <FaLock className="w-6 h-7 text-primary" />
+              <select
+                id="privacy"
+                className="p-2 bg-white rounded-md cursor-default focus:outline-none"
+                onChange={(e) => setVisibility(e.target.value.toUpperCase())}
+              >
+                {["Public", "Friends", "Unlisted"].map((option, index) => (
+                  <option
+                    key={index}
+                    value={option}
+                  >
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           {form == "Text/Markdown" ||
           (oldContentType?.includes("text") && edit) ? (
             <div className="flex items-center align-baseline gap-x-4 text-primary">
