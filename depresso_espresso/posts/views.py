@@ -58,19 +58,22 @@ def author_post(request, authorid, postid):
       author_data = response.json()
 
   else: # if the author of the post is saved on our server
-      author = Author.objects.filter(id = author)
+      author = Author.objects.filter(id = authorid)
       author_data = author.values()[0]
 
   if request.method == 'GET': # Deal with this later to make it work with foreign authors
     '''Get a single post by an author'''
 
     author = [Author.objects.get(id=authorid)]
-    post = Post.objects.get(id=postid)
-    # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
-    author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
+    if not Post.objects.filter(id=postid).exists():
+        return HttpResponse(status=404)
+    else:
+      post = [Post.objects.get(id=postid)]
+      post_data = serializers.serialize('json', post)
+      author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-    results = '{"post": ', post, ', "author": ', author_data, '}'
-    return HttpResponse(results, content_type='application/json')
+      results = '{"post": ', post_data, ', "author": ', author_data, '}'
+      return HttpResponse(results, content_type='application/json')
 
 
 @api_view(['POST'])
@@ -102,6 +105,7 @@ def new_post(request):
           # images
           form.save(commit = True)
           data['success'] = True
+          data["id"] = post.id
           post.save()
           return JsonResponse(data)
         else:
@@ -115,7 +119,6 @@ def get_all_posts(request):
   posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
   authors = [Author.objects.get(id=(post.author.id)) for post in posts]
   data = serializers.serialize('json', posts)
-  # author_data = serializers.serialize('json', authors, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
   results = '{"posts": ', data, ', "authors": ', author_data, '}'
@@ -198,17 +201,18 @@ def get_post_comment(request, authorid, postid, commentid):
 def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
+  data = {}
  
   if not LikePost.objects.filter(author = request.user, post = post).exists():
       LikePost.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1
-
+      data["already_liked"] = False
   else:
       LikePost.objects.get(author=request.user, post=post).delete()
       post.likecount = F('likecount') - 1
-
+      data["already_liked"] = True
   post.save()
-  return HttpResponse("Success")
+  return JsonResponse(data = data)
 
 def like_comment(request, authorid, postid, commentid):
   '''Like or unlike a post'''
@@ -316,8 +320,6 @@ def share_post(request, authorid, postid):
 
   sharingAuthor = request.user
 
-  print("yyyeeeeeeeeeeeeeeeeee", request.user, post, postid, postAuthor, sharingAuthor)
-
   if request.method == 'POST':
       if sharingAuthor == postAuthor:
         print("horrible sharing failure")
@@ -343,7 +345,7 @@ def share_post(request, authorid, postid):
 
   return JsonResponse(data)
 
-def frontend_explorer(request):
+def frontend_explorer(request, **kwargs):
   return render(request, "index.html")
 
 def get_post_likes(request, authorid, postid):

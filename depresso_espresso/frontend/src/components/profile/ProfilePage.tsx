@@ -67,7 +67,7 @@ const ProfilePage = () => {
           github: rawauthor.github,
           profileImage: rawauthor.profileImage,
         }));
-        setFollowers(followerModels);
+        if (followerModels) setFollowers(followerModels);
       } catch (error) {
         console.error(error);
       }

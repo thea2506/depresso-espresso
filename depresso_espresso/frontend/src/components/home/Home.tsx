@@ -41,7 +41,7 @@ const Home = () => {
       try {
         const response = await axios.get("/get_all_posts/");
         const allData = response.data;
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = allData.posts.map((rawpost: any, index: number) => {
           const author = allData.authors[index];
