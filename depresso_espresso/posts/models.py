@@ -13,6 +13,7 @@ class Post(models.Model):
     origin = models.TextField(blank=True, null = True)
     author = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     
+    
     # Content
     type = models.CharField(max_length=50, default="post")
     title = models.TextField(null = True)

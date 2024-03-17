@@ -13,6 +13,7 @@ from django.core import serializers
 import json, requests
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
+from authentication.getuser import getUser
 
 # Create your views here.
 
@@ -38,7 +39,7 @@ class CommentView(forms.ModelForm):
 
 
 @api_view(['GET', 'DELETE', 'PUT'])
-def author_post(request, authorid, postid):
+def handle_author_post(request, authorid, postid):
 
   if request.session.session_key is not None:
       session = Session.objects.get(session_key=request.session.session_key)
@@ -61,7 +62,7 @@ def author_post(request, authorid, postid):
       author = Author.objects.filter(id = author)
       author_data = author.values()[0]
 
-  if request.method == 'GET': # Deal with this later to make it work with foreign authors
+  if request.method == 'GET': # Get post with id == postid
     '''Get a single post by an author'''
 
     author = [Author.objects.get(id=authorid)]
@@ -74,8 +75,10 @@ def author_post(request, authorid, postid):
 
 
 @api_view(['POST'])
-
-def new_post(request):
+def new_local_post(request):
+    ''' LOCAL
+        POST /new_post/: This function is used locally only to create a new post. This endpoint is posted to by our frontend form. The addition of external posts to our db is handled by new_external_post function'''
+    
     if request.session.session_key is not None:
       session = Session.objects.get(session_key=request.session.session_key)
       if session:
@@ -83,8 +86,7 @@ def new_post(request):
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
 
-    data ={}
-    if request.method == 'POST':
+    if request.method == 'POST': # Create new post based on form data submitted on our frontend
         
         form = PostView(request.POST)
         if form.is_valid():
@@ -93,17 +95,15 @@ def new_post(request):
           post.type = "post"
           post.title = form.cleaned_data["title"]
           post.author = user
-
           post.description = form.cleaned_data["description"]
           post.contentType = form.cleaned_data["contentType"]
           post.content = form.cleaned_data["content"]
-
           post.published = make_aware(datetime.datetime.now())
           post.visibility = form.cleaned_data["visibility"]
           post.url = user.url + '/posts/' + post.id
           
-          # images
           form.save(commit = True)
+          data ={}
           data['success'] = True
           post.save()
 
@@ -133,6 +133,8 @@ def new_post(request):
 
           }
 
+          #-- Send post to relevant author's inboxes-- (I think we only need to send them to external authors?)
+
           if post.visibility == "PUBLIC":
 
             following = Following.objects.filter(authorid=user.id) # Users who will receive this post in their inbox
@@ -148,13 +150,12 @@ def new_post(request):
                 requests.post(url + '/inbox/', post_data,  auth=(username,password)) # Send to external author
 
               else:
-                 requests.post(url + '/inbox/', post_data) # Send to our author
-                 
-               
-            return JsonResponse(data)
+                 requests.post(url + '/inbox/', post_data) # Send to author on our server (I don't think this is necessary but the spec is a bit unclear)
+      
+          # Send this post to the inboxes of authors who are friends with the posting author
           elif post.visibility == "FRIENDS":
              
-             following = Following.objects.filter(authorid=user.id) # Users who will receive this post in their inbox
+             following = Following.objects.filter(authorid=user.id, areFriends=True) # Users who will receive this post in their inbox
 
              for following_user in following:
               url = following_user.get("url")
@@ -167,27 +168,81 @@ def new_post(request):
                 requests.post(url + '/inbox/', data,  auth=(username,password)) # Send to external author
 
               else:
-                 requests.post(url + '/inbox/', data) # Send to our author
-          
+                 requests.post(url + '/inbox/', data)  # Send to author on our server (I don't think this is necessary but the spec is unclear)
+
         else:
           print("form is not valid", form.errors)
           data['success'] = False
+          
         return JsonResponse(data)
 
     return render(request, "index.html")
 
 
 
+@api_view(['POST'])
+def new_external_post(request):
+   """LOCAL
+      This function is used to create a new post from an external author"""
+   
+   if request.method == 'POST':
+        external_author =request.POST["author"]
+        form = PostView(request.POST)
+        if form.is_valid():
+          post = form.save(commit=False)
+          
+          post.type = "post"
+          post.title = form.cleaned_data["title"]
+          post.author = external_author
+          post.description = form.cleaned_data["description"]
+          post.contentType = form.cleaned_data["contentType"]
+          post.content = form.cleaned_data["content"]
+          post.published = make_aware(datetime.datetime.now())
+          post.visibility = form.cleaned_data["visibility"]
+          post.url = external_author.url + '/posts/' + post.id
+          post.local = False
+          
+          form.save(commit = True)
+          data ={}
+          data['success'] = True
+          post.save()
+
+          return JsonResponse(data)
+
+
+@api_view(['GET'])
 def get_all_posts(request):
-  posts = Post.objects.filter(visibility="PUBLIC").order_by('-published')
-  authors = [Author.objects.get(id=(post.author.id)) for post in posts]
-  data = serializers.serialize('json', posts)
+  "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
+
+  user = getUser(request)
+  if not user:
+     return JsonResponse({"message": "User session error"})
+
+  public_posts = Post.objects.filter(visibility="PUBLIC", local= True).order_by('-published') # Get all PUBLIC LOCAL posts
+  
+  public_posts_dict = serializers.serialize('json', public_posts)
+
+  friend_following_posts = requests.get(user.url + '/inbox/') # Get friend and following posts from user's inbox to integrate them with public posts
+
+  posts_dict = friend_following_posts["items"]
+
+  # Reference: https://www.geeksforgeeks.org/python-merging-two-dictionaries/ Accessed 3/16/2024
+  merged_posts = dict(posts_dict.items() | public_posts_dict.items())
+
+  authors = [Author.objects.get(id=(post.author.id)) for post in merged_posts]
+
+  # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
+  sorted(merged_posts, key=lambda x: x['published']) # sort the posts by date
+
   # author_data = serializers.serialize('json', authors, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-  results = '{"posts": ', data, ', "authors": ', author_data, '}'
+  results = '{"posts": ', merged_posts, ', "authors": ', author_data, '}'
 
   return HttpResponse(results, content_type='application/json')
+
+
+
 
 def get_author_posts(request, authorid):
   '''Get all posts by an author'''
