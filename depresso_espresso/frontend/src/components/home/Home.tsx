@@ -1,33 +1,18 @@
 //#region imports
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ToastContainer, ToastOptions, toast } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
 import { PostModel } from "../data/PostModel";
 import PostList from "../profile/PostList";
-import { AuthContext } from "../../App";
 //#endregion
 
-const myToast: ToastOptions = {
-  position: "top-center",
-  autoClose: 1000,
-  hideProgressBar: true,
-  closeOnClick: true,
-  closeButton: false,
-  pauseOnHover: false,
-  draggable: false,
-  progress: undefined,
-};
-
 const Home = () => {
-  //   const [display_name, setDisplayName] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
-  const [image_url, setImage] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [author, setAuthor] = useState<any>({});
   const [posts, setPosts] = useState<PostModel[]>([]);
-  const [authorid, setAuthorID] = useState<string>("");
-  //const {setAuthorID } = useContext(AuthContext);
   const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();
@@ -39,14 +24,12 @@ const Home = () => {
      */
     const retrieveData = async () => {
       try {
-        const response = await axios.get("/user_data");
-        setUsername(response.data.username);
-        setImage(response.data.profile_image);
-        localStorage.setItem("authorid", response.data.authorid);
-        setAuthorID(response.data.authorid);
+        const response = await axios.get("/curUser");
+        if (response.data.success == true) {
+          const userData = response.data;
+          setAuthor(userData);
+        }
       } catch (error) {
-        toast.error("Please Sign in to go further", myToast);
-        navigate("/signin");
         console.error(error);
       }
     };
@@ -56,30 +39,33 @@ const Home = () => {
      */
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_all_posts");
-        const postData = response.data;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = postData.map((rawpost: any) => {
-          console.log("rawpost", rawpost);
-          return {
-            username: rawpost.fields.author_username,
-            user_img_url: rawpost.fields.author_profile_image,
+        const response = await axios.get("/get_all_posts/");
+        const allData = response.data;
 
-            authorid: rawpost.fields.authorid,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const postModels = allData.posts.map((rawpost: any, index: number) => {
+          const author = allData.authors[index];
+          author.fields.id = author.pk;
+          return {
+            // type: rawpost.fields.type,
+            title: rawpost.fields.title,
+            id: rawpost.pk,
+
+            author: author,
+
+            description: rawpost.fields.description,
+            contenttype: rawpost.fields.contentType,
             content: rawpost.fields.content,
-            postid: rawpost.pk,
-            likes: rawpost.fields.liked_by.length,
-            commentcount: rawpost.fields.commentcount,
-            //username: rawpost.fields.authorname,
-            publishdate: rawpost.fields.publishdate,
+
+            count: rawpost.fields.count,
+
+            published: rawpost.fields.published,
             visibility: rawpost.fields.visibility,
-            image_url: rawpost.fields.image_url,
-            contenttype: rawpost.fields.contenttype,
-            image_file: rawpost.fields.image_file, 
-            //user_img_url: rawpost.fields.authorprofile, 
+
+            likecount: rawpost.fields.likecount,
+            sharecount: rawpost.fields.sharecount,
           };
         });
-        console.log("postmodels", postModels);
         setPosts(postModels);
       } catch (error) {
         console.error(error);
@@ -87,14 +73,14 @@ const Home = () => {
     };
     retrieveData();
     retrievePosts();
-  }, [navigate, setAuthorID, refresh]);
+  }, [navigate, refresh]);
+
   //#endregion
   return (
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">
       <ToastContainer />
       <PostForm
-        username={username}
-        user_img_url={image_url}
+        author={author}
         edit={false}
         refresh={refresh}
         setRefresh={setRefresh}

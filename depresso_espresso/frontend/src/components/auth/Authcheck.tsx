@@ -14,10 +14,14 @@ const AuthCheck: FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const useLoginStatus = async () => {
   const [log_status, setLog] = useState<boolean>();
+  console.log("Call from auth check");
 
   try {
-    const response = await axios.get("/get_auth");
-    console.log(response);
+    const response = await axios.get("/get_auth", {
+      params: {
+        user: { is_authenticated: true },
+      },
+    });
     if (response.data.success) {
       console.log("Logged in");
       setLog(true);

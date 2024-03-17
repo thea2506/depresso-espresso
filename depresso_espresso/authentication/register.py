@@ -1,8 +1,8 @@
-from django import forms
+
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
-from django.contrib.auth import authenticate
+from .models import RegisterConfig
 
 # https://www.youtube.com/watch?v=lHYzmlx2Vso&list=PLbMO9c_jUD44i7AkA4gj1VSKvCFIf59fb&index=7 Django Tutorial - User Registration & Sign Up Page #7 by Python Lessons
 # https://www.youtube.com/watch?v=_tHabkMKh98 Django Tutorial - Creating Custom User model in Django website #4 by Python Lessons
@@ -10,17 +10,30 @@ from django.contrib.auth import authenticate
 
 class Register(UserCreationForm):
     permission_classes = (permissions.AllowAny)
-    template_name = "register.html", 
-
     class Meta:
         model = get_user_model()
-        fields = ("display_name", "username", "password1", "password2" )
+        fields = ("username", "displayName", "password1", "password2")
 
-    def save(self, commit=True):
-        user = super(Register, self).save(commit=False) # call save from parent UserCreationForm
+    def save(self, host, commit=True):
+        user = super(Register, self).save(commit=False)
+        register_config = (RegisterConfig.objects.all())[:1]
 
-        user.display_name = self.cleaned_data["display_name"]
-        #user = authenticate(self.cleaned_data["username"], self.cleaned_data["password1"])
+        if len(register_config) == 0:
+            register_config = RegisterConfig.objects.create(requireRegisterPerms=False) # create new register config object that has its require_register_perms set to false by default (admin can change this setting)
+            user.allowRegister = True
+        
+        elif (register_config.values())[0]["requireRegisterPerms"] == False:
+            user.allowRegister = True
+        else:
+            user.allowRegister = False
+
+        user.username = self.cleaned_data["username"]
+        user.displayName = self.cleaned_data["displayName"]
+        user.host = f"http://{host}/"
+        user.set_password(self.cleaned_data["password1"])
+        user.url = f"http://{host}/authors/{user.id}"
+
+        
         if commit:
             user.save()
         return user

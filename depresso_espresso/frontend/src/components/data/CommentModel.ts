@@ -1,12 +1,13 @@
 export interface CommentModel {
-  authorid: string;
-  authorname: string;
-  comment: string;
-  commentlikecount: number | null;
+  id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  author: any;
+
   contenttype: string | null;
-  editdate: string | null;
-  liked_by: string[];
-  postid: string;
-  publishdate: string;
-  profile_image: string;
+  comment: string;
+
+  published: string;
+  profileImage: string;
+
+  likecount: number;
 }

@@ -9,27 +9,24 @@ from .register import Register
 from .login import Login
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
-from django.shortcuts import redirect
-from django.contrib.auth import get_user_model
+from django.contrib.sessions.models import Session
+from authentication.models import Author
 
 def register(request):
-    '''Handles a form submission POST request to register
-       returns: JSON data including success status + errors if applicable'''  
+    ''' LOCAL ONLY
+        Handles a form submission POST request to register
+        returns: JSON data including success status + errors if applicable'''  
     if request.method == 'POST':  
         data ={}
-        print(request.POST)
         form = Register(request.POST)
         
-        if form.is_valid():  
-            user = form.save()
-            
-            login(request, user)
+        if form.is_valid():
+            form.save(request.get_host())
             data['success'] = True  
             return JsonResponse(data)  
         else:
             errors = []
             for error in list(form.errors.values()):              
-                print(request, form.errors.items(), error)
                 errors.append(error)  
 
             data['errors'] = errors   
@@ -40,43 +37,55 @@ def register(request):
 
     return render(request, "index.html")
     
-def loginview(request):
-    '''Handles a form submission POST request to login
-       returns: JSON data including success status + errors if applicable'''  
-    
-
+def loginUser(request):
+    ''' LOCAL ONLY
+        Handles a form submission POST request to login
+        returns: JSON data including success status + errors if applicable'''
     if request.method == 'POST':
-        
-        data ={}
         user = Login.post(request)
-        print("USER RIGHT HERE", user)
-        if user:
+        if user is not None:
             login(request, user)
-            data['success'] = True  
-            return JsonResponse(data)  
-        else:
-            data['success'] = False
-            return JsonResponse(data)  
+            print("user id:", user.id)
+            return JsonResponse({'success': True, 'id': user.id})
         
-    return render(request, 'index.html')
-
-def index(request):
+        else:
+            return JsonResponse({'success': False})
     return render(request, "index.html")
 
-def get_auth(request):
-    data = {}
-    if request.user.is_authenticated:
-        data['success'] = True
-    else:
-        data['success'] = False
-    return JsonResponse(data)
-
 def logoutUser(request):
+    ''' LOCAL ONLY
+        Handles a form submission POST request to login
+        returns: JSON data including success status '''
+    
     data = {}
     logout(request)
-    
     if request.user.is_authenticated:
         data['success'] = False
     else:
         data['success'] = True
     return JsonResponse(data)
+
+def curUser(request):
+    '''LOCAL ONLY '''
+    data = {} 
+    if request.method == 'GET' and request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            user = Author.objects.get(id=uid)
+
+            data["type"] = user.type
+            data["id"] = user.id
+            data["username"] = user.username
+            data["displayName"] = user.displayName
+            data["host"] = user.host
+            data["url"] = user.url
+            data["github"] = user.github
+            data["profileImage"] = user.profileImage
+            data["success"] = True
+        return JsonResponse(data)
+    return JsonResponse({'success': False})
+
+
+

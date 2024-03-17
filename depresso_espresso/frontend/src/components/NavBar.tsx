@@ -1,11 +1,10 @@
 //#region imports
-import { useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastOptions, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { AuthContext } from "../App";
 
 // components
 import { Button } from "./Button";
@@ -28,21 +27,34 @@ const myToast: ToastOptions = {
 };
 
 const NavBar = () => {
-  const { authorid } = useContext(AuthContext);
   const iconStyling = "text-3xl text-black hover:text-secondary-dark";
   const [currentPage, setCurrentPage] = useState<string>(
-    window.location.pathname.split("/")[1]
+    window.location.pathname.substring(window.location.pathname.indexOf("/"))
   );
+  const [id0, setId0] = useState<string>("");
+  const authorIDPath = `/authors/${id0}`;
+  const authorInboxPath = `/authors/${id0}/inbox`;
 
   const nav = useNavigate();
-  const authorIDPath = `/authors/${authorid}`;
 
-  // TODO: add the correct authorID to the link (dynamic route)
-  // Inbox and Discover are not implemented yet
+  useEffect(() => {
+    const getId = async () => {
+      try {
+        const response = await axios.get("/curUser");
+        if (response.data.success) {
+          setId0(response.data.id);
+        }
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+    getId();
+  });
+
   const navContents = [
     { icon: <GoHome />, link: "/", name: "" },
     { icon: <GoPerson />, link: authorIDPath, name: "authors" },
-    { icon: <GoInbox />, link: "/inbox", name: "inbox" },
+    { icon: <GoInbox />, link: authorInboxPath, name: "inbox" },
     { icon: <PiNewspaperClipping />, link: "/discover", name: "discover" },
   ];
 
@@ -52,8 +64,8 @@ const NavBar = () => {
    * @param name The name of the page
    * @param link The link to the page
    */
-  const changePage = (name: string, link: string) => {
-    setCurrentPage(name);
+  const changePage = (link: string) => {
+    setCurrentPage(link);
     nav(link);
   };
 
@@ -97,9 +109,9 @@ const NavBar = () => {
             key={index}
             className={twMerge(
               iconStyling,
-              currentPage === item.name ? "text-primary" : ""
+              currentPage === item.link ? "text-primary" : ""
             )}
-            onClick={() => changePage(item.name, item.link)}
+            onClick={() => changePage(item.link)}
           ></Button>
         ))}
       </ul>
@@ -109,7 +121,7 @@ const NavBar = () => {
         icon={<LiaSignOutAltSolid />}
         className={twMerge(
           iconStyling,
-          "hidden w-1/4 lg:flex items-end justify-end"
+          "hidden w-1/4 lg:flex items-center justify-center"
         )}
         onClick={handleLogout}
       />

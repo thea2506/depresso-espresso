@@ -1,19 +1,24 @@
 export interface PostModel {
-  username: string;
-  user_img_url?: string;
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type: string;
   title?: string;
-  postid: string;
+  id: string;
+
   source?: string;
   origin?: string;
-  image_url?: string;
-  image_file?: string;
-  description?: string;
+  author: any;
+  
+  description: string;
   contenttype: string;
   content: string;
-  authorid: string;
-  commentcount: number;
-  publishdate: string;
+
+  count: number;
+  likecount: number;
+  sharecount: number;
+  comments?: any;
+
+  published: string;
   visibility: string;
-  likes?: number;
+
+  image_file?: string;
 }

@@ -62,17 +62,14 @@ const MakePost = () => {
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      toast.success("Here now", myToast);
       const formField = new FormData();
       formField.append("content", content);
       formField.append("image_url", image_url);
-      const response = await axios.post("/make_post", formField);
+      const response = await axios.post("/new_post/", formField);
 
       if (response.data.success) {
         toast.success("Post Created Successfully", myToast);
-        console.log("Post creation successful");
       } else {
-        console.log("Failed to create post");
         toast.error("Failed to create post", myToast);
       }
     } catch (error) {

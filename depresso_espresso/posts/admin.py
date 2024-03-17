@@ -1,5 +1,4 @@
-from .models import Post
-from .models import Comment
+from .models import Post, Comment, LikePost, LikeComment, Share
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -12,7 +11,7 @@ class PostCreationForm(forms.ModelForm):
     """A form for creating new posts."""
     class Meta:
         model = Post
-        fields = ('content', 'image_url', 'publishdate', 'authorid')
+        fields = ('content', 'published', 'author')
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -27,16 +26,16 @@ class PostChangeForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ('content', 'image_url', 'publishdate', 'authorid')
+        fields = ('content', 'published', 'author')
 
 class PostsAdmin(admin.ModelAdmin):
-    list_display = ('content', 'image_url', 'publishdate', 'authorid', 'postid')
+    list_display = ('content', 'published', 'author', 'id')
 
 class CommentCreationForm(forms.ModelForm):
     """A form for creating new comments."""
     class Meta:
         model = Comment
-        fields = ('postid', 'authorid', 'publishdate', 'comment')
+        fields = ('postid', 'author', 'publishdate', 'comment')
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -51,10 +50,22 @@ class CommentChangeForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ('postid', 'authorid', 'publishdate', 'comment')
+        fields = ('postid', 'author', 'publishdate', 'comment')
 
 class CommentsAdmin(admin.ModelAdmin):
-    list_display = ('postid', 'authorid', 'publishdate', 'comment', "commentid")
+    list_display = ('postid', 'author', 'publishdate', 'comment', "id")
+
+@admin.register(LikePost)
+class LikePostAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post')
+
+@admin.register(LikeComment)
+class LikeCommentAdmin(admin.ModelAdmin):
+    list_display = ('author', 'comment')
+
+@admin.register(Share)
+class ShareAdmin(admin.ModelAdmin):
+    list_display = ('author', 'post')
 
 admin.site.register(Post, PostsAdmin)
 admin.site.register(Comment, CommentsAdmin)

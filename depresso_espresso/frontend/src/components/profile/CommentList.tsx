@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, useState, SetStateAction } from "react";
 import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
@@ -8,6 +8,7 @@ import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
+import { AuthorModel } from "../data/AuthorModel";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -20,10 +21,18 @@ const myToast: ToastOptions = {
   closeButton: false,
 };
 
-const CommentList = ({ post }: { post: PostModel }) => {
+const CommentList = ({
+  post,
+  refresh,
+  setRefresh,
+}: {
+  refresh: boolean;
+  setRefresh: Dispatch<SetStateAction<boolean>>;
+  post: PostModel;
+}) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
-  const [, setAuthorImg] = useState("");
+  const [curUser, setCurUser] = useState<AuthorModel>();
 
   //#region functions
   const formatDateString = (inputDateString: string) => {
@@ -42,11 +51,11 @@ const CommentList = ({ post }: { post: PostModel }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("/user_data");
+        const response = await axios.get("/curUser");
         const data = response.data;
 
-        if (response.data.success) {
-          setAuthorImg(data.profile_image);
+        if (data.success) {
+          setCurUser(data);
         }
       } catch (error) {
         console.error("An error occurred", error);
@@ -55,53 +64,61 @@ const CommentList = ({ post }: { post: PostModel }) => {
 
     const fetchComments = async () => {
       try {
-        const response = await axios.post("/get_post_comments", {
-          postId: post.postid,
-        });
-        console.log("comments resp", response.data);
-        if (response.status === 200) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const commentModels = response.data.comment.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (rawcomment: any, index: number) => {
-              return {
-                authorid: rawcomment.fields.authorid,
-                authorname: rawcomment.fields.authorname,
-                comment: rawcomment.fields.comment,
-                commentlikecount: rawcomment.fields.commentlikecount,
-                contenttype: rawcomment.fields.contenttype,
-                editdate: rawcomment.fields.editdate,
-                liked_by: rawcomment.fields.liked_by,
-                postid: rawcomment.fields.postid,
-                publishdate: rawcomment.fields.publishdate,
-                profile_image: response.data.author[index].fields.profile_image,
-              };
-            }
-          );
-          console.log("commentmodels", commentModels);
-          setComments(commentModels);
+        const response = await axios.post(
+          `/authors/${post.author.pk}/posts/${post.id}/comments`
+        );
+        if (response.status === 200 && response.data.length > 0) {
+          if (response.data.length > 0) {
+            const commentModels = response.data.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (rawcomment: any) => {
+                return {
+                  type: "comment",
+                  author: rawcomment.author,
+                  comment: rawcomment.comment,
+                  contenttype: rawcomment.contenttype,
+                  published: rawcomment.published,
+                  likecount: rawcomment.likecount,
+                  id: rawcomment.id,
+                };
+              }
+            );
+            setComments(commentModels);
+          } else {
+            console.log("No comments found");
+            setComments([]);
+          }
         } else {
           console.error("Failed to fetch comments");
         }
       } catch (error) {
-        console.error("An error occurred");
+        console.error("An error occurred", error);
       }
     };
 
     fetchProfile();
     fetchComments();
-  }, [post.postid]);
+  }, [post.author.pk, post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
       const formField = new FormData();
       formField.append("comment", comment);
-      formField.append("postid", post.postid);
+      formField.append("postid", post.id);
 
       const response = await axios.post("/make_comment", formField);
 
+      await axios.post("/create_notification", {
+        type: "comment",
+        sender_id: curUser!.id,
+        receiver_id: post.author.pk,
+        post_id: post.id,
+      });
+
       if (response.data.success) {
         console.log("Comment creation successful");
+        setRefresh(!refresh);
+        setComment("");
       } else {
         toast.error("Failed to create comment", myToast);
       }
@@ -136,15 +153,17 @@ const CommentList = ({ post }: { post: PostModel }) => {
           >
             <div className="flex items-center justify-between">
               <UserDisplay
-                username={comment.authorname}
-                user_img_url={comment.profile_image}
-                link={`/authors/${comment.authorid}`}
+                displayName={comment.author.displayName}
+                user_img_url={comment.author.profileImage}
+                link={comment.author.url}
               />
               <p className="text-sm opacity-70">
-                {formatDateString(comment.publishdate.substring(0, 16))}
+                {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
-            <p className="text-start">{comment.comment}</p>
+            <p className="p-4 bg-white text-start rounded-xl">
+              {comment.comment}
+            </p>
           </div>
         ))}
       </div>
