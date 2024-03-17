@@ -8,6 +8,7 @@ import ProfilePage from "./components/profile/ProfilePage.tsx";
 import Home from "./components/home/Home.tsx";
 import NotiPage from "./components/notification/NotiPage.tsx";
 import Discover from "./components/discover/Discover.tsx";
+import SinglePostView from "./components/notification/SinglePostView.tsx";
 import { NavBar } from "./components/NavBar.tsx";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -79,6 +80,14 @@ function App() {
           element={
             <General>
               <Discover />
+            </General>
+          }
+        />
+        <Route
+          path="/authors/:authorId/posts/:postId"
+          element={
+            <General>
+              <SinglePostView />
             </General>
           }
         />

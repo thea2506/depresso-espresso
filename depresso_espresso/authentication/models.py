@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
+import datetime
 
 # Create your models here.
 class Author(AbstractUser):
@@ -42,6 +43,7 @@ class Following(models.Model):
     authorid = models.CharField(max_length=200)
     followingid = models.CharField(max_length=200)
     areFriends = models.BooleanField(null = False, blank = False, default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = True

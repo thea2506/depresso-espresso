@@ -16,7 +16,11 @@ urlpatterns = [
     path("get_all_posts/", views.get_all_posts, name="get_all_posts"),
     path("authors/<str:authorid>/liked", views.get_author_liked, name="get_author_liked"),
     path("authors/<str:authorid>/posts", views.get_author_posts, name="get_author_posts"),
-    path("authors/<str:authorid>/posts/<str:postid>", views.handle_author_post, name="author_post"),
+    
+    path("authors/<str:authorid>/posts/<str:postid>", views.frontend_explorer, name="post_frontend"),
+    path('espresso-api/authors/<str:authorid>/posts/<str:postid>', views.author_post, name ='author_post'),
+    
+    path("authors/<str:authorid>/posts/<str:postid>", views.author_post, name="author_post"),
     path("authors/<str:authorid>/posts/<str:postid>/likes", views.get_post_likes, name="get_post_likes"),
     path("authors/<str:authorid>/posts/<str:postid>/comments", views.get_post_comments, name="get_post_comments"),
     path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>", views.get_post_comment, name="get_post_comment"),
