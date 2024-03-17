@@ -141,14 +141,15 @@ def new_local_post(request):
 
           if post.visibility == "PUBLIC":
 
-            following = Following.objects.filter(authorid=user.id) # Users who will receive this post in their inbox
-
+            following = Following.objects.filter(followingid=user.id) # Users who will receive this post in their inbox
+            
             for following_user in following:
-              url = following_user.get("url")
-              host = following_user.get("host")   # get the host from the id
-              node = Node.objects.get(baseUrl = host)
+              following_user = Author.objects.get(id=following_user.authorid)
+              url = following_user.url
+              host = following_user.host   # get the host from the id
 
-              if node:
+              if Node.objects.filter(baseUrl = host).exists():
+                node = Node.objects.get(baseUrl = host)
                 username = node["theirUsername"]
                 password = node["theirPassword"]
                 requests.post(url + '/inbox/', post_data,  auth=(username,password)) # Send to external author

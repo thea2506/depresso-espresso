@@ -320,8 +320,9 @@ def create_follow_request(request, foreignid):
         
         # Check if the author that the user wants to follow is from an external node:
         host = foreign_author.host   # get the host from the id
-        node = Node.objects.get(baseUrl = host)
-        if node:
+        
+        if Node.objects.filter(baseUrl = host).exists():
+          node = Node.objects.get(baseUrl = host)
           username = node["theirUsername"]
           password = node["theirPassword"]
           response = requests.post(foreign_author.url + '/inbox/', data,  auth=(username,password)) # Send data to external author's inbox

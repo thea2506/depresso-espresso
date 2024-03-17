@@ -50,16 +50,17 @@ def handle_inbox(request, authorid):
         print("user:", user.displayName)
 
         # Author's inbox should contain posts from friends and followed authors
-        items = []          
-    
-        following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
+        items = []
+        print("lllllllaaaaaaaaaaaaaaaaaaaaaaaaaa", request.data)
 
-        print("following authors:", following_authors.json())
-        for author in (following_authors.json())["items"]:
-             print("AUTHOR:  ", author)
-             author_ob = Author.objects.get(id = author["id"]) # Get the author object of the friend
-             following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
-             items.append(serializers.serialize('json', following_posts))
+        if len(request.data) > 0:
+            following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
+            print("following authors:", following_authors.json())
+            for author in (following_authors):
+                print("AUTHOR:  ", author)
+                author_ob = Author.objects.get(id = author) # Get the author object of the friend
+                following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
+                items.append(serializers.serialize('json', following_posts))
 
         
         friends = requests.get( user.url + '/friends/') # Get the author's friends

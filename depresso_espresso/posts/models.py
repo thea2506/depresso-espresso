@@ -3,11 +3,10 @@ import uuid
 from authentication.models import Author
 
 class Post(models.Model):
-    
-    url = models.CharField(db_column='postID', unique=True, max_length=200)
-    id = models.UUIDField(db_column='postUUID', primary_key=True, default=uuid.uuid4)
 
-    # Origins
+    # Identifiers
+    id = models.UUIDField(db_column='postID', primary_key=True, default=uuid.uuid4)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE, db_column='authorID')
     source = models.TextField(blank=True, null = True)
     origin = models.TextField(blank=True, null = True)
     published = models.DateTimeField(db_column='publishDate', null = True, blank=True)
