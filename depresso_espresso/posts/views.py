@@ -239,14 +239,11 @@ def get_all_posts(request):
   friend_following_posts = []
 
   for item in posts_dict["items"]:
-     print("ITEM:::::::::::::::::::::", item)
      friend_following_posts.append(Post.objects.get(id = item["id"]))
      
 
-  print("posts dict:", posts_dict)
-
   merged_posts = friend_following_posts + public_posts_list
-  print("merged posts:", merged_posts)
+
 
   authors = [Author.objects.get(id=(post.author.id)) for post in merged_posts]
 
@@ -254,7 +251,7 @@ def get_all_posts(request):
   sorted(merged_posts, key=lambda x: x.published) # sort the posts by date
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
-  print("author data:", author_data)
+
 
   merged_posts = serializers.serialize('json', merged_posts)
 

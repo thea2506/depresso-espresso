@@ -15,6 +15,7 @@ const AuthorSearch = () => {
     const fetchAuthors = async () => {
       try {
         const response = await axios.get(`/authors?search=${searchTerm}`);
+        console.log(response)
 
         const authorModels = response.data?.map(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

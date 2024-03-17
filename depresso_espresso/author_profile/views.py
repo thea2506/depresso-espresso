@@ -55,8 +55,7 @@ def author_profile(request, authorid):
               "host": author.host,
               "displayName": author.displayName,
               "github": author.github,
-              "profileImage": author.profileImage
-            
+              "profileImage": author.profileImage     
         }
 
         return JsonResponse(data)
@@ -79,12 +78,12 @@ def get_authors(request):
               uid = session_data.get('_auth_user_id')
               user = Author.objects.get(id=uid)
 
-
   if request.method == "GET":
 
 
     if user.is_authenticated == False:
-          #handle retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
+          # This part of the function is meant to be used by remote servers only
+          #handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
           node = checkBasic(request)
           if not node:
              return JsonResponse({"message:" "External Auth Failed"}, status=401)
@@ -105,6 +104,15 @@ def get_authors(request):
               "profileImage": author.profileImage
 
             })
+
+            data = {
+            "type": "author",
+            "items": items
+            }
+        
+          return JsonResponse(data, safe=False)
+
+
     else:
 
       # Poll all external nodes for their authors
@@ -129,34 +137,22 @@ def get_authors(request):
               new_author.isExternalAuthor = True
 
       search_terms = request.GET.get('search')
+      
 
+      # Get authors on our db
       if search_terms:
         authors = Author.objects.filter(displayName__icontains=search_terms)
+        print(authors)
 
       else:
         authors = Author.objects.all()
       
       items = []
       for author in authors:
-        items.append({
-            
-          "type": author.type,
-          "id": author.id,
-          "url": author.url,
-          "host": author.host,
-          "displayName": author.displayName,
-          "username": author.username,
-          "github": author.github,
-          "profileImage": author.profileImage
+        items.append(author)
 
-        })
-
-    data = {
-       "type": "author",
-       "items": items
-    }
-  
-    return JsonResponse(data, safe=False)
+    res = serializers.serialize("json", items, fields=["profileImage", "username", "github", "displayName", "url"])
+    return HttpResponse(res, content_type="application/json")
    
 
 
@@ -343,6 +339,8 @@ def create_external_follow_request(request):
       Within inbox, If remote author is unknown to our db, create new author (maybe add way to update remote profile if it changes) -->
       Inbox sends POST request to this function to create the new follow request object
       """
+   
+   # This function could be moved inside index views.py if it isn't working this way
    
    if request.method == 'POST':
       localid = request.data.get("localid")
