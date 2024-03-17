@@ -134,6 +134,7 @@ const PostForm = ({
     event.preventDefault();
     try {
       const formData = new FormData();
+      formData.append("inbox", "No");
       formData.append("title", title);
       formData.append("description", description);
 
@@ -141,6 +142,7 @@ const PostForm = ({
 
       // content
       formData.append("contentType", contentType);
+      console.log("visibility:", visibility);
       formData.append("visibility", visibility.toUpperCase());
       formData.append("authorId", author.id);
 

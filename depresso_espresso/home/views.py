@@ -3,6 +3,13 @@ from .userstream import StreamView
 from .search import SearchView
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
+from django.contrib.sessions.models import Session
+from authentication.models import Author, Following, FollowRequest, Node
+from posts.models import Post
+from rest_framework.decorators import api_view
+from django.http import JsonResponse
+from django.core import serializers
+
 
 
 class StreamView(TemplateView):
@@ -11,18 +18,12 @@ class StreamView(TemplateView):
     def get(self, request):
         return render(request, "index.html")
 
-@login_required
+# Create your views here.
+
 def stream(request):
-    '''Shows the user their stream page'''
     rend = StreamView().get(request)
     return rend
 
 
-"""
-@login_required
-def search(request):
-    '''Shows the user their search results for other users'''
-    SearchView()
-    return render(request, "index.html")
-    
-"""
+
+
