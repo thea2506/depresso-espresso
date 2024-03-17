@@ -77,7 +77,7 @@ const PostForm = ({
   );
   const [title, setTitle] = useState(oldTitle || "");
   const [description, setDescription] = useState(oldDescription || "");
-  const [visibility, setVisibility] = useState(oldVisibility || "public");
+  const [visibility, setVisibility] = useState(oldVisibility || "PUBLIC");
   const [form, setForm] = useState("");
   const [imgDisabled, setImgDisabled] = useState(false);
   const [textDisabled, setTextDisabled] = useState(false);
@@ -88,6 +88,7 @@ const PostForm = ({
   //#region functions
   const openPost = (newForm: string) => {
     if (
+      newForm === "refresh" ||
       (newForm === "Image" && newForm == form) ||
       (newForm === "Text/Markdown" && newForm == form)
     ) {
@@ -98,7 +99,7 @@ const PostForm = ({
       setImgDisabled(false);
       setTextDisabled(true);
       setForm("Image");
-    } else {
+    } else if (newForm === "Text/Markdown") {
       setImgDisabled(true);
       setTextDisabled(false);
       setForm("Text/Markdown");
@@ -142,8 +143,9 @@ const PostForm = ({
 
       // content
       formData.append("contentType", contentType);
-      console.log("visibility:", visibility);
-      formData.append("visibility", visibility.toUpperCase());
+
+      console.log("visibility", visibility);
+      formData.append("visibility", visibility);
       formData.append("authorId", author.id);
 
       if (contentType.includes("image") && imageFile) {
@@ -165,13 +167,11 @@ const PostForm = ({
           post_id: response.data.id,
         });
 
-      if (response.data.success) {
-        setRefresh(!refresh);
-        setIsOpen(false);
-        setTimeout(function () {
-          closePopup && closePopup();
-        }, 200);
-      } else {
+      openPost("refresh");
+      closePopup && closePopup();
+      setRefresh(!refresh);
+
+      if (!response.data.success) {
         toast.error("Failed to create/modify post", myToast);
       }
     } catch (error) {
@@ -179,6 +179,7 @@ const PostForm = ({
     }
   };
   //#endregion
+
   return (
     <div className="flex flex-col items-center justify-center w-full gap-y-4">
       <ToastContainer />
@@ -299,18 +300,17 @@ const PostForm = ({
 
         {/* Options */}
         <div className="flex items-center justify-between w-full gap-x-4">
-          <div className="flex gap-x-4">
+          <div className="flex items-center gap-x-4">
             <FaLock className="w-6 h-7 text-primary" />
             <select
-              name="privacy"
               id="privacy"
-              className="px-4 py-1 bg-white rounded-xl"
+              className="p-2 bg-white rounded-md cursor-default focus:outline-none"
+              onChange={(e) => setVisibility(e.target.value.toUpperCase())}
             >
-              {["Public", "Private"].map((option, index) => (
+              {["Public", "Friends", "Unlisted"].map((option, index) => (
                 <option
                   key={index}
-                  value={option.toLowerCase()}
-                  onClick={() => setVisibility(option.toLowerCase())}
+                  value={option}
                 >
                   {option}
                 </option>

@@ -160,7 +160,7 @@ def new_local_post(request):
           # Send this post to the inboxes of authors who are friends with the posting author
           elif post.visibility == "FRIENDS":
              
-             following = Following.objects.filter(following=user.id, areFriends=True) # Users who will receive this post in their inbox
+             following = Following.objects.filter(followingid=user.id, areFriends=True) # Users who will receive this post in their inbox
 
              for following_user in following:
               following_user = Author.objects.get(id=following_user.authorid)
