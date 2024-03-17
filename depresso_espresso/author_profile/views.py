@@ -399,7 +399,7 @@ def get_friends(request, authorid):
     friends = Following.objects.filter(authorid=authorid, areFriends=True)
     data = []
     for friend in friends:
-      user = Author.objects.get(id=friend.authorid.id)
+      user = Author.objects.get(id=friend.authorid)
       data.append({
         "type": user.type,
         "id": user.id,

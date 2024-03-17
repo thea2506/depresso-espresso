@@ -70,7 +70,9 @@ def handle_inbox(request, authorid):
              friend_posts = Post.objects.filter(author = author_ob, visibility = "FRIENDS")
              items.append(serializers.serialize('json', friend_posts))
 
-        print("ITEMSSSSSSSSSSSSSSSSSSSSSSSSSSSS:", items)
+        if items == ['[]']:
+
+            items = []
 
         # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
         # sorted(items, key=lambda x: x["fields"]["published"]) # sort the posts by date

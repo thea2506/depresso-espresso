@@ -160,14 +160,16 @@ def new_local_post(request):
           # Send this post to the inboxes of authors who are friends with the posting author
           elif post.visibility == "FRIENDS":
              
-             following = Following.objects.filter(authorid=user.id, areFriends=True) # Users who will receive this post in their inbox
+             following = Following.objects.filter(following=user.id, areFriends=True) # Users who will receive this post in their inbox
 
              for following_user in following:
-              url = following_user.get("url")
-              host = following_user.get("host")   # get the host from the id
-              node = Node.objects.get(baseUrl = host)
+              following_user = Author.objects.get(id=following_user.authorid)
+              url = following_user.url
+              host = following_user.host  # get the host from the id
 
-              if node:
+
+              if Node.objects.filter(baseUrl = host).exists():
+                node = Node.objects.get(baseUrl = host)
                 username = node["theirUsername"]
                 password = node["theirPassword"]
                 requests.post(url + '/inbox/', data,  auth=(username,password)) # Send to external author
@@ -218,13 +220,6 @@ def new_external_post(request):
 def get_all_posts(request):
   "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
   
-
-
-
-
-
-
-
   user, session = getUser(request)
   session.save()
   if not user:
@@ -236,12 +231,21 @@ def get_all_posts(request):
   public_posts_list = []
   for post in public_posts:
      public_posts_list.append(post)
+  
 
   url = user.url+ '/espresso-api/inbox'
   friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
   posts_dict = friend_following_posts.json()
+  friend_following_posts = []
 
-  merged_posts = posts_dict["items"] + public_posts_list
+  for item in posts_dict["items"]:
+     print("ITEM:::::::::::::::::::::", item)
+     friend_following_posts.append(Post.objects.get(id = item["id"]))
+     
+
+  print("posts dict:", posts_dict)
+
+  merged_posts = friend_following_posts + public_posts_list
   print("merged posts:", merged_posts)
 
   authors = [Author.objects.get(id=(post.author.id)) for post in merged_posts]
