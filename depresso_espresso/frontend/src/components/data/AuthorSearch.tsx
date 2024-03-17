@@ -71,7 +71,7 @@ const AuthorSearch = () => {
                   onClick={() => nav(`/authors/${author.id}`)}
                 >
                   <UserDisplay
-                    username={author.displayName}
+                    displayName={author.displayName}
                     user_img_url={author.profileImage}
                     link={`/authors/${author.id}`}
                     className="text-lg font-semibold text-secondary-dark hover:text-white"

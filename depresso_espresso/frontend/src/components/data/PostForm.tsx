@@ -155,6 +155,14 @@ const PostForm = ({
       const url = edit ? "/edit_post" : "/new_post/";
       const response = await axios.post(url, formData);
 
+      // create notification
+      if (url == "/new_post/" && visibility.toLowerCase() != "private")
+        await axios.post("/create_notification", {
+          type: "post",
+          sender_id: author.id,
+          post_id: response.data.id,
+        });
+
       if (response.data.success) {
         setRefresh(!refresh);
         setIsOpen(false);
@@ -214,9 +222,7 @@ const PostForm = ({
             <img
               className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
               src={
-                author.profileImage != null
-                  ? author.profileImage
-                  : defaultProfileImage
+                author.profileImage ? author.profileImage : defaultProfileImage
               }
               alt="Profile picture"
             />
