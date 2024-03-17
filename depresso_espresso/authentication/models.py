@@ -38,6 +38,7 @@ class Node(models.Model):
         return self.baseUrl
 
 class Following(models.Model):
+    
     authorid = models.CharField(max_length=200)
     followingid = models.CharField(max_length=200)
     areFriends = models.BooleanField(null = False, blank = False, default=False)

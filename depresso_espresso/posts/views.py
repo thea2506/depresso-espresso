@@ -196,7 +196,7 @@ def get_post_comment(request, authorid, postid, commentid):
 def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
- 
+
   if not LikePost.objects.filter(author = request.user, post = post).exists():
       LikePost.objects.create(author = request.user, post = post)
       post.likecount = F('likecount') + 1

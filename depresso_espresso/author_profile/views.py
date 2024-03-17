@@ -10,7 +10,6 @@ from django.contrib.sessions.models import Session
 import json
 
 
-
 @api_view(["GET","PUT"])
 def author_profile(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
@@ -57,7 +56,6 @@ def author_profile(request, authorid):
               author_data = response.json()      
           
           data = {
-             
                 "type": "author",
                 "id": author_data["id"],
                 "url": author_data["url"],
@@ -65,7 +63,6 @@ def author_profile(request, authorid):
                 "displayName": author_data["displayName"],
                 "github": author_data["github"],
                 "profileImage": author_data["profileImage"]
-              
           }
 
           return JsonResponse(data)
@@ -118,7 +115,6 @@ def get_followers(request, authorid):
       GET ://service/authors/{AUTHOR_ID}/followers: Get all followers of an author'''
   
   user = Author.objects.get(id=authorid)
-          
   
   if request.method == "GET":
 
@@ -127,7 +123,6 @@ def get_followers(request, authorid):
           if not node:
              return JsonResponse({"message:" "External Auth Failed"}, status=401)
           
-
     followers = Following.objects.filter(followingid=authorid)
     items = []
     data = {}
@@ -157,7 +152,6 @@ def foreign_author_follow(request, authorid, foreignid):
     ''' LOCAL AND REMOTE GET ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
         LOCAL PUT ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
         LOCAL DELETE ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Unfollow another author'''
-    
 
     if request.session.session_key is not None:
           session = Session.objects.get(session_key=request.session.session_key)
@@ -172,7 +166,6 @@ def foreign_author_follow(request, authorid, foreignid):
     if  Author.objects.filter(id = authorid).exists(): # if the foreign author is saved on our server:
         author = Author.objects.filter(id = author)
         author_data = author.values()[0]
-      
              
     else:
         # They (other servers) will have to send a json string of the foreing author's data. I do not think we need to do this to retrieve external author info
@@ -184,12 +177,10 @@ def foreign_author_follow(request, authorid, foreignid):
         author_data = response.json()
         send_external == "author"
 
-
     if request.META["HTTP_HOST"] in foreignid: # if the foreign author is saved on our server:
         foreign_author = Author.objects.get(id = foreignid)
         foreign_data = foreign_author.values()[0]
         
-      
     else:
       split_id = foreignid.split("authors")
       node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
@@ -294,8 +285,8 @@ def foreign_author_follow(request, authorid, foreignid):
             return JsonResponse({"message": "Could not sent request to external node", "success": False}, status=response.status)
 
       return JsonResponse({"message": message,"success": True})
-       
-      
+
+
     if request.method == "DELETE": #  remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID       
 
       if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
@@ -387,7 +378,6 @@ def create_follow_request(request, foreignid):
         return JsonResponse({"message": message, "success": True})
 
 
-
 @api_view(['PUT']) 
 def respond_to_follow_request(request, foreignid):
     ''' LOCAL/REMOTE 
@@ -447,8 +437,6 @@ def get_friends(request, authorid):
     return JsonResponse(data, safe=False)
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
-  
-
 
 
 def check_follow_status(request):
@@ -480,7 +468,6 @@ def check_follow_status(request):
     return JsonResponse(result)
   else:
     return JsonResponse({"success" : False})
-  
 
 
 def front_end_inbox(request, authorid):
@@ -488,7 +475,6 @@ def front_end_inbox(request, authorid):
 
 def get_follow_requests(request): # Can this be extended to be inbox?
     '''Get all follow requests for an author'''
-    
 
     if request.method == "GET":
       authorid = request.GET.get("id")
