@@ -16,7 +16,7 @@ urlpatterns = [
 
 
     path('authors/<str:authorid>/friends/', views.get_friends, name = 'get_friends'),
-    path('authors/<str:authorid>/following/', views.get_following, name = 'get_following'),
+    path('authors/<str:authorid>/following/', views.get_followers, name = 'get_following'),
     path('authors/<str:authorid>', views.front_end, name ='frontend'),
     path('user/<str:username>/', views.user_posts, name='user_posts'),
     path('authors/images/<str:image_file>', views.get_image, name='image_file'),

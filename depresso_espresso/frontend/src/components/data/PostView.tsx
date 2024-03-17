@@ -65,22 +65,8 @@ const PostView = ({
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
-<<<<<<< HEAD
-
-        await axios.post("/create_notification", {
-          type: "share",
-          sender_id: curUser.id,
-          receiver_id: post.author.pk,
-          post_id: post.id,
-        });
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Already shared"
-      ) {
-=======
       }
       else if (response.data.success === false && response.data.message === "Already shared") {
->>>>>>> 676c34bc31d699d858ce54e80bdb8c9f47c5532f
         console.log("Post already shared");
         setRefresh(!refresh);
       }
@@ -98,23 +84,7 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-<<<<<<< HEAD
-    console.log("Like clicked");
-    const response = await axios.post(
-      `authors/${post.author.pk}/posts/${post.id}/toggle_like`
-    );
-    if (response.data.already_liked == false) {
-      await axios.post("/create_notification", {
-        type: "like",
-        sender_id: curUser.id,
-        receiver_id: post.author.pk,
-        post_id: post.id,
-      });
-    }
-
-=======
     await axios.post(`authors/${post.author.pk}/posts/${post.id}/like_post`);
->>>>>>> 676c34bc31d699d858ce54e80bdb8c9f47c5532f
     setRefresh(!refresh);
   };
 

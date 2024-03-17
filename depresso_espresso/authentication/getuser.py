@@ -10,7 +10,7 @@ def getUser(request):
           session_data = session.get_decoded()
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
-          return(user)
+          return(user, session)
       
     return(None)
 

@@ -80,7 +80,7 @@ def handle_author_post(request, authorid, postid):
 @api_view(['POST'])
 def new_local_post(request):
     ''' LOCAL
-        POST /new_post/: This function is used locally only to create a new post. This endpoint is posted to by our frontend form. The addition of external posts to our db is handled by new_external_post function'''
+        POST /new_local_post/: This function is used locally only to create a new post. This endpoint is posted to by our frontend form. The addition of external posts to our db is handled by new_external_post function'''
     
     if request.session.session_key is not None:
       session = Session.objects.get(session_key=request.session.session_key)
@@ -103,7 +103,9 @@ def new_local_post(request):
           post.content = form.cleaned_data["content"]
           post.published = make_aware(datetime.datetime.now())
           post.visibility = form.cleaned_data["visibility"]
-          post.url = user.url + '/posts/' + post.id
+
+          print("Post visibility:" , post.visibility)
+          post.url = user.url + '/posts/' + str(post.id)
           
           form.save(commit = True)
           data ={}
@@ -204,7 +206,6 @@ def new_external_post(request):
           post.published = make_aware(datetime.datetime.now())
           post.visibility = form.cleaned_data["visibility"]
           post.url = external_author.url + '/posts/' + post.id
-          post.local = False
           
           form.save(commit = True)
           data ={}
@@ -217,35 +218,46 @@ def new_external_post(request):
 @api_view(['GET'])
 def get_all_posts(request):
   "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
+  
 
-  user = getUser(request)
+
+
+
+
+
+
+  user, session = getUser(request)
+  session.save()
   if not user:
      return JsonResponse({"message": "User session error"})
 
-  public_posts = Post.objects.filter(visibility="PUBLIC", local= True).order_by('-published') # Get all PUBLIC LOCAL posts
+  public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published') # Get all PUBLIC LOCAL posts
   
-  public_posts_dict = serializers.serialize('json', public_posts)
+  #public_posts = serializers.serialize('json', public_posts)
+  public_posts_list = []
+  for post in public_posts:
+     public_posts_list.append(post)
 
-  friend_following_posts = requests.get(user.url + '/inbox/') # Get friend and following posts from user's inbox to integrate them with public posts
+  url = user.url+ '/espresso-api/inbox'
+  friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
+  posts_dict = friend_following_posts.json()
 
-  posts_dict = friend_following_posts["items"]
-
-  # Reference: https://www.geeksforgeeks.org/python-merging-two-dictionaries/ Accessed 3/16/2024
-  merged_posts = dict(posts_dict.items() | public_posts_dict.items())
+  merged_posts = posts_dict["items"] + public_posts_list
+  print("merged posts:", merged_posts)
 
   authors = [Author.objects.get(id=(post.author.id)) for post in merged_posts]
 
   # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-  sorted(merged_posts, key=lambda x: x['published']) # sort the posts by date
+  sorted(merged_posts, key=lambda x: x.published) # sort the posts by date
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
+  print("author data:", author_data)
+
+  merged_posts = serializers.serialize('json', merged_posts)
 
   results = '{"posts": ', merged_posts, ', "authors": ', author_data, '}'
 
   return HttpResponse(results, content_type='application/json')
-
-
-
 
 def get_author_posts(request, authorid):
   '''Get all posts by an author'''

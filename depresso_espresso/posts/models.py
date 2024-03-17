@@ -5,7 +5,7 @@ from authentication.models import Author
 # Create your models here.
 class Post(models.Model):
     
-    url = models.CharField(db_column='postID', primary_key=True, max_length=200)
+    url = models.CharField(db_column='postID', unique=True, max_length=200)
     id = models.UUIDField(db_column='postUUID', primary_key=True, default=uuid.uuid4)
 
     # Origins

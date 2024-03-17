@@ -7,11 +7,12 @@ from django.contrib.sessions.models import Session
 from authentication.models import Author, Following, FollowRequest, Node
 from posts.models import Post
 from rest_framework.decorators import api_view
-from posts.views import new_post
 from django.http import JsonResponse
 import requests
+from django.core import serializers
+import json
 
-'''
+
 class StreamView(TemplateView):
     template_name = 'home/home.html'
 
@@ -20,11 +21,10 @@ class StreamView(TemplateView):
 
 # Create your views here.
 
-@login_required
 def stream(request):
     rend = StreamView().get(request)
     return rend
-'''
+
 
 
 @api_view(["POST", "GET"])
@@ -32,37 +32,50 @@ def handle_inbox(request, authorid):
     """ LOCAL REMOTE
         GET /authors/<str:authorid>/inbox: This retrieves all posts that would be sent to this author's inbox
         POST /authors/<str:authorid>/inbox This is where other authors post relevant information that this author needs to know about"""
-
+    
+    '''
     if request.session.session_key is not None: # Check if user is athenticated and get current user
                 session = Session.objects.get(session_key=request.session.session_key)
+                print("Session:", session)
                 if session:
                     session_data = session.get_decoded()
                     uid = session_data.get('_auth_user_id')
                     user = Author.objects.get(id=uid)
-                    authorid = user.id
+                    if user.id != authorid:
+                         return JsonResponse({"message": "Illegal inbox access"}, status = 401)
+    '''
 
     if request.method == "GET": # Get all posts from authorid's inbox
+        print("Method Get\n")
+        user = Author.objects.get(id=authorid)
+        print("user:", user.displayName)
 
         # Author's inbox should contain posts from friends and followed authors
         items = []          
     
         following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
-        for author in following_authors:
-             author_ob = Author.objects.get(id = friend["id"]) # Get the author object of the friend
-             following_posts = Post.objects.filter(author = author_ob)
-             for post in following_posts:
-                  items.append[post]
 
+        print("following authors:", following_authors.json())
+        for author in (following_authors.json())["items"]:
+             print("AUTHOR:  ", author)
+             author_ob = Author.objects.get(id = author["id"]) # Get the author object of the friend
+             following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
+             items.append(serializers.serialize('json', following_posts))
+
+        
         friends = requests.get( user.url + '/friends/') # Get the author's friends
-        for friend in friends.data:
+        print("friends:", friends.json())
+        for friend in (friends.json()):
              author_ob = Author.objects.get(id = friend["id"]) # Get the author object of the friend
-             friend_posts = Post.objects.filter(author = author_ob)
-             for post in friend_posts:
-                  items.append[post]
+             friend_posts = Post.objects.filter(author = author_ob, visibility = "FRIENDS")
+             items.append(serializers.serialize('json', friend_posts))
+
+        print("ITEMSSSSSSSSSSSSSSSSSSSSSSSSSSSS:", items)
 
         # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-        sorted(items, key=lambda x: x['published']) # sort the posts by date
-
+        # sorted(items, key=lambda x: x["fields"]["published"]) # sort the posts by date
+        
+        print("\n\nITEMS:", items)
         data = {
                 "type": "inbox",
                 "author": user.id,

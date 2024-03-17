@@ -75,6 +75,7 @@ LOGIN_EXEMPT_URLS = (
     r"api/signin",
     r"curUser",
     r'make_post',
+    r'/inbox/'
 )
 
 CORS_ALLOWED_ORIGINS = [

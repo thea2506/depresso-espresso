@@ -73,6 +73,7 @@ def get_authors(request):
       GET ://service/authors/ or GET ://service/authors?page=10&size=5'''
   
   if request.session.session_key is not None:
+
           session = Session.objects.get(session_key=request.session.session_key)
           if session:
               session_data = session.get_decoded()
@@ -81,6 +82,7 @@ def get_authors(request):
 
 
   if request.method == "GET":
+
 
     if user.is_authenticated == False:
           #handle retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
@@ -282,17 +284,17 @@ def create_follow_request(request, foreignid):
       foreign_author = Author.objects.get(id=foreignid)
 
       # follow logic
-      if Following.objects.filter(authorid = user["id"], followingid = foreignid).exists(): 
+      if Following.objects.filter(authorid = user.id, followingid = foreignid).exists(): 
         message = "You are already following this author"
         return JsonResponse({"message": message, "success": False}, status=405)
 
-      elif FollowRequest.objects.filter(requester = user["id"], receiver = foreignid).exists():
+      elif FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
         message = user["displayName"], "has already sent a follow request to", foreign_author.displayName
         return JsonResponse({"message": message, "success": False}, status=405)
       
-      elif not FollowRequest.objects.filter(requester = user["id"], receiver = foreignid).exists():
+      elif not FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
 
-        FollowRequest.objects.create(requester = user["id"], receiver = foreignid)
+        FollowRequest.objects.create(requester = user.id, receiver = foreignid)
 
         data = {
            
@@ -318,7 +320,7 @@ def create_follow_request(request, foreignid):
           }
         
         # Check if the author that the user wants to follow is from an external node:
-        host = foreign_author.get("host")   # get the host from the id
+        host = foreign_author.host   # get the host from the id
         node = Node.objects.get(baseUrl = host)
         if node:
           username = node["theirUsername"]
