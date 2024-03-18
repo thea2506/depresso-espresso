@@ -7,6 +7,7 @@ import json, requests
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from django.core import serializers
+from posts.views import utility_get_posts
 
 def create_notification(request):
     data = json.loads(request.body)
@@ -86,42 +87,13 @@ def handle_inbox(request, authorid):
     if request.method == "GET": # Get all posts from authorid's inbox
 
         user = Author.objects.get(id=authorid)
-        # Author's inbox should contain posts from friends and followed authors
-        items = []
+        all_visible_posts = utility_get_posts(authorid) # Get all public posts
 
-        #if len(request.data) > 0:
-        #following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
-        
-
-
-
-
-
-        following_authors = get_followings(authorid)
-        print("following authors:", following_authors)
-        for author_ob in (following_authors):
-            following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
-            items.append(serializers.serialize('json', following_posts))
-
-        
-        #friends = requests.get( user.url + '/friends/') # Get the author's friends
-        friends = get_friends(authorid)
-        print("friends:", friends)
-        for author_ob in (friends):
-             friend_posts = Post.objects.filter(author = author_ob, visibility = "FRIENDS")
-             items.append(serializers.serialize('json', friend_posts))
-
-
-        if items == ['[]']:
-            items = []
-        else:
-            #Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-            sorted(items, key=lambda x: x.published) # sort the posts by date
-        
+        # JUST POSTS FOR NOW
         data = {
                 "type": "inbox",
                 "author": user.id,
-                "items": items
+                "items": json.loads(serializers.serialize('json', all_visible_posts))
         }
         return JsonResponse(data)
 
@@ -217,9 +189,7 @@ def get_friends(authorid):
     data = []
     for friend in friends:
         user = Author.objects.get(id=friend.authorid)
-        data.append({
-            user
-        })
+        data.append(user)
 
     return data
 

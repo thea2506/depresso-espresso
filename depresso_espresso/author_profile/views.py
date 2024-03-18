@@ -8,6 +8,8 @@ from django.core import serializers
 import requests
 from django.contrib.sessions.models import Session
 import json
+import urllib.request
+from urllib.parse import unquote
 
 
 @api_view(["GET","PUT"])
@@ -22,7 +24,8 @@ def author_profile(request, authorid):
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
 
-    if request.method == "PUT": # Update user profile information
+     # Update user profile information
+    if request.method == "PUT":
         if user.is_authenticated == True:
           author = get_object_or_404(Author, pk=authorid)
           data = json.loads(request.body)
@@ -36,24 +39,19 @@ def author_profile(request, authorid):
             author.save()
             return JsonResponse({"message": "Profile updated successfully"})
 
-    if request.method == "GET": # Gets user profile information
-        if user.is_authenticated == False:
-          node = checkBasic(request)
-          if not node:
-             return JsonResponse({"message:" "External Auth Failed"}, status=401)
-        
+    # Gets user profile information
+    elif request.method == "GET":
         if not Author.objects.filter(id=authorid).exists():
-          return JsonResponse({"message": "Author not found"}, status= 500)
+          return JsonResponse({"message": "Author not found"}, status= 404)
         
         author = Author.objects.get(id=authorid)
 
         data = {
-          
               "type": "author",
-              "id": author.id,
-              "url": author.url,
+              "id": author.url,
               "host": author.host,
               "displayName": author.displayName,
+              "url": author.url,
               "github": author.github,
               "profileImage": author.profileImage     
         }
@@ -160,15 +158,9 @@ def get_authors(request):
 def get_followers(request, authorid):
   ''' LOCAL and REMOTE   
       GET ://service/authors/{AUTHOR_ID}/followers: Get all followers of an author'''
-  
-  user = Author.objects.get(id=authorid)
-  
   if request.method == "GET":
-
-    if user.is_authenticated == False:
-          node = checkBasic(request)
-          if not node:
-             return JsonResponse({"message:" "External Auth Failed"}, status=401)
+    if not Author.objects.filter(id=authorid).exists():
+      return JsonResponse({"message": "Author not found"}, status= 404)
           
     followers = Following.objects.filter(followingid=authorid)
     items = []
@@ -201,46 +193,99 @@ def handle_follow(request, authorid, foreignid):
         LOCAL DELETE ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Unfollow another author'''
 
     if request.session.session_key is not None:
-          session = Session.objects.get(session_key=request.session.session_key)
-          if session:
-              session_data = session.get_decoded()
-              uid = session_data.get('_auth_user_id')
-              user = Author.objects.get(id=uid)
-              authorid = user.id
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
 
-    foreign_author = Author.objects.get(id = foreignid)
+    
+    if Author.objects.filter(id=foreignid).exists():
+      foreign_author = Author.objects.get(id = foreignid) 
+    else:
+      response = urllib.request.urlopen(unquote(foreignid))
+      if response.status != 200:
+          return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
+      foreign_author = json.loads(response.read()) 
+      foreign_author = { 
+         "type": foreign_author["type"], 
+         "id": foreign_author["id"], 
+         "url": foreign_author["url"], 
+         "host": foreign_author["host"], 
+         "displayName": foreign_author["displayName"], 
+         "github": foreign_author["github"], 
+         "profileImage": foreign_author["profileImage"]
+      }
+           
     author = Author.objects.get(id = authorid)
    
-    if request.method == "GET": #check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
-       if user.is_authenticated == False:
-          node = checkBasic(request)
-          if not node:
-             return JsonResponse({"message:" "External Auth Failed"}, status=401)
-          
+    # check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
+    if request.method == "GET": 
        if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
-          return JsonResponse({"success": True})
+          items = []
+
+          # append our author
+          items.append({
+            "type": author.type,
+            "id": author.id,
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "github": author.github,
+            "profileImage": author.profileImage
+          })
           
+          # append the foreign author
+          items.append({
+             "type": foreign_author.type,
+            "id": foreign_author.id,
+            "url": foreign_author.url,
+            "host": foreign_author.host,
+            "displayName": foreign_author.displayName,
+            "github": foreign_author.github,
+            "profileImage": foreign_author.profileImage,
+          })
+
+          data = { "type" : "followers", "items": items}
+          return JsonResponse(data, safe=False)
        else:
-          return JsonResponse({"success": False})
+          return JsonResponse({"message": "Author not found"}, status= 404)
       
-    if request.method == "PUT": # Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
-
-      if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
+    # Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
+    if request.method == "PUT": 
+      if user.is_authenticated == False:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+      
+      # foreign author has not followed author yet
+      if not Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
+          Following.objects.create(authorid = foreignid, followingid = authorid, areFriends = False)
+      
+      # LOCAL
+      if Author.objects.filter(id = foreignid).exists():
+        if Following.objects.filter(authorid = authorid, followingid = foreignid).exists():
+            Following.objects.filter(authorid = foreignid, followingid = authorid).update(areFriends = True)
+            Following.objects.filter(authorid = authorid, followingid = foreignid).update(areFriends = True)
+            message = "Follow request from", foreign_author.id, "accepted by", author.displayName, "and they are now friends" 
+        else:
+          message = "Follow request from", foreign_author.id, "accepted by", author.displayName
+      
+      # REMOTE
+      else:
+        response = urllib.request.urlopen(foreign_author.url + '/followers/' + authorid)
+        if response.status == 200:
           Following.objects.filter(authorid = foreignid, followingid = authorid).update(areFriends = True)
-          Following.objects.create(authorid = authorid, followingid = foreignid, areFriends = True)
-          message = "Follow request from", foreign_author.id, "accepted by", author.displayName, "and they are now friends" 
-
+          message = "Follow request from a foreign", foreignid, "accepted by", author.displayName, "and they are now friends"
+        else:
+          message = "Follow request from a foreign", foreign_author.id, "accepted by", author.displayName
       return JsonResponse({"message": message,"success": True})
-       
       
     if request.method == "DELETE": #  remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID      
 
       if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
         message = foreign_author.displayName, "unfollowed", author.displayName 
        
-        if Following.objects.filter(authorid = foreignid, followingid = authorid).areFriends:
+        if Following.objects.filter(authorid = foreignid, followingid = authorid).areFriends and Following.objects.filter(authorid = authorid, followingid = foreignid).exists():
           Following.objects.filter(authorid = authorid, followingid = foreignid).update(areFriends = False)
-          Following.objects.filter(authorid = foreignid, followingid = authorid).update(areFriends = False)
           message = foreign_author.displayName, "unfollowed", author.displayName, "and they are no longer friends"
       
         Following.objects.filter(authorid = authorid, followingid = foreignid).delete()    
@@ -498,3 +543,87 @@ def front_end(request, authorid):
 
 def get_image(request, image_file):
     return redirect(f'/images/{image_file}')
+
+
+
+# Required API Endpoints
+@api_view(['GET'])
+def api_get_authors(request):
+  page = request.GET.get("page")
+  size = request.GET.get("size")
+  data = { "type": "author"}
+  author_list = []
+
+  if request.method == "GET":
+    authors = Author.objects.all()
+    if page and size:
+      page = int(page)
+      size = int(size)
+
+      start_index = size * (page - 1)
+      end_index = size * page
+      
+      if end_index > len(authors):
+        end_index = len(authors)
+      if start_index < 0:
+        start_index = 0
+      
+      if start_index > len(authors) or end_index < 0:
+        author_list = []
+      else:
+        authors = authors[start_index : end_index]
+        for author in authors:
+          author_list.append({
+            "type": author.type,
+            "id": author.id,
+            "url": author.url,
+            "host": author.host,
+            "displayName": author.displayName,
+            "username": author.username,
+            "github": author.github,
+            "profileImage": author.profileImage
+          })
+    else:
+      for author in authors:
+        author_list.append({
+          "type": author.type,
+          "id": author.id,
+          "url": author.url,
+          "host": author.host,
+          "displayName": author.displayName,
+          "username": author.username,
+          "github": author.github,
+          "profileImage": author.profileImage
+        })
+    data["items"] = author_list
+    return JsonResponse(data)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@api_view(['GET'])
+def api_get_followers(request, authorid):
+  data = { "type": "followers"}
+  follower_list = []
+  
+  if request.method == "GET":
+    if not Author.objects.filter(id=authorid).exists():
+      return JsonResponse({"message": "Author not found"}, status= 404)
+  
+    followers = Following.objects.filter(followingid=authorid)
+    
+    for follower in followers:
+      author = Author.objects.get(id=follower.authorid)
+      follower_list.append({
+        "type": author.type,
+        "id": author.id,
+        "url": author.url,
+        "host": author.host,
+        "displayName": author.displayName,
+        "github": author.github,
+        "profileImage": author.profileImage
+      })
+    data["items"] = follower_list
+    return JsonResponse(data)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+    

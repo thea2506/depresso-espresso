@@ -14,6 +14,8 @@ import json, requests
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
+from itertools import chain
+from operator import attrgetter
 
 
 class PostView(forms.ModelForm):
@@ -214,6 +216,21 @@ def new_external_post(request):
           post.save()
 
           return JsonResponse(data)
+        
+    
+def utility_get_posts(authorid):
+  '''Get all visible posts for an author'''
+  items = []
+  public_posts = Post.objects.filter(visibility="PUBLIC") # Get all PUBLIC LOCAL posts
+  friends = Following.objects.filter(authorid=authorid, areFriends=True)
+  items = chain(items, public_posts)
+  for friend in friends:
+    friends_posts = Post.objects.filter(author = friend.followingid, visibility = "FRIENDS")
+    items = chain(items, friends_posts)
+  self_posts_for_friends = Post.objects.filter(author=authorid, visibility="FRIENDS")
+  items = chain(items, self_posts_for_friends)
+  sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
+  return sorted_items
 
 
 @api_view(['GET'])
@@ -225,34 +242,37 @@ def get_all_posts(request):
   if not user:
      return JsonResponse({"message": "User session error"})
 
-  public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published') # Get all PUBLIC LOCAL posts
+  # public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published') # Get all PUBLIC LOCAL posts
   
-  #public_posts = serializers.serialize('json', public_posts)
-  stream_posts_list = []
-  for post in public_posts:
-     stream_posts_list.append(post)
+  # #public_posts = serializers.serialize('json', public_posts)
+  # stream_posts_list = []
+  # for post in public_posts:
+  #    stream_posts_list.append(post)
 
-  own_posts = Post.objects.filter(author=user, visibility="FRIENDS")
-  for post in own_posts:
-     stream_posts_list.append(post)
+  # own_posts = Post.objects.filter(author=user, visibility="FRIENDS")
+  # for post in own_posts:
+  #    stream_posts_list.append(post)
 
-  url = user.url+ '/espresso-api/inbox'
-  friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
-  posts_dict = friend_following_posts.json()
+  # url = user.url + '/espresso-api/inbox'
+  # friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
 
-  for item in posts_dict["items"]:
-     stream_posts_list.append(Post.objects.get(id = item["id"]))
+  all_visible_posts = utility_get_posts(user.id)
+  
+  print("Friend and following posts:", all_visible_posts)
+
+  # for item in all_visible_posts:
+  #    stream_posts_list.append(item)
      
-  authors = [Author.objects.get(id=(post.author.id)) for post in stream_posts_list]
+  authors = [Author.objects.get(id=(post.author.id)) for post in all_visible_posts]
 
   # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-  print("Pre sorted stream list:", stream_posts_list)
-  stream_posts_list = sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
-  print("Post sorted stream list:", stream_posts_list)
+  # print("Pre sorted stream list:", stream_posts_list)
+  # stream_posts_list = sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
+  # print("Post sorted stream list:", stream_posts_list)
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-  stream_posts = serializers.serialize('json', stream_posts_list)
+  stream_posts = serializers.serialize('json', all_visible_posts)
   
   results = '{"posts": ', stream_posts, ', "authors": ', author_data, '}'
 
