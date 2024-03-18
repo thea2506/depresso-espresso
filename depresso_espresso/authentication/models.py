@@ -3,6 +3,8 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 import datetime
 
+# Create your models here.
+
 class Author(AbstractUser):
 
     # Identifiers, can't be modified by the user
