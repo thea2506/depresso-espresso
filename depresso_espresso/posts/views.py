@@ -98,7 +98,7 @@ def handle_author_post(request, authorid, postid):
   if request.method == 'DELETE':
     if Post.objects.filter(id=postid, author=author).exists():
       post = Post.objects.get(id=postid)
-      if user == post.author:
+      if user == post.author and user.is_authenticated:
         post.delete()
         return JsonResponse({"message": "Post deleted", "success": True}, status=200)
       else:
@@ -109,7 +109,7 @@ def handle_author_post(request, authorid, postid):
   if request.method == 'PUT':
     if Post.objects.filter(id=postid, author=author).exists():
       post = Post.objects.get(id=postid)
-      if user == post.author:
+      if user == post.author and user.is_authenticated:
         post.title = request.POST.get('title')
         post.description = request.POST.get('description')
         post.content = request.POST.get('content')
