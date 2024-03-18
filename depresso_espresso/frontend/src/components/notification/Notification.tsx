@@ -74,7 +74,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        "/respond_to_follow_request/from/" + authorid,
+        `/authors/respond_to_follow_request/from/${authorid}`,
         data
       );
       if (response.data.success) {

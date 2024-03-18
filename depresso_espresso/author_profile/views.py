@@ -285,7 +285,7 @@ def handle_follow(request, authorid, foreignid):
       if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
         message = foreign_author.displayName, "unfollowed", author.displayName 
        
-        if Following.objects.filter(authorid = foreignid, followingid = authorid).areFriends and Following.objects.filter(authorid = authorid, followingid = foreignid).exists():
+        if Following.objects.filter(authorid = authorid, followingid = foreignid).exists() and Following.objects.filter(authorid = foreignid, followingid = authorid)[0].areFriends:
           Following.objects.filter(authorid = authorid, followingid = foreignid).update(areFriends = False)
           message = foreign_author.displayName, "unfollowed", author.displayName, "and they are no longer friends"
       
@@ -297,46 +297,23 @@ def handle_follow(request, authorid, foreignid):
 @api_view(['POST'])  
 def create_follow_request(request, foreignid):
     '''LOCAL + REMOTE'''
-    if request.session.session_key is not None:
-        session = Session.objects.get(session_key=request.session.session_key)
-        if session:
-            session_data = session.get_decoded()
-            uid = session_data.get('_auth_user_id')
-            user = Author.objects.get(id=uid)
 
-            
     if request.method == 'POST':
-      # LOCAL
-      if Author.objects.filter(id=foreignid).exists():
-        foreign_author = Author.objects.get(id=foreignid)
-
-      # REMOTE
-      else:
-        response = urllib.urlopen(unquote(foreignid))
-        if response.status != 200:
-            return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
-        foreign_author = json.loads(response.read()) 
-        foreign_author = { 
-           "type": foreign_author["type"], 
-           "id": foreign_author["id"], 
-           "url": foreign_author["url"], 
-           "host": foreign_author["host"], 
-           "displayName": foreign_author["displayName"], 
-           "github": foreign_author["github"], 
-           "profileImage": foreign_author["profileImage"]
-        }
-
+      author = request.data["actor"]
+      foreign_author = request.data["object"]
+      
       # follow logic
-      if Following.objects.filter(authorid = user.id, followingid = foreignid).exists(): 
+      if Following.objects.filter(authorid = author["id"], followingid = foreignid).exists(): 
         message = "You are already following this author"
         return JsonResponse({"message": message, "success": False}, status=405)
 
-      elif FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
-        message = user.displayName, "has already sent a follow request to", foreign_author.displayName
+      elif FollowRequest.objects.filter(requester = author["id"], receiver = foreignid).exists():
+        message = author["displayName"], "has already sent a follow request to", foreign_author["displayName"]
         return JsonResponse({"message": message, "success": False}, status=405)
       
-      elif not FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
-        FollowRequest.objects.create(requester = user.id, receiver = foreignid) 
+      elif not FollowRequest.objects.filter(requester = author["id"], receiver = foreignid).exists():
+        FollowRequest.objects.create(requester = author["id"], receiver = foreignid)
+        message = author["displayName"], "has successfully sent a follow request to", foreign_author["displayName"]
         return JsonResponse({"message": message, "success": True})
 
 @api_view(['PUT']) 
