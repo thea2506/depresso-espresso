@@ -247,13 +247,18 @@ def get_all_posts(request):
 
   # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
   print("Pre sorted stream list:", stream_posts_list)
-  sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
+  stream_posts_list = sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
   print("Post sorted stream list:", stream_posts_list)
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-  stream_posts = serializers.serialize('json', stream_posts_list)
+  for post in stream_posts_list:
+     published = post.published
+     print(post, published)
+     
 
+  stream_posts = serializers.serialize('json', stream_posts_list)
+  
   results = '{"posts": ', stream_posts, ', "authors": ', author_data, '}'
 
   return HttpResponse(results, content_type='application/json')

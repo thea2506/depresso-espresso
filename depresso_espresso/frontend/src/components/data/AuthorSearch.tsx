@@ -15,16 +15,14 @@ const AuthorSearch = () => {
     const fetchAuthors = async () => {
       try {
         const response = await axios.get(`/authors?search=${searchTerm}`);
-        console.log("llllllaaaaaaaaaa", response)
 
         const authorModels = response.data?.map(
           
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (rawauthor: any) => {
-            console.log("llllllaaaaaaaaaa", rawauthor)
             return {
               type: rawauthor.fields.type,
-              id: rawauthor.fields.id,
+              id: rawauthor.pk,
               url: rawauthor.fields.url,
               host: rawauthor.fields.host,
               displayName: rawauthor.fields.displayName,
@@ -34,7 +32,6 @@ const AuthorSearch = () => {
             };
           }
         );
-        console.log("llllllaaaaaaaaaa", authorModels)
         setAuthors(authorModels);
       } catch (error) {
         console.error(error);
