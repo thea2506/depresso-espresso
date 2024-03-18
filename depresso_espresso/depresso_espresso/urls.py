@@ -4,7 +4,9 @@ from django.views.generic.base import TemplateView
 from home import views
 
 
+
 urlpatterns = [
+
     path('', views.StreamView.as_view(), name="home"),
     path('admin/', admin.site.urls),
     path("", include('authentication.urls')),

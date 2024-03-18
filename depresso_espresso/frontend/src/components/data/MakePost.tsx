@@ -39,22 +39,6 @@ const MakePost = () => {
     }
   };
 
-  /** 
-    const checkImageURL = (imageURL: string) => {
-      const img = new Image();
-      img.src = imageURL;
-      if (img.complete) {
-        return true;
-      } else {
-        img.onload = () => {
-          return true;
-        };
-        img.onerror = () => {
-          return false;
-        };
-      }
-    };
-    */
 
   /**
    * Posts the inputs to the backend.

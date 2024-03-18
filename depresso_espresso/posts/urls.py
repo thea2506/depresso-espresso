@@ -5,7 +5,8 @@ from django.conf import settings
 
 urlpatterns = [
     # Creating stuff
-    path("new_post/", views.new_post, name="make_post"),
+    path("new_post/", views.new_local_post, name="new_local__post"),
+    path("new_external_post/", views.new_external_post, name="new_external__post"),
     path("make_comment", views.make_comment, name="make_comment"),
     path("authors/<str:authorid>/posts/<str:postid>/share_post", views.share_post, name="share_post"),
     path("authors/<str:authorid>/posts/<str:postid>/like_post", views.like_post, name="like_post"),
@@ -17,9 +18,9 @@ urlpatterns = [
     path("authors/<str:authorid>/posts", views.get_author_posts, name="get_author_posts"),
     
     path("authors/<str:authorid>/posts/<str:postid>", views.frontend_explorer, name="post_frontend"),
-    path('espresso-api/authors/<str:authorid>/posts/<str:postid>', views.author_post, name ='author_post'),
+    path('espresso-api/authors/<str:authorid>/posts/<str:postid>', views.handle_author_post, name ='author_post'),
     
-    path("authors/<str:authorid>/posts/<str:postid>", views.author_post, name="author_post"),
+    path("authors/<str:authorid>/posts/<str:postid>", views.handle_author_post, name="author_post"),
     path("authors/<str:authorid>/posts/<str:postid>/likes", views.get_post_likes, name="get_post_likes"),
     path("authors/<str:authorid>/posts/<str:postid>/comments", views.get_post_comments, name="get_post_comments"),
     path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>", views.get_post_comment, name="get_post_comment"),
