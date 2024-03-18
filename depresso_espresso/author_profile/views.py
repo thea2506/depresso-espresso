@@ -279,7 +279,8 @@ def handle_follow(request, authorid, foreignid):
           message = "Follow request from a foreign", foreign_author.id, "accepted by", author.displayName
       return JsonResponse({"message": message,"success": True})
       
-    if request.method == "DELETE": #  remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID      
+    #  remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    if request.method == "DELETE":       
 
       if Following.objects.filter(authorid = foreignid, followingid = authorid).exists():
         message = foreign_author.displayName, "unfollowed", author.displayName 
@@ -295,17 +296,7 @@ def handle_follow(request, authorid, foreignid):
 
 @api_view(['POST'])  
 def create_follow_request(request, foreignid):
-    '''LOCAL
-      Pipeline: 
-      author ON OUR SERVER clicks the follow button on another author's profile (LOCAL or REMOTE author) -->
-      frontend sends request to /create_follow_request/ -->
-      create new FollowRequest object in db -->
-      if requested author is remote, send to their inbox using their url field and basic auth info from their node
-      if requested author is local, do nothing else because i don't think there is any benefit in sending local events to local inboxes "'''
-
-    # Front end will send the data format to our server and other server as well. Frontend handles the data format.
-    # All data of the foreign author is sent to the backend as a dictionary so we do not need to request for their info
-
+    '''LOCAL + REMOTE'''
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
@@ -315,13 +306,25 @@ def create_follow_request(request, foreignid):
 
             
     if request.method == 'POST':
-       # I think the external author that our author is attempting to follow should already exist on our db at this point, or else they wouldn't be able to see their profile
-      
-      # if not exist, create an Author object for the foreign author
-     # if  not Author.objects.filter(id = foreignid).exists():         
-      #    Author.object.create(id = foreign_author_info["id"], host = foreign_author_info["host"], displayName = foreign_author_info["displayName"], url = foreign_author_info["url"], github = foreign_author_info["github"], profileImage = foreign_author_info["profileImage"])
+      # LOCAL
+      if Author.objects.filter(id=foreignid).exists():
+        foreign_author = Author.objects.get(id=foreignid)
 
-      foreign_author = Author.objects.get(id=foreignid)
+      # REMOTE
+      else:
+        response = urllib.urlopen(unquote(foreignid))
+        if response.status != 200:
+            return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
+        foreign_author = json.loads(response.read()) 
+        foreign_author = { 
+           "type": foreign_author["type"], 
+           "id": foreign_author["id"], 
+           "url": foreign_author["url"], 
+           "host": foreign_author["host"], 
+           "displayName": foreign_author["displayName"], 
+           "github": foreign_author["github"], 
+           "profileImage": foreign_author["profileImage"]
+        }
 
       # follow logic
       if Following.objects.filter(authorid = user.id, followingid = foreignid).exists(): 
@@ -329,73 +332,12 @@ def create_follow_request(request, foreignid):
         return JsonResponse({"message": message, "success": False}, status=405)
 
       elif FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
-        message = user["displayName"], "has already sent a follow request to", foreign_author.displayName
+        message = user.displayName, "has already sent a follow request to", foreign_author.displayName
         return JsonResponse({"message": message, "success": False}, status=405)
       
       elif not FollowRequest.objects.filter(requester = user.id, receiver = foreignid).exists():
-
-        FollowRequest.objects.create(requester = user.id, receiver = foreignid)
-
-        data = {
-           
-              "type": "Follow",      
-              "summary": foreign_author.displayName + " has unfollowed " + user.displayName,
-              "actor":{"type": "author",
-                      "id": foreign_author.id,
-                      "url": foreign_author.url,
-                      "host": foreign_author.host,
-                      "displayName": foreign_author.displayName,
-                      "github": foreign_author.github,
-                      "profileImage": foreign_author.profileImage
-              },
-              "object":{
-                      "type": "author",
-                      "id": user.id,
-                      "url": user.url,
-                      "host": user.host,
-                      "displayName": user.displayName,
-                      "github": user.github,
-                      "profileImage": user.profileImage
-              }
-          }
-        
-        # Check if the author that the user wants to follow is from an external node:
-        host = foreign_author.host   # get the host from the id
-        
-        if Node.objects.filter(baseUrl = host).exists():
-          node = Node.objects.get(baseUrl = host)
-          username = node["theirUsername"]
-          password = node["theirPassword"]
-          response = requests.post(foreign_author.url + '/inbox/', data,  auth=(username,password)) # Send data to external author's inbox
-
-          if response.status != 200:
-              return JsonResponse({"message": "Could not sent request to external node", "success": False}, status=response.status)
-        
-        message = user.displayName, "sent a follow request to", foreign_author.displayName   
+        FollowRequest.objects.create(requester = user.id, receiver = foreignid) 
         return JsonResponse({"message": message, "success": True})
-
-@api_view(['POST'])     
-def create_external_follow_request(request):
-   """LOCAL
-      creates a follow request that had originated from an external author to one of our local authors
-      Pipeline:
-      author on external node clicks the follow button on one of our author's profiles -->
-      Remote server sends follow event to our author's local inbox -->
-      Within inbox, If remote author is unknown to our db, create new author (maybe add way to update remote profile if it changes) -->
-      Inbox sends POST request to this function to create the new follow request object
-      """
-   
-   # This function could be moved inside index views.py if it isn't working this way
-   
-   if request.method == 'POST':
-      localid = request.data.get("localid")
-      externalid = request.data.get("externalid")
-      FollowRequest.objects.create(requester = externalid, receiver = localid)
-
-      return JsonResponse({"message": "Request created successfully"})
-
-
-
 
 @api_view(['PUT']) 
 def respond_to_follow_request(request, foreignid):

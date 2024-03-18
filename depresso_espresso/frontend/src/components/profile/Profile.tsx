@@ -173,8 +173,6 @@ const Profile = ({
       github: newGithub,
       profileImage: newImageURL,
     };
-
-    console.log("SENDING PUT REQUEST TO EDIT: ID:", id);
     await axios.put(`/espresso-api/authors/${id}`, data);
     setLoading(!loading);
   };

@@ -22,7 +22,7 @@ urlpatterns = [
     path('check_follow_status/', views.check_follow_status, name='check_follow_request'),
     path('get_follow_list', views.get_follow_list, name='get_follow_list'),
 
-    # REQUIRED API ENDPOINTS
+    # REQUIRED API ENDPOINTS (Authors and Followers Covered)
     # 1. GET //service/authors/ - Parameters: page, size
     path('espresso-api/authors', views.api_get_authors, name='api_get_authors'),
     
@@ -34,4 +34,9 @@ urlpatterns = [
 
     # 4. GET/DELETE/PUT //service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
     path('espresso-api/authors/<str:authorid>/followers/<str:foreignid>', views.handle_follow, name='api_handle_follow'),
+
+    # 5 POST //service/authors/create_follow_request/to/<str:foreignid>
+    path('espresso-api/authors/create_follow_request/to/<str:foreignid>', views.create_follow_request, name='api_create_follow_request'),
+
+    
 ]
