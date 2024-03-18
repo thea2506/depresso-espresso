@@ -151,8 +151,16 @@ const PostForm = ({
 
       setForm("");
 
-      const url = edit ? "/edit_post" : "/new_post/";
-      const response = await axios.post(url, formData);
+      const url = edit
+        ? `/espresso-api/authors/${author.id}/posts/${postId}`
+        : "/new_post/";
+
+      let response;
+      if (edit) {
+        response = await axios.put(url, formData);
+      } else {
+        response = await axios.post(url, formData);
+      }
 
       // create notification
       if (url == "/new_post/" && visibility.toLowerCase() != "private")

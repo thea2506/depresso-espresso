@@ -26,7 +26,6 @@ urlpatterns = [
     
     # Modifying stuff
     path("delete_comment", views.delete_comment, name="delete_comment"),
-    path("edit_post", views.edit_post, name="edit_post"),
 
     # explorer
     path("discover", views.frontend_explorer, name="frontend_explorer"),

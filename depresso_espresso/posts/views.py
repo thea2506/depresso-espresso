@@ -106,6 +106,22 @@ def handle_author_post(request, authorid, postid):
     else:
       return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
+  if request.method == 'PUT':
+    if Post.objects.filter(id=postid, author=author).exists():
+      post = Post.objects.get(id=postid)
+      if user == post.author:
+        post.title = request.POST.get('title')
+        post.description = request.POST.get('description')
+        post.content = request.POST.get('content')
+        post.contentType = request.POST.get('contentType')
+        post.save()
+        return JsonResponse({"message": "Post edited successfully", "success": True}, status=200)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+    else:
+      return JsonResponse({"message": "Post not found", "success": False}, status=404)
+     
+
 @api_view(['POST'])
 def new_local_post(request):
     ''' LOCAL
@@ -461,24 +477,6 @@ def delete_comment(request):
   else:
     data['success'] = False
     return JsonResponse(data)
-  
-def edit_post(request):
-  '''Edit a post'''
-  data = {}
-  postid = request.POST.get('postid')
-
-  post = get_object_or_404(Post, pk=postid)
-  if request.method == 'POST':
-      post.title = request.POST.get('title')
-      post.description = request.POST.get('description')
-      post.content = request.POST.get('content')
-      post.visibility = request.POST.get('visibility')
-      post.contentType = request.POST.get('contentType')
-      post.save()
-
-  data['success'] = True
-
-  return JsonResponse(data)
 
 def share_post(request, authorid, postid):
   '''Share a post'''
