@@ -252,11 +252,6 @@ def get_all_posts(request):
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
-  for post in stream_posts_list:
-     published = post.published
-     print(post, published)
-     
-
   stream_posts = serializers.serialize('json', stream_posts_list)
   
   results = '{"posts": ', stream_posts, ', "authors": ', author_data, '}'
