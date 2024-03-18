@@ -139,8 +139,6 @@ const PostForm = ({
       formData.append("title", title);
       formData.append("description", description);
 
-      // TODO: source and origin and comments not covered
-
       formData.append("contentType", contentType);
       formData.append("visibility", visibility);
       formData.append("authorId", author.id);

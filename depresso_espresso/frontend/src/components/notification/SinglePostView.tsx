@@ -32,24 +32,23 @@ const SinglePostView = () => {
           `/espresso-api/authors/${authorid}/posts/${postid}`
         );
 
-        const allData = response.data;
-        const author = allData.author[0];
-        const rawpost = allData.post[0];
-        author.fields.id = author.pk;
+        const post = response.data;
+        console.log(post);
 
         const postModel = {
-          title: rawpost.fields.title,
-          id: rawpost.pk,
-          author: author,
-          description: rawpost.fields.description,
-          contenttype: rawpost.fields.contentType,
-          content: rawpost.fields.content,
-          count: rawpost.fields.count,
-          published: rawpost.fields.published,
-          visibility: rawpost.fields.visibility,
-          likecount: rawpost.fields.likecount,
-          sharecount: rawpost.fields.sharecount,
+          title: post.title,
+          id: post.id,
+          author: {
+            fields: post.author,
+          },
+          description: post.description,
+          contenttype: post.contentType,
+          content: post.content,
+          count: post.count,
+          published: post.published,
+          visibility: post.visibility,
         };
+
         setPost(postModel);
       } catch (error) {
         console.error("An error occurred", error);

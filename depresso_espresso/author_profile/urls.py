@@ -26,14 +26,14 @@ urlpatterns = [
     path('espresso-api/authors', views.api_get_authors, name='api_get_authors'),
     
     # 2. GET //service/authors/{AUTHOR_ID}/
-    path('espresso-api/authors/<path:authorid>', views.author_profile, name ='author_profile'),
+    path('espresso-api/authors/<str:authorid>', views.author_profile, name ='author_profile'),
 
     # 3. GET //service/authors/{AUTHOR_ID}/followers
-    path('espresso-api/authors/<path:authorid>/followers', views.get_followers, name='api_get_followers'),
+    path('espresso-api/authors/<str:authorid>/followers', views.get_followers, name='api_get_followers'),
 
     # 4. GET/DELETE/PUT //service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}
-    path('espresso-api/authors/<path:authorid>/followers/<path:foreignid>', views.handle_follow, name='api_handle_follow'),
+    path('espresso-api/authors/<str:authorid>/followers/<str:foreignid>', views.handle_follow, name='api_handle_follow'),
 
     # 5 POST //service/authors/create_follow_request/to/<str:foreignid>
-    path('espresso-api/create-follow-request/to/<path:foreignid>', views.create_follow_request, name='create_follow_request'),
+    path('espresso-api/create-follow-request/to/<str:foreignid>', views.create_follow_request, name='create_follow_request'),
 ]

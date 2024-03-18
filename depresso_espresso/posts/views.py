@@ -16,6 +16,8 @@ from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
 from itertools import chain
 from operator import attrgetter
+import urllib.request
+from urllib.parse import unquote
 
 
 class PostView(forms.ModelForm):
@@ -47,35 +49,51 @@ def handle_author_post(request, authorid, postid):
           session_data = session.get_decoded()
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
+
+  # Get the author (LOCAL or REMOTE)
+  if Author.objects.filter(id=authorid).exists():
+    author = Author.objects.get(id=authorid)
+  else:
+    response = urllib.request.urlopen(unquote(authorid))
+    if response != 200:
+      return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
+    author = json.loads(response.read())
+
+  if request.method == 'GET': 
+    # LOCAL POST
+    if Post.objects.filter(id=postid, author=author ).exists():
+      post = Post.objects.get(id=postid)
+      post = {
+        "type": "post",
+        "title": post.title,
+        "id": f"{post.origin}/authors/{user.id}/posts/{post.id}",
+        "source": post.source,
+        "origin": post.origin,
+        "description": post.description,
+        "contentType": post.contentType,
+        "content": post.content,
+        "author": {
+          "type": "author",
+          "id": author.url,
+          "host": author.host,
+          "displayName": author.displayName,
+          "url": author.url,
+          "github": author.github,
+          "profileImage": author.profileImage
+        },
+        "count": post.count,
+        "comments": f"{post.origin}/authors/{user.id}/posts/{post.id}/comments",
+        "published": post.published,
+        "visibility": post.visibility,
+      }
     
-      local_author = Author.objects.filter(id = authorid).exists()
-
-  if  not local_author: # if the author of the post is not saved on our server:
-      split_id = authorid.split("authors")
-      node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
-      username = node["theirUsername"]
-      password = node["theirPassword"]
-      response = requests.get(authorid, auth=(username, password)) # send get request to node to retrieve external author info
-      author_data = response.json()
-
-  else: # if the author of the post is saved on our server
-      author = Author.objects.filter(id = authorid)
-      author_data = author.values()[0]
-
-  if request.method == 'GET': # Get post with id == postid
-    '''Get a single post by an author'''
-
-    author = [Author.objects.get(id=authorid)]
-    if not Post.objects.filter(id=postid).exists():
-        return HttpResponse(status=404)
+    # REMOTE POST
     else:
-      post = [Post.objects.get(id=postid)]
-      post_data = serializers.serialize('json', post)
-      author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
-
-      results = '{"post": ', post_data, ', "author": ', author_data, '}'
-      return HttpResponse(results, content_type='application/json')
-
+      response = urllib.request.urlopen(f"{unquote(postid)}")
+      if response != 200:
+        return JsonResponse({"message": "Post not found", "success": False}, status=404)
+      post = json.loads(response.read())
+    return JsonResponse(post, status=200)
 
 @api_view(['POST'])
 def new_local_post(request):
@@ -103,6 +121,8 @@ def new_local_post(request):
           post.content = form.cleaned_data["content"]
           post.published = make_aware(datetime.datetime.now())
           post.visibility = form.cleaned_data["visibility"]
+          post.source = request.get_host()
+          post.origin = request.get_host()
 
           print("Post visibility:" , post.visibility)
           post.url = user.url + '/posts/' + str(post.id)
@@ -114,10 +134,9 @@ def new_local_post(request):
           post.save()
 
           post_data = {
-             
              "type": "post",
              "title": post.title,
-             "id": post.id,
+             "id": f"{request.get_host()}/authors/{user.id}/posts/{post.id}",
              "source": post.source,
              "origin": post.origin,
              "description": post.description,
