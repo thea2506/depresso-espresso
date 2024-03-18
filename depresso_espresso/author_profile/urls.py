@@ -21,7 +21,7 @@ urlpatterns = [
     path('check_follow_status/', views.check_follow_status, name='check_follow_request'),
     path('get_follow_list', views.get_follow_list, name='get_follow_list'),
 
-    # REQUIRED API ENDPOINTS (Authors and Followers Covered)
+    # REQUIRED API ENDPOINTS (Authors, Single Author, Followers, Friend/Follow Request Covered)
     # 1. GET //service/authors/ - Parameters: page, size
     path('espresso-api/authors', views.api_get_authors, name='api_get_authors'),
     
