@@ -228,36 +228,37 @@ def get_all_posts(request):
   public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published') # Get all PUBLIC LOCAL posts
   
   #public_posts = serializers.serialize('json', public_posts)
-  public_posts_list = []
+  stream_posts_list = []
   for post in public_posts:
-     public_posts_list.append(post)
-  
+     stream_posts_list.append(post)
+
+  own_posts = Post.objects.filter(author=user, visibility="FRIENDS")
+  for post in own_posts:
+     stream_posts_list.append(post)
 
   url = user.url+ '/espresso-api/inbox'
   friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
   posts_dict = friend_following_posts.json()
-  friend_following_posts = []
 
   for item in posts_dict["items"]:
-     friend_following_posts.append(Post.objects.get(id = item["id"]))
+     stream_posts_list.append(Post.objects.get(id = item["id"]))
      
-
-  merged_posts = friend_following_posts + public_posts_list
-
-
-  authors = [Author.objects.get(id=(post.author.id)) for post in merged_posts]
+  authors = [Author.objects.get(id=(post.author.id)) for post in stream_posts_list]
 
   # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-  sorted(merged_posts, key=lambda x: x.published) # sort the posts by date
+  print("Pre sorted stream list:", stream_posts_list)
+  sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
+  print("Post sorted stream list:", stream_posts_list)
 
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
 
+  stream_posts = serializers.serialize('json', stream_posts_list)
 
-  merged_posts = serializers.serialize('json', merged_posts)
-
-  results = '{"posts": ', merged_posts, ', "authors": ', author_data, '}'
+  results = '{"posts": ', stream_posts, ', "authors": ', author_data, '}'
 
   return HttpResponse(results, content_type='application/json')
+
+
 
 def get_author_posts(request, authorid):
   '''Get all posts by an author'''

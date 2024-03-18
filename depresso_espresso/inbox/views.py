@@ -89,17 +89,25 @@ def handle_inbox(request, authorid):
         # Author's inbox should contain posts from friends and followed authors
         items = []
 
-        if len(request.data) > 0:
-            following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
-            for author in (following_authors):
-                author_ob = Author.objects.get(id = author) # Get the author object of the friend
-                following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
-                items.append(serializers.serialize('json', following_posts))
+        #if len(request.data) > 0:
+        #following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
+        
+
+
+
+
+
+        following_authors = get_followings(authorid)
+        print("following authors:", following_authors)
+        for author_ob in (following_authors):
+            following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
+            items.append(serializers.serialize('json', following_posts))
 
         
-        friends = requests.get( user.url + '/friends/') # Get the author's friends
-        for friend in (friends.json()):
-             author_ob = Author.objects.get(id = friend["id"]) # Get the author object of the friend
+        #friends = requests.get( user.url + '/friends/') # Get the author's friends
+        friends = get_friends(authorid)
+        print("friends:", friends)
+        for author_ob in (friends):
              friend_posts = Post.objects.filter(author = author_ob, visibility = "FRIENDS")
              items.append(serializers.serialize('json', friend_posts))
 
@@ -200,3 +208,31 @@ def handle_inbox(request, authorid):
                   
 
 
+
+def get_friends(authorid):
+    '''LOCAL
+    Get all friends of an author'''
+
+    friends = Following.objects.filter(authorid=authorid, areFriends=True)
+    data = []
+    for friend in friends:
+        user = Author.objects.get(id=friend.authorid)
+        data.append({
+            user
+        })
+
+    return data
+
+
+
+def get_followings(authorid):
+    ''' LOCAL
+      Get all authors that an author is following'''
+  
+
+    following = Following.objects.filter(authorid=authorid)
+    data = []
+    for follow in following:
+        user = Author.objects.get(id=follow.followingid)
+        data.append(user)
+    return data
