@@ -152,7 +152,7 @@ def new_local_post(request):
                 node = Node.objects.get(baseUrl = host)
                 username = node["theirUsername"]
                 password = node["theirPassword"]
-                requests.post(url + '/inbox/', post_data,  auth=(username,password)) # Send to external author
+                requests.post(url + '/inbox/', post_data, auth=(username,password)) # Send to external author
 
               else:
                  requests.post(url + '/inbox/', post_data) # Send to author on our server (I don't think this is necessary but the spec is a bit unclear)
@@ -218,13 +218,6 @@ def new_external_post(request):
 def get_all_posts(request):
   "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
   
-
-
-
-
-
-
-
   user, session = getUser(request)
   session.save()
   if not user:
