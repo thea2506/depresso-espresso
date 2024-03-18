@@ -95,6 +95,17 @@ def handle_author_post(request, authorid, postid):
       post = json.loads(response.read())
     return JsonResponse(post, status=200)
 
+  if request.method == 'DELETE':
+    if Post.objects.filter(id=postid, author=author).exists():
+      post = Post.objects.get(id=postid)
+      if user == post.author:
+        post.delete()
+        return JsonResponse({"message": "Post deleted", "success": True}, status=200)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+    else:
+      return JsonResponse({"message": "Post not found", "success": False}, status=404)
+
 @api_view(['POST'])
 def new_local_post(request):
     ''' LOCAL
@@ -433,23 +444,6 @@ def make_comment(request):
 
     rend = CommentView().get(request)
     return rend
-
-def delete_post(request):
-  '''Delete a post'''
-  data = {}
-
-  data = json.loads(request.body)
-  postid = data.get('postid')
-  post = Post.objects.get(pk=postid)
-
-  if request.user == post.author:
-    post.delete()
-    data['success'] = True
-    return JsonResponse(data)
-  
-  else:
-    data['success'] = False
-    return JsonResponse(data)
 
 def delete_comment(request):
   '''Delete a comment'''

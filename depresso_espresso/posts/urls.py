@@ -25,7 +25,6 @@ urlpatterns = [
     path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>", views.get_post_comment, name="get_post_comment"),
     
     # Modifying stuff
-    path("delete_post", views.delete_post, name="delete_post"),
     path("delete_comment", views.delete_comment, name="delete_comment"),
     path("edit_post", views.edit_post, name="edit_post"),
 
