@@ -4,7 +4,7 @@ from django.urls import path
 urlpatterns = [
 
     # authors
-    path('authors/', views.get_authors, name = 'get_authors'),
+    path('authors', views.get_authors, name = 'get_authors'),
     path('espresso-api/authors/<str:authorid>', views.author_profile, name ='author_profile'),
 
     # followers
