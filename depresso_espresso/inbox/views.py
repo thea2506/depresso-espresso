@@ -103,7 +103,7 @@ def handle_inbox(request, authorid):
         match type:
              case "Post": # Author's friend/follower makes a post that this author is interested in. It seems that external posts will not be knows by our server until one arrives in any of our author's inboxes.
 
-                if Post.objects.filter(url=request.data["id"]).exists(): # check if post exists in db already (Post should only not exist already if it originates from an external author)
+                if Post.objects.filter(url=request.POST.get("id")).exists(): # check if post exists in db already (Post should only not exist already if it originates from an external author)
                      return JsonResponse({"message": "Post already exists in db, no action required"}, status = 200)
                 
                 # --- Anything beyond this point is meant to handle posts from external authors ---
