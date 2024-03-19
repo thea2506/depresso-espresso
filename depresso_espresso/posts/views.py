@@ -286,7 +286,6 @@ def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
   data = {}
- 
 
   if not LikePost.objects.filter(author = request.user, post = post).exists():
       LikePost.objects.create(author = request.user, post = post)

@@ -98,9 +98,6 @@ def handle_inbox(request, authorid):
         return JsonResponse(data)
 
 
-
-
-
     if request.method == "POST": # An author could be sent a relevant post, follow, like, or comment that the inbox must handle.
         type = request.POST.get("type") # get the type of message sent to the inbox
         match type:
@@ -206,3 +203,19 @@ def get_followings(authorid):
         user = Author.objects.get(id=follow.followingid)
         data.append(user)
     return data
+
+def post_like_inbox(request, authorid):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        type = data['type'].lower()
+        send_author = data["author"]
+
+        # like only
+        if type == "like" and not Notification.objects.filter(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=data["object"]).exists():
+            Notification.objects.create(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=data["object"])
+            return JsonResponse({"message": "Like notification created"}, status=201)
+        else:
+            return JsonResponse({"message": "Like notification already exists"}, status=200)
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+        

@@ -55,6 +55,8 @@ const Home = () => {
             contenttype: rawpost.contentType,
             content: rawpost.content,
             count: rawpost.count,
+            origin: rawpost.origin,
+            source: rawpost.source,
             published: rawpost.published,
             visibility: rawpost.visibility,
             likecount: rawpost.likecount,

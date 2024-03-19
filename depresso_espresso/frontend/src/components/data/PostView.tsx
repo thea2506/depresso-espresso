@@ -91,6 +91,22 @@ const PostView = ({
 
   const handleLikeToggle = async () => {
     await axios.post(`authors/${post.author.id}/posts/${post.id}/like_post`);
+
+    await axios.post(`/espresso-api/authors/${post.author.id}/inbox/`, {
+      summary: `${curUser.displayName} liked your post`,
+      type: "like",
+      object: post.origin,
+      author: {
+        type: "author",
+        id: curUser.id,
+        host: curUser.host,
+        displayName: curUser.displayName,
+        url: curUser.url,
+        github: curUser.github,
+        profileImage: curUser.profileImage,
+      },
+    });
+
     setRefresh(!refresh);
   };
 

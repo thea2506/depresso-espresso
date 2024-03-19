@@ -92,6 +92,8 @@ const ProfilePage = () => {
             visibility: rawpost.visibility,
             likecount: rawpost.likecount,
             sharecount: rawpost.sharecount,
+            origin: rawpost.origin,
+            source: rawpost.source,
           };
         });
         setPosts(postModels);
