@@ -221,7 +221,8 @@ def get_post_comments(request, authorid, postid):
             "comment": comment.comment,
             "contentType": comment.contenttype,
             "published": comment.publishdate.isoformat(),
-            "id": str(comment.id)
+            "id": str(comment.id),
+            "likecount": comment.likecount
           }
           merged_data.append(comment_data)
           
@@ -237,8 +238,6 @@ def get_post_comments(request, authorid, postid):
     elif request.method == 'POST':
       if user and user.is_authenticated:
         data = json.loads(request.body)
-        print("HEY")
-        print(data["comment"])
        
         naive_datetime = datetime.datetime.now()
         
@@ -274,7 +273,8 @@ def get_post_comment(request, authorid, postid, commentid):
         "comment": comment.comment,
         "contentType": comment.contenttype,
         "published": comment.publishdate.isoformat(),
-        "id": str(comment.id)
+        "id": str(comment.id),
+        "likecount": comment.likecount
     }
     merged_data.append(comment_data)
 
@@ -296,22 +296,30 @@ def like_post(request, authorid, postid):
       post.likecount = F('likecount') - 1
       data["already_liked"] = True
   post.save()
-  return JsonResponse(data = data)
+  return JsonResponse(data = data, status=200)
 
 def like_comment(request, authorid, postid, commentid):
   '''Like or unlike a post'''
+  if not Author.objects.filter(id=authorid).exists():
+    return JsonResponse({"message": "Author not found", "success": False}, status=404)
+  if not Post.objects.filter(id=postid).exists():
+    return JsonResponse({"message": "Post not found", "success": False}, status=404)
+  if not Comment.objects.filter(id=commentid).exists():
+    return JsonResponse({"message": "Comment not found", "success": False}, status=404)
+  
   comment = Comment.objects.get(pk=commentid)
- 
+  data = {}
   if not LikeComment.objects.filter(author = request.user, comment = comment).exists():
       LikeComment.objects.create(author = request.user, comment = comment)
       comment.likecount = F('likecount') + 1
-
+      data["already_liked"] = False
   else:
       LikeComment.objects.get(author=request.user, comment=comment).delete()
       comment.likecount = F('likecount') - 1
+      data["already_liked"] = False
 
   comment.save()
-  return HttpResponse("Success")
+  return JsonResponse(data, safe=False, status=200)
 
 def make_comment(request):
     data ={}

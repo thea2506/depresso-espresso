@@ -12,6 +12,7 @@ interface NotificationProps {
   author: any;
   authorid: string;
   authorpostid?: string;
+  summary: string;
   type: "follow" | "share" | "post" | "like" | "comment";
   postid?: string;
   createdAt?: string;
@@ -39,18 +40,12 @@ const Notification = ({
   authorid,
   authorpostid,
   type,
+  summary,
   postid,
   createdAt,
   refresh,
   setRefresh,
 }: NotificationProps): JSX.Element => {
-  const messages = {
-    follow: "wants to follow you",
-    share: "shared a post with you",
-    post: "made a post",
-    like: "liked your post",
-    comment: "commented on your post",
-  };
   const formatDateString = (inputDateString: string) => {
     const date = new Date(inputDateString);
     const formattedDate = date.toLocaleString("en-US", {
@@ -126,9 +121,9 @@ const Notification = ({
         />
         <div>
           <span className="font-semibold text-secondary-dark">
-            {author.displayName}{" "}
+            {author.displayName}
           </span>
-          {messages[type]}
+          {summary.replace(author.displayName, "")}
         </div>
       </a>
 

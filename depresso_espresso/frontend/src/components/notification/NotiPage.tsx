@@ -62,6 +62,7 @@ const NotiPage = () => {
       {followRequests?.map((request: any, index: number) => (
         <div key={index}>
           <Notification
+            summary={request?.summary}
             refresh={refresh}
             setRefresh={setRefresh}
             author={request.fields}
@@ -75,6 +76,7 @@ const NotiPage = () => {
         .map((notification: any, index: number) => (
           <div key={index}>
             <Notification
+              summary={notification?.summary}
               refresh={refresh}
               setRefresh={setRefresh}
               author={notification.author}

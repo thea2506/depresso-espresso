@@ -9,6 +9,7 @@ import { CommentModel } from "../data/CommentModel";
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
 import { AuthorModel } from "../data/AuthorModel";
+import { GoHeart } from "react-icons/go";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -79,6 +80,7 @@ const CommentList = ({
                 contenttype: rawcomment.contenttype,
                 published: rawcomment.published,
                 id: rawcomment.id,
+                likecount: rawcomment.likecount,
               };
             }
           );
@@ -90,7 +92,6 @@ const CommentList = ({
         console.error("An error occurred", error);
       }
     };
-
     fetchProfile();
     fetchComments();
   }, [post.author.id, post.id, refresh]);
@@ -137,6 +138,29 @@ const CommentList = ({
     }
   };
 
+  const handleLikeComment = async (comment: CommentModel) => {
+    const like_response = await axios.post(
+      `authors/${post.author.id}/posts/${post.id}/comments/${comment.id}/like_comment`
+    );
+    if (!like_response.data.already_liked) {
+      setRefresh(!refresh);
+      await axios.post(`/espresso-api/authors/${post.author.id}/inbox/`, {
+        summary: `${curUser!.displayName} liked your comment`,
+        type: "like",
+        object: comment.id,
+        author: {
+          type: "author",
+          id: curUser!.id,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          url: curUser!.url,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
+        },
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-4 w-full rounded-[1.4rem] bg-accent-3 px-4 md:px-8">
       <ToastContainer />
@@ -171,9 +195,16 @@ const CommentList = ({
                 {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
-            <p className="p-4 bg-white text-start rounded-xl">
-              {comment.comment}
-            </p>
+            <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+              <p>{comment.comment}</p>
+              <div className="flex items-center justify-center gap-x-2">
+                <GoHeart
+                  className="w-5 h-5 cursor-pointer text-primary"
+                  onClick={() => handleLikeComment(comment)}
+                />
+                <p>{comment.likecount}</p>
+              </div>
+            </div>
           </div>
         ))}
       </div>
