@@ -64,6 +64,7 @@ def get_authors(request):
         Handles getting all LOCAL authors on our server with and without an optional search parameter
         GET ://service/authors/ or GET ://service/authors?page=10&size=5'''
     user = None
+    print("bluuuuuuubbbbbbbbbbbbbbb", request.session.session_key)
     if request.session.session_key is not None:
 
         session = Session.objects.get(session_key=request.session.session_key)
