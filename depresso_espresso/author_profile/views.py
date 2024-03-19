@@ -138,8 +138,8 @@ def get_authors(request):
               new_author.isExternalAuthor = True
 
       search_terms = request.GET.get('search')
-      page = request.GET.get('page')
-      size = request.GET.get('size')
+      page = request.GET.get('page',1)
+      size = request.GET.get('size',10)
       
 
       # Get authors on our db
@@ -149,7 +149,7 @@ def get_authors(request):
 
       else:
         authors = Author.objects.all()
-      paginator = Paginator(authors, size)
+      paginator = Paginator(authors, int(size))
 
       try:
          authors_page = paginator.page(page)
