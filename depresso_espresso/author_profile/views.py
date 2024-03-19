@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
-from posts.models import Post
+from posts.models import LikePost, Post
 from authentication.models import Author, Following, FollowRequest, Node
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
@@ -10,6 +10,8 @@ from django.contrib.sessions.models import Session
 import json
 import urllib.request
 from urllib.parse import unquote
+from django.db.models import Q
+
 
 
 @api_view(["GET","PUT"])
@@ -546,3 +548,30 @@ def api_get_followers(request, authorid):
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
     
+def api_get_likes(request, authorid, postid):
+   if request.method == "GET":
+      if not Author.objects.filter(id=authorid).exists():
+        return HttpResponse(status=404)
+      if not Post.objects.filter(id=postid).exists():
+        return HttpResponse(status=404)
+      post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
+      likes = LikePost.objects.filter(Q(post=post), ~Q(author=Author.objects.get(id=authorid)))
+      data = []
+      for like in likes:
+        item = {
+           "summary": f"{like.author.displayName} liked your post",
+           "type": "Like",
+           "author": {
+             "type": "author",
+             "id": like.author.url,
+             "host": like.author.host,
+             "displayName": like.author.displayName,
+             "url": like.author.url,
+             "github": like.author.github,
+             "profileImage": like.author.profileImage
+           },
+           "object": like.post.source
+        }
+        data.append(item)
+      return JsonResponse(data, safe=False, status=200)
+      
