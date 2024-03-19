@@ -122,7 +122,7 @@ def get_authors(request):
                 for author in authors:
                     print("AAAAAAAAAAAAAAAAAAAAAAAAAAUTHOR", author)
                     # Check if the author already exists in our db
-                    if not Author.objects.filter(url=author.url).exists():
+                    if not Author.objects.filter(url=author["items"]["url"]).exists():
                         # if author does not exist, create a new one
                         new_author = Author.objects.create()
                         if not new_author:
