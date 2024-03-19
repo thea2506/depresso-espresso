@@ -1,6 +1,6 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from .models import Post, Comment, LikePost, LikeComment, Share
 from authentication.models import Author, Node, Following
 from django.http import JsonResponse
@@ -18,6 +18,7 @@ from itertools import chain
 from operator import attrgetter
 import urllib.request
 from urllib.parse import unquote
+import base64
 
 
 class PostView(forms.ModelForm):
@@ -559,7 +560,23 @@ def get_author_posts(request, authorid):
         "sharecount": post.sharecount,
       })
     return JsonResponse(result, status=200, safe=False)
-
+  return HttpResponse(status=404)
 
 def api_get_image(request, authorid, postid):
-  pass
+  if not Author.objects.filter(id=authorid).exists():
+    return JsonResponse({"message": "Author not found", "success": False}, status=404)
+  if not Post.objects.filter(id=postid).exists():
+    return JsonResponse({"message": "Post not found", "success": False}, status=404)
+  
+  if request.method == 'GET':
+    post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
+    if "image" in post.contentType.lower():
+      base64_string = post.content
+      no_prefix = base64_string.split(",")[1]
+      image_binary = base64.b64decode(no_prefix)
+      return HttpResponse(image_binary, content_type=post.contentType)
+    else:
+      return HttpResponseNotFound()
+  else:
+    return HttpResponseNotAllowed()
+   

@@ -295,8 +295,8 @@ const PostForm = ({
                   }
 
                   file?.name.includes("png")
-                    ? setContentType("image/png")
-                    : setContentType("image/jpeg");
+                    ? setContentType("image/png;base64")
+                    : setContentType("image/jpeg;base64");
                 }}
               />
               Upload Image
