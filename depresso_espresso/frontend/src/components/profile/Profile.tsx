@@ -200,8 +200,9 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
+      const real_id = id?.split("/").pop();
       const response = await axios.post(
-        `/espresso-api/create-follow-request/to/${id}`,
+        `/espresso-api/authors/${real_id}/inbox/`,
         {
           type: "Follow",
           summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
@@ -216,6 +217,7 @@ const Profile = ({
       toast.error("Failed to send follow request", myToast);
     }
   };
+
   /**
    * Unfollow a user
    */
