@@ -168,6 +168,14 @@ def get_all_posts(request):
   return HttpResponse(results, content_type='application/json')
 
 def get_post_comments(request, authorid, postid):
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            if Author.objects.filter(id=uid).exists():
+              user = Author.objects.get(id=uid)
+    
     if request.method == 'GET':
       if not Author.objects.filter(id=authorid).exists():
           return JsonResponse({"message": "Author not found", "success": False}, status=404)
@@ -227,25 +235,24 @@ def get_post_comments(request, authorid, postid):
       }
       return JsonResponse(result, status=200, safe=False)
     elif request.method == 'POST':
-      form = CommentView(request.POST)
-      if form.is_valid():
-        comment = form.save(commit=False)
-        comment.comment = form.cleaned_data["comment"]
-        comment.author = request.user
+      if user and user.is_authenticated:
+        data = json.loads(request.body)
+        print("HEY")
+        print(data["comment"])
+       
         naive_datetime = datetime.datetime.now()
-        comment.publishdate = make_aware(naive_datetime)
-        postid = form.cleaned_data.get("postid")
-        post = Post.objects.get(pk=postid.id)
-        comment.postid = post
-        comment.visibility = post.visibility
+        
+        post = Post.objects.get(id=postid)
         post.count = F('count') + 1
+
+        comment = Comment.objects.create(comment=data["comment"], author=user, postid=post, publishdate=make_aware(naive_datetime), contenttype="text/plain", visibility=post.visibility)
+        
         post.save()
-        form.save(commit = True)
         comment.save()
         return JsonResponse({"message": "Comment created", "success": True}, status=201)
       else:
-        return JsonResponse({"message": "Comment not created", "success": False}, status=400)
-
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+      
 def get_post_comment(request, authorid, postid, commentid):
     '''Get a single comment on a post'''
     comment = Comment.objects.get(id=commentid)

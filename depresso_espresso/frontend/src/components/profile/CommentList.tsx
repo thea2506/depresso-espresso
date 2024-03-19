@@ -100,7 +100,23 @@ const CommentList = ({
       const formField = new FormData();
       formField.append("comment", comment);
       formField.append("postid", post.id);
-      const response = await axios.post("/make_comment", formField);
+      const response = await axios.post(
+        `/espresso-api/authors/${post.author.id}/posts/${post.id}/comments`,
+        {
+          type: "comment",
+          author: {
+            type: "author",
+            id: curUser!.id,
+            url: curUser!.url,
+            host: curUser!.host,
+            displayName: curUser!.displayName,
+            github: curUser!.github,
+            profileImage: curUser!.profileImage,
+          },
+          comment: comment,
+          contenttype: "text/plain",
+        }
+      );
 
       await axios.post("/create_notification", {
         type: "comment",
