@@ -14,6 +14,7 @@ import json, requests
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class PostView(forms.ModelForm):
@@ -263,9 +264,19 @@ def get_all_posts(request):
 def get_author_posts(request, authorid):
   '''Get all posts by an author'''
   author = [Author.objects.get(id=authorid)]
+  page = request.GET.get('page', 1)
+  size = request.GET.get('size', 10)
   
   posts = Post.objects.filter(author=author[0]).order_by('-published')
-  data = serializers.serialize('json', posts)
+  paginator = Paginator(posts, size)
+  try:
+    posts_page = paginator.page(page)
+  except PageNotAnInteger:
+    posts_page = paginator.page(1)
+  except EmptyPage:
+    posts_page = paginator.page(paginator.num_pages)
+
+  data = serializers.serialize('json', posts_page)
   # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
   author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
 

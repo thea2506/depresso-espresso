@@ -232,14 +232,24 @@ const PostView = ({
         {/* Like, Comment, Share Section */}
         <div className="flex items-center justify-between w-full mt-2">
           {interactSection.map((item, index) => (
+            // <div
+            //   key={index}
+            //   className="flex items-center justify-center text-xl gap-x-4 text-primary"
+            // >
+            //   <p
+            //     className="cursor-pointer hover:text-secondary-light"
+            //     onClick={item.onClick}
+            //   >
             <div
-              key={index}
-              className="flex items-center justify-center text-xl gap-x-4 text-primary"
+                key={index}
+                className={`flex items-center justify-center text-xl gap-x-4 ${
+                item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted") ? 'text-gray-400 cursor-not-allowed' : 'text-primary'
+            }`}
             >
-              <p
-                className="cursor-pointer hover:text-secondary-light"
-                onClick={item.onClick}
-              >
+            <p
+              className={`cursor-pointer ${item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted") ? '' : 'hover:text-secondary-light'}`}
+              onClick={!(item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted")) ? item.onClick : undefined}
+            >
                 {item.icon}
               </p>
               <p>{item.count}</p>

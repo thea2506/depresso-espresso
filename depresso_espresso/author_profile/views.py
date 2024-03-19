@@ -414,9 +414,19 @@ def get_friends(request, authorid):
       Get all friends of an author'''
   
   if request.method == "GET":
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)
     friends = Following.objects.filter(authorid=authorid, areFriends=True)
+    paginator = Paginator(friends, int(size))
+    try:
+        friends_page = paginator.page(page)
+    except PageNotAnInteger:
+        friends_page = paginator.page(1)
+    except EmptyPage:
+        friends_page = paginator.page(paginator.num_pages)
+
     data = []
-    for friend in friends:
+    for friend in friends_page:
       user = Author.objects.get(id=friend.authorid)
       data.append({
         "type": user.type,
@@ -437,9 +447,18 @@ def get_follow_list(request):
       Get all authors that an author is following'''
   
   if request.method == "GET":
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)
     following = Following.objects.filter(authorid=request.user.id)
+    paginator = Paginator(following, int(size))
+    try:
+        following_page = paginator.page(page)
+    except PageNotAnInteger:
+        following_page = paginator.page(1)
+    except EmptyPage:
+        following_page = paginator.page(paginator.num_pages)
     data = []
-    for follow in following:
+    for follow in following_page:
       user = Author.objects.get(id=follow.followingid)
       data.append({
         "type": "author",
