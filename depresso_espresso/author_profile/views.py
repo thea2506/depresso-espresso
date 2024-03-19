@@ -606,4 +606,47 @@ def api_get_likes_comment(request,authorid,postid,commentid):
     }
     data.append(item)
   return JsonResponse(data, safe=False, status=200)
+
+def api_get_author_liked(request, authorid):
+  if request.method != "GET":
+     return HttpResponse(status=405)
+  if not Author.objects.filter(id=authorid).exists():
+      return HttpResponse(status=404)
+  author = Author.objects.get(id=authorid)
+  liked_posts = LikePost.objects.filter(author=author)
+  liked_comments = LikeComment.objects.filter(author=author)
+  data = []
+  for like in liked_posts:
+    item = {
+        "summary": f"{like.author.displayName} liked your post",
+        "type": "like_post",
+        "author": {
+          "type": "author",
+          "id": like.author.url,
+          "host": like.author.host,
+          "displayName": like.author.displayName,
+          "url": like.author.url,
+          "github": like.author.github,
+          "profileImage": like.author.profileImage
+        },
+        "object": like.post.source
+    }
+    data.append(item)
+  for like in liked_comments:
+    item = {
+        "summary": f"{like.author.displayName} liked your comment",
+        "type": "like_comment",
+        "author": {
+          "type": "author",
+          "id": like.author.url,
+          "host": like.author.host,
+          "displayName": like.author.displayName,
+          "url": like.author.url,
+          "github": like.author.github,
+          "profileImage": like.author.profileImage
+        },
+        "object": like.comment.postid.origin + "/comments/" + str(like.comment.id)
+    }
+    data.append(item)
+  return JsonResponse({"type": "liked", "items": data}, safe=False, status=200)
       

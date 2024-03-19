@@ -44,4 +44,7 @@ urlpatterns = [
 
     # 7. GET //service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments/{COMMENT_ID}/likes
     path('espresso-api/authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>/likes', views.api_get_likes_comment, name='api_get_likes_comment'),
+
+    # 8. GET //service/authors/{AUTHOR_ID}/liked
+    path('espresso-api/authors/<str:authorid>/liked', views.api_get_author_liked, name='api_get_likes_comment'),
 ]
