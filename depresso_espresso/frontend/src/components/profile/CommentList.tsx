@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
+import { GoHeart } from "react-icons/go";
 import { useEffect } from "react";
 import { CommentModel } from "../data/CommentModel";
 
@@ -100,6 +101,15 @@ const CommentList = ({
     fetchComments();
   }, [post.author.pk, post.id, refresh]);
 
+  const handleLikeToggle = async (commentId: string) => {
+      await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
+      console.log("Like successful");
+      setRefresh(!refresh);
+  };
+        
+
+
+
   const handleCommentSubmit = async () => {
     try {
       const formField = new FormData();
@@ -164,6 +174,15 @@ const CommentList = ({
             <p className="p-4 bg-white text-start rounded-xl">
               {comment.comment}
             </p>
+          <button
+            onClick={() => handleLikeToggle(comment.id)}
+            className={`flex items-center justify-center gap-x-1 text-primary`}
+          >
+            <GoHeart/>
+            <p>{comment.likecount !== undefined ? comment.likecount : 0}</p>
+
+          </button>
+          
           </div>
         ))}
       </div>
