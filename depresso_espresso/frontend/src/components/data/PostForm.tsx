@@ -153,7 +153,7 @@ const PostForm = ({
 
       const url = edit
         ? `/espresso-api/authors/${author.id}/posts/${postId}`
-        : "/new_post/";
+        : `/espresso-api/authors/${author.id}/posts/`;
 
       let response;
       if (edit) {

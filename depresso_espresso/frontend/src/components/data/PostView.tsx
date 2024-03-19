@@ -60,7 +60,7 @@ const PostView = ({
   const handleShareClick = async () => {
     try {
       const response = await axios.post(
-        `/authors/${post.author.pk}/posts/${post.id}/share_post`
+        `/authors/${post.author.id}/posts/${post.id}/share_post`
       );
       if (response.data.success) {
         console.log("Post shared");
@@ -90,14 +90,14 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    await axios.post(`authors/${post.author.pk}/posts/${post.id}/like_post`);
+    await axios.post(`authors/${post.author.id}/posts/${post.id}/like_post`);
     setRefresh(!refresh);
   };
 
   const handleDelete = async () => {
     try {
       const response = await axios.delete(
-        `espresso-api/authors/${post.author.pk}/posts/${post.id}`
+        `espresso-api/authors/${post.author.id}/posts/${post.id}`
       );
       if (response.data.success) {
         setRefresh(!refresh);
@@ -166,7 +166,7 @@ const PostView = ({
             />
           </div>
           <PostForm
-            author={post.author.fields}
+            author={post.author}
             oldTitle={post.title}
             oldDescription={post.description}
             oldContent={post.content}
@@ -189,9 +189,9 @@ const PostView = ({
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            displayName={post.author.fields.displayName}
-            user_img_url={post.author.fields.profileImage}
-            link={`/authors/${post.author.pk}`}
+            displayName={post.author.displayName}
+            user_img_url={post.author.profileImage}
+            link={`/authors/${post.author.id}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
@@ -252,14 +252,14 @@ const PostView = ({
             </div>
           ))}
 
-          {curUser.id === post.author.pk && (
+          {curUser.id === post.author.id && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {curUser.id === post.author.pk && (
+          {curUser.id === post.author.id && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}

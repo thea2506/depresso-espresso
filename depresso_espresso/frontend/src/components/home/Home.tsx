@@ -39,31 +39,26 @@ const Home = () => {
      */
     const retrievePosts = async () => {
       try {
-        const response = await axios.get("/get_all_posts/");
+        const response = await axios.get(
+          `/espresso-api/authors/${author.id}/posts/`
+        );
         const allData = response.data;
+        const posts = allData.items;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = allData.posts.map((rawpost: any, index: number) => {
-          const author = allData.authors[index];
-          author.fields.id = author.pk;
+        const postModels = posts.map((rawpost: any) => {
           return {
-            // type: rawpost.fields.type,
-            title: rawpost.fields.title,
-            id: rawpost.pk,
-
-            author: author,
-
-            description: rawpost.fields.description,
-            contenttype: rawpost.fields.contentType,
-            content: rawpost.fields.content,
-
-            count: rawpost.fields.count,
-
-            published: rawpost.fields.published,
-            visibility: rawpost.fields.visibility,
-
-            likecount: rawpost.fields.likecount,
-            sharecount: rawpost.fields.sharecount,
+            title: rawpost.title,
+            id: rawpost.id,
+            author: rawpost.author,
+            description: rawpost.description,
+            contenttype: rawpost.contentType,
+            content: rawpost.content,
+            count: rawpost.count,
+            published: rawpost.published,
+            visibility: rawpost.visibility,
+            likecount: rawpost.likecount,
+            sharecount: rawpost.sharecount,
           };
         });
         setPosts(postModels);
@@ -73,7 +68,7 @@ const Home = () => {
     };
     retrieveData();
     retrievePosts();
-  }, [navigate, refresh]);
+  }, [author.id, navigate, refresh]);
 
   //#endregion
   return (

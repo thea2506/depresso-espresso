@@ -76,29 +76,24 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get(`/authors/${authorId}/posts`);
-        const allData = response.data;
+        const response = await axios.get(
+          `espresso-api/authors/${authorId}/posts/`
+        );
+        const posts = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = allData.posts.map((rawpost: any) => {
-          const author = allData.authors[0];
-          author.fields.id = author.pk;
+        const postModels = posts.map((rawpost: any) => {
           return {
-            title: rawpost.fields.title,
-            id: rawpost.pk,
-
-            author: author,
-
-            description: rawpost.fields.description,
-            contenttype: rawpost.fields.contentType,
-            content: rawpost.fields.content,
-
-            count: rawpost.fields.count,
-
-            published: rawpost.fields.published,
-            visibility: rawpost.fields.visibility,
-
-            likecount: rawpost.fields.likecount,
-            sharecount: rawpost.fields.sharecount,
+            title: rawpost.title,
+            id: rawpost.id,
+            author: rawpost.author,
+            description: rawpost.description,
+            contenttype: rawpost.contentType,
+            content: rawpost.content,
+            count: rawpost.count,
+            published: rawpost.published,
+            visibility: rawpost.visibility,
+            likecount: rawpost.likecount,
+            sharecount: rawpost.sharecount,
           };
         });
         setPosts(postModels);
