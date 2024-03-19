@@ -67,10 +67,12 @@ def get_authors(request):
     if request.session.session_key is not None:
 
         session = Session.objects.get(session_key=request.session.session_key)
+        print(session)
         if session:
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
+            print(user)
 
     if request.method == "GET":
 
