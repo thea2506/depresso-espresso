@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
+
     # Our apps
     'rest_framework',
     'corsheaders',
@@ -76,6 +76,7 @@ LOGIN_EXEMPT_URLS = (
     r"curUser",
     r'make_post',
     r'/inbox/',
+    r'espresso-api/',
 )
 
 CORS_ALLOWED_ORIGINS = [
@@ -110,7 +111,7 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
- 
+
 # commented out to work with heroku-postgres
 
 # DATABASES = {
@@ -151,8 +152,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-    )
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 
 # Internationalization
@@ -187,11 +188,11 @@ STATICFILES_STORAGE = (
 
 django_on_heroku.settings(locals())
 
-AUTH_USER_MODEL = 'authentication.Author' # User model to use in migration
+AUTH_USER_MODEL = 'authentication.Author'  # User model to use in migration
 
-#REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
+# REST_FRAMEWORK = {'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permission.AllowAny']}
 
-MEDIA_ROOT =  ""
+MEDIA_ROOT = ""
 MEDIA_URL = ""
 
 # reference: https://swesadiqul.medium.com/basic-authentication-in-django-rest-framework-bd9900bdb413 Md Sadiqul Islam 3/11/24
