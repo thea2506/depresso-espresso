@@ -38,9 +38,7 @@ const SinglePostView = () => {
         const postModel = {
           title: post.title,
           id: post.id,
-          author: {
-            fields: post.author,
-          },
+          author: post.author,
           description: post.description,
           contenttype: post.contentType,
           content: post.content,

@@ -65,8 +65,10 @@ const CommentList = ({
 
     const fetchComments = async () => {
       try {
+        const real_postid = post.id.split("/").pop();
+        const real_authorid = post.author.id.split("/").pop();
         const response = await axios.get(
-          `espresso-api/authors/${post.author.id}/posts/${post.id}/comments`
+          `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`
         );
         if (response.status === 200) {
           const comment_list = response.data.comments;
@@ -101,8 +103,10 @@ const CommentList = ({
       const formField = new FormData();
       formField.append("comment", comment);
       formField.append("postid", post.id);
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
       const response = await axios.post(
-        `/espresso-api/authors/${post.author.id}/posts/${post.id}/comments`,
+        `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`,
         {
           type: "comment",
           author: {
@@ -122,8 +126,8 @@ const CommentList = ({
       await axios.post("/create_notification", {
         type: "comment",
         sender_id: curUser!.id,
-        receiver_id: post.author.id,
-        post_id: post.id,
+        receiver_id: real_authorid,
+        post_id: real_postid,
       });
 
       if (response.data.success) {
@@ -139,14 +143,18 @@ const CommentList = ({
   };
 
   const handleLikeComment = async (comment: CommentModel) => {
+    const real_postid = post.id.split("/").pop();
+    const real_authorid = post.author.id.split("/").pop();
+    const real_commentid = comment.id.split("/").pop();
     const like_response = await axios.post(
-      `authors/${post.author.id}/posts/${post.id}/comments/${comment.id}/like_comment`
+      `/authors/${real_authorid}/posts/${real_postid}/comments/${real_commentid}/like_comment`
     );
+    const real_commentauthorid = comment.author.id.split("/").pop();
     if (!like_response.data.already_liked) {
       setRefresh(!refresh);
-      await axios.post(`/espresso-api/authors/${post.author.id}/inbox/`, {
+      await axios.post(`/espresso-api/authors/${real_commentauthorid}/inbox/`, {
         summary: `${curUser!.displayName} liked your comment`,
-        type: "like",
+        type: "like_comment",
         object: comment.id,
         author: {
           type: "author",

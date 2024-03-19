@@ -221,7 +221,7 @@ def get_post_comments(request, authorid, postid):
             "comment": comment.comment,
             "contentType": comment.contenttype,
             "published": comment.publishdate.isoformat(),
-            "id": str(comment.id),
+            "id": post.origin + "/comments/" + str(comment.id),
             "likecount": comment.likecount
           }
           merged_data.append(comment_data)

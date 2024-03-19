@@ -39,8 +39,9 @@ const Home = () => {
      */
     const retrievePosts = async () => {
       try {
+        const real_authorid = author?.id?.split("/").pop();
         const response = await axios.get(
-          `/espresso-api/authors/${author.id}/posts/`
+          `/espresso-api/authors/${real_authorid}/posts/`
         );
         const allData = response.data;
         const posts = allData.items;

@@ -59,8 +59,10 @@ const PostView = ({
 
   const handleShareClick = async () => {
     try {
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
       const response = await axios.post(
-        `/authors/${post.author.id}/posts/${post.id}/share_post`
+        `/authors/${real_authorid}/posts/${real_postid}/share_post`
       );
       if (response.data.success) {
         console.log("Post shared");
@@ -90,14 +92,16 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
+    const real_postid = post.id.split("/").pop();
+    const real_authorid = post.author.id.split("/").pop();
     const like_response = await axios.post(
-      `authors/${post.author.id}/posts/${post.id}/like_post`
+      `/authors/${real_authorid}/posts/${real_postid}/like_post`
     );
 
     if (!like_response.data.already_liked) {
-      await axios.post(`/espresso-api/authors/${post.author.id}/inbox/`, {
+      await axios.post(`/espresso-api/authors/${real_authorid}/inbox/`, {
         summary: `${curUser.displayName} liked your post`,
-        type: "like",
+        type: "like_post",
         object: post.origin,
         author: {
           type: "author",
@@ -115,8 +119,10 @@ const PostView = ({
 
   const handleDelete = async () => {
     try {
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
       const response = await axios.delete(
-        `espresso-api/authors/${post.author.id}/posts/${post.id}`
+        `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
       );
       if (response.data.success) {
         setRefresh(!refresh);

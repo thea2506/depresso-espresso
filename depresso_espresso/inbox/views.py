@@ -209,10 +209,15 @@ def post_like_inbox(request, authorid):
         data = json.loads(request.body)
         type = data['type'].lower()
         send_author = data["author"]
-
+        object = data["object"]
+        print(object)
+        if type == "like_comment":
+            post_id = object.split("/")[len(object.split("/"))-3]
+        elif type == "like_post":
+            post_id = object.split("/")[len(object.split("/"))-1] 
         # like only
-        if type == "like" and not Notification.objects.filter(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=data["object"]).exists():
-            Notification.objects.create(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=data["object"])
+        if "like" in type and not Notification.objects.filter(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=post_id).exists():
+            Notification.objects.create(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=post_id)
             return JsonResponse({"message": "Like notification created"}, status=201)
         else:
             return JsonResponse({"message": "Like notification already exists"}, status=200)

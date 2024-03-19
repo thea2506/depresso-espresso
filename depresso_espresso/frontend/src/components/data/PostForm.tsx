@@ -134,6 +134,8 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
+      const real_postid = postId?.split("/").pop();
+      const real_authorid = author.id.split("/").pop();
       const formData = new FormData();
       formData.append("inbox", "No");
       formData.append("title", title);
@@ -147,13 +149,13 @@ const PostForm = ({
         formData.append("content", base64Image);
       } else formData.append("content", content);
 
-      if (edit && postId) formData.append("postid", postId);
+      if (edit && postId) formData.append("postid", real_postid!);
 
       setForm("");
 
       const url = edit
-        ? `/espresso-api/authors/${author.id}/posts/${postId}`
-        : `/espresso-api/authors/${author.id}/posts/`;
+        ? `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
+        : `/espresso-api/authors/${real_authorid}/posts/`;
 
       let response;
       if (edit) {
@@ -164,13 +166,13 @@ const PostForm = ({
 
       // create notification
       if (
-        url == `/espresso-api/authors/${author.id}/posts/` &&
+        url == `/espresso-api/authors/${real_authorid}/posts/` &&
         visibility.toLowerCase() != "private"
       )
         await axios.post("/create_notification", {
           type: "post",
-          sender_id: author.id,
-          post_id: response.data.postid,
+          sender_id: real_authorid,
+          post_id: response.data.postid.split("/").pop()!,
         });
 
       openPost("refresh");
