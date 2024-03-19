@@ -115,8 +115,8 @@ def get_authors(request):
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
                 authors = requests.get(
-                    baseUrl + '/authors/', auth=(username, password))
-                print("BBAAASSEEEEURLLL", baseUrl)
+                    baseUrl + 'authors/', auth=(username, password))
+                print("BBAAASSEEEEURLLL", baseUrl, username, password, authors)
                 for author in authors:
                     print("AAAAAAAAAAAAAAAAAAAAAAAAAAUTHOR", author)
                     # Check if the author already exists in our db
