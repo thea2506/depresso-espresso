@@ -112,7 +112,7 @@ const ProfilePage = () => {
 
   //#endregion
   return (
-    <div className="flex flex-col w-full px-4 gap-y-8 sm:px-12 md:px-20">
+    <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
       <Profile
         id={authorId}
         display_name={displayName}
