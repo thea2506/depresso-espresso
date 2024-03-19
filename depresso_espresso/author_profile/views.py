@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
-from posts.models import LikePost, Post
+from posts.models import Comment, LikeComment, LikePost, Post
 from authentication.models import Author, Following, FollowRequest, Node
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
@@ -549,29 +549,61 @@ def api_get_followers(request, authorid):
     return JsonResponse({"message": "Method not allowed"}, status=405)
     
 def api_get_likes(request, authorid, postid):
-   if request.method == "GET":
-      if not Author.objects.filter(id=authorid).exists():
+  if request.method != "GET":
+     return HttpResponse(status=405)
+  if not Author.objects.filter(id=authorid).exists():
         return HttpResponse(status=404)
-      if not Post.objects.filter(id=postid).exists():
+  if not Post.objects.filter(id=postid).exists():
+    return HttpResponse(status=404)
+  post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
+  likes = LikePost.objects.filter(Q(post=post), ~Q(author=Author.objects.get(id=authorid)))
+  data = []
+  for like in likes:
+    item = {
+        "summary": f"{like.author.displayName} liked your post",
+        "type": "Like",
+        "author": {
+          "type": "author",
+          "id": like.author.url,
+          "host": like.author.host,
+          "displayName": like.author.displayName,
+          "url": like.author.url,
+          "github": like.author.github,
+          "profileImage": like.author.profileImage
+        },
+        "object": like.post.source
+    }
+    data.append(item)
+  return JsonResponse(data, safe=False, status=200)
+
+   
+def api_get_likes_comment(request,authorid,postid,commentid):
+  if request.method != "GET":
+     return HttpResponse(status=405)
+  if not Author.objects.filter(id=authorid).exists():
         return HttpResponse(status=404)
-      post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
-      likes = LikePost.objects.filter(Q(post=post), ~Q(author=Author.objects.get(id=authorid)))
-      data = []
-      for like in likes:
-        item = {
-           "summary": f"{like.author.displayName} liked your post",
-           "type": "Like",
-           "author": {
-             "type": "author",
-             "id": like.author.url,
-             "host": like.author.host,
-             "displayName": like.author.displayName,
-             "url": like.author.url,
-             "github": like.author.github,
-             "profileImage": like.author.profileImage
-           },
-           "object": like.post.source
-        }
-        data.append(item)
-      return JsonResponse(data, safe=False, status=200)
+  if not Post.objects.filter(id=postid).exists():
+    return HttpResponse(status=404)
+  if not Comment.objects.filter(id=commentid).exists():
+    return HttpResponse(status=404)
+  comment = Comment.objects.get(id=commentid, postid=Post.objects.get(id=postid, author=Author.objects.get(id=authorid)))
+  likes = LikeComment.objects.filter(Q(comment=comment), ~Q(author=Author.objects.get(id=authorid)))
+  data = []
+  for like in likes:
+    item = {
+        "summary": f"{like.author.displayName} liked your comment",
+        "type": "Like",
+        "author": {
+          "type": "author",
+          "id": like.author.url,
+          "host": like.author.host,
+          "displayName": like.author.displayName,
+          "url": like.author.url,
+          "github": like.author.github,
+          "profileImage": like.author.profileImage
+        },
+        "object": comment.comment
+    }
+    data.append(item)
+  return JsonResponse(data, safe=False, status=200)
       
