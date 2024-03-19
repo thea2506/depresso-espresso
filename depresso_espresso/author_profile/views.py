@@ -80,7 +80,6 @@ def get_authors(request):
 
   if request.method == "GET":
 
-
     if user.is_authenticated == False:
           # This part of the function is meant to be used by remote servers only
           #handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
@@ -124,7 +123,7 @@ def get_authors(request):
         authors = requests.get(baseUrl + '/authors/', auth=(username, password)) # send get request to node to retrieve external author info
 
         for author in authors["items"]:
-           
+          print(author)
           if not Author.objects.filter(url=author["url"]).exists(): # Check if the author already exists in our db
               # if author does not exist, create a new one
               new_author = Author.objects.create()
