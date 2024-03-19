@@ -39,7 +39,6 @@ const MakePost = () => {
     }
   };
 
-
   /**
    * Posts the inputs to the backend.
    */

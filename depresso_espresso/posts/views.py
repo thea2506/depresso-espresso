@@ -1,6 +1,6 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
 from .models import Post, Comment, LikePost, LikeComment, Share
 from authentication.models import Author, Node, Following
 from django.http import JsonResponse
@@ -14,6 +14,11 @@ import json, requests
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
+from itertools import chain
+from operator import attrgetter
+import urllib.request
+from urllib.parse import unquote
+import base64
 
 
 class PostView(forms.ModelForm):
@@ -45,176 +50,103 @@ def handle_author_post(request, authorid, postid):
           session_data = session.get_decoded()
           uid = session_data.get('_auth_user_id')
           user = Author.objects.get(id=uid)
+
+  # Get the author (LOCAL or REMOTE)
+  if Author.objects.filter(id=authorid).exists():
+    author = Author.objects.get(id=authorid)
+  else:
+    response = urllib.request.urlopen(unquote(authorid))
+    if response != 200:
+      return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
+    author = json.loads(response.read())
+
+  if request.method == 'GET': 
+    # LOCAL POST
+    if Post.objects.filter(id=postid, author=author ).exists():
+      post = Post.objects.get(id=postid)
+      post = {
+        "type": "post",
+        "title": post.title,
+        "id": f"{post.origin}/authors/{user.id}/posts/{post.id}",
+        "source": post.source,
+        "origin": post.origin,
+        "description": post.description,
+        "contentType": post.contentType,
+        "content": post.content,
+        "author": {
+          "type": "author",
+          "id": author.url,
+          "host": author.host,
+          "displayName": author.displayName,
+          "url": author.url,
+          "github": author.github,
+          "profileImage": author.profileImage
+        },
+        "count": post.count,
+        "comments": f"{post.origin}/authors/{user.id}/posts/{post.id}/comments",
+        "published": post.published,
+        "visibility": post.visibility,
+      }
     
-      local_author = Author.objects.filter(id = authorid).exists()
-
-  if  not local_author: # if the author of the post is not saved on our server:
-      split_id = authorid.split("authors")
-      node = Node.objects.get(baseUrl = split_id[0]) # get the host from the id
-      username = node["theirUsername"]
-      password = node["theirPassword"]
-      response = requests.get(authorid, auth=(username, password)) # send get request to node to retrieve external author info
-      author_data = response.json()
-
-  else: # if the author of the post is saved on our server
-      author = Author.objects.filter(id = authorid)
-      author_data = author.values()[0]
-
-  if request.method == 'GET': # Get post with id == postid
-    '''Get a single post by an author'''
-
-    author = [Author.objects.get(id=authorid)]
-    if not Post.objects.filter(id=postid).exists():
-        return HttpResponse(status=404)
+    # REMOTE POST
     else:
-      post = [Post.objects.get(id=postid)]
-      post_data = serializers.serialize('json', post)
-      author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
+      response = urllib.request.urlopen(f"{unquote(postid)}")
+      if response != 200:
+        return JsonResponse({"message": "Post not found", "success": False}, status=404)
+      post = json.loads(response.read())
+    return JsonResponse(post, status=200)
 
-      results = '{"post": ', post_data, ', "author": ', author_data, '}'
-      return HttpResponse(results, content_type='application/json')
+  if request.method == 'DELETE':
+    if Post.objects.filter(id=postid, author=author).exists():
+      post = Post.objects.get(id=postid)
+      if user == post.author and user.is_authenticated:
+        post.delete()
+        return JsonResponse({"message": "Post deleted", "success": True}, status=200)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+    else:
+      return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
-
-@api_view(['POST'])
-def new_local_post(request):
-    ''' LOCAL
-        POST /new_local_post/: This function is used locally only to create a new post. This endpoint is posted to by our frontend form. The addition of external posts to our db is handled by new_external_post function'''
+  if request.method == 'PUT':
+    if Post.objects.filter(id=postid, author=author).exists():
+      post = Post.objects.get(id=postid)
+      if user == post.author and user.is_authenticated:
+        post.title = request.POST.get('title')
+        post.description = request.POST.get('description')
+        post.content = request.POST.get('content')
+        post.contentType = request.POST.get('contentType')
+        post.save()
+        return JsonResponse({"message": "Post edited successfully", "success": True}, status=200)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+    else:
+      return JsonResponse({"message": "Post not found", "success": False}, status=404)
+     
     
-    if request.session.session_key is not None:
-      session = Session.objects.get(session_key=request.session.session_key)
-      if session:
-          session_data = session.get_decoded()
-          uid = session_data.get('_auth_user_id')
-          user = Author.objects.get(id=uid)
+def utility_get_posts(authorid, mode):
+  '''Get all visible posts for an author'''
+  items = []
 
-    if request.method == 'POST': # Create new post based on form data submitted on our frontend
-        
-        form = PostView(request.POST)
-        if form.is_valid():
-          post = form.save(commit=False)
-          
-          post.type = "post"
-          post.title = form.cleaned_data["title"]
-          post.author = user
-          post.description = form.cleaned_data["description"]
-          post.contentType = form.cleaned_data["contentType"]
-          post.content = form.cleaned_data["content"]
-          post.published = make_aware(datetime.datetime.now())
-          post.visibility = form.cleaned_data["visibility"]
+  # Get all PUBLIC posts
+  public_posts = Post.objects.filter(visibility="PUBLIC")
+  items = chain(items, public_posts)
 
-          print("Post visibility:" , post.visibility)
-          post.url = user.url + '/posts/' + str(post.id)
-          
-          form.save(commit = True)
-          data ={}
-          data['success'] = True
-          data["id"] = post.id
-          post.save()
-
-          post_data = {
-             
-             "type": "post",
-             "title": post.title,
-             "id": post.id,
-             "source": post.source,
-             "origin": post.origin,
-             "description": post.description,
-             "contentType": post.contentType,
-             "content": post.content,
-             "author": {
-                "type": "author",
-                "id": user.id,
-                "host": user.host,
-                "displayName": user.displayName,
-                "url": user.url,
-                "github": user.github,
-                "profileImage": user.profileImage
-             },
-             "count":0,
-             "comments": None,
-             "published": post.published,
-             "visibility": "PUBLIC"
-
-          }
-
-          #-- Send post to relevant author's inboxes-- (I think we only need to send them to external authors?)
-
-          if post.visibility == "PUBLIC":
-
-            following = Following.objects.filter(followingid=user.id) # Users who will receive this post in their inbox
-            
-            for following_user in following:
-              following_user = Author.objects.get(id=following_user.authorid)
-              url = following_user.url
-              host = following_user.host   # get the host from the id
-
-              if Node.objects.filter(baseUrl = host).exists():
-                node = Node.objects.get(baseUrl = host)
-                username = node["theirUsername"]
-                password = node["theirPassword"]
-                requests.post(url + '/inbox/', post_data, auth=(username,password)) # Send to external author
-
-              else:
-                 requests.post(url + '/inbox/', post_data) # Send to author on our server (I don't think this is necessary but the spec is a bit unclear)
-      
-          # Send this post to the inboxes of authors who are friends with the posting author
-          elif post.visibility == "FRIENDS":
-             
-             following = Following.objects.filter(followingid=user.id, areFriends=True) # Users who will receive this post in their inbox
-
-             for following_user in following:
-              following_user = Author.objects.get(id=following_user.authorid)
-              url = following_user.url
-              host = following_user.host  # get the host from the id
-
-
-              if Node.objects.filter(baseUrl = host).exists():
-                node = Node.objects.get(baseUrl = host)
-                username = node["theirUsername"]
-                password = node["theirPassword"]
-                requests.post(url + '/inbox/', data,  auth=(username,password)) # Send to external author
-
-              else:
-                 requests.post(url + '/inbox/', data)  # Send to author on our server (I don't think this is necessary but the spec is unclear)
-
-        else:
-          print("form is not valid", form.errors)
-          data['success'] = False
-          
-        return JsonResponse(data)
-
-    return render(request, "index.html")
-
-
-
-@api_view(['POST'])
-def new_external_post(request):
-   """LOCAL
-      This function is used to create a new post from an external author"""
-   
-   if request.method == 'POST':
-        external_author =request.POST["author"]
-        form = PostView(request.POST)
-        if form.is_valid():
-          post = form.save(commit=False)
-          
-          post.type = "post"
-          post.title = form.cleaned_data["title"]
-          post.author = external_author
-          post.description = form.cleaned_data["description"]
-          post.contentType = form.cleaned_data["contentType"]
-          post.content = form.cleaned_data["content"]
-          post.published = make_aware(datetime.datetime.now())
-          post.visibility = form.cleaned_data["visibility"]
-          post.url = external_author.url + '/posts/' + post.id
-          
-          form.save(commit = True)
-          data ={}
-          data['success'] = True
-          post.save()
-
-          return JsonResponse(data)
-
+  # Author
+  if mode == "author":
+    friends = Following.objects.filter(authorid=authorid, areFriends=True)
+    for friend in friends:
+      friend_data = Author.objects.get(id=friend.followingid)
+      friends_posts = Post.objects.filter(author = friend_data, visibility = "FRIENDS")
+      items = chain(items, friends_posts)
+    items = chain(items, Post.objects.filter(author=authorid, visibility="FRIENDS"))
+    items = chain(items, Post.objects.filter(author=authorid, visibility="UNLISTED"))
+  
+  # Friend of author
+  elif mode == "friend":
+    items = chain(items, Post.objects.filter(author=authorid, visibility="FRIENDS"))  
+  
+  sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
+  return sorted_items
 
 @api_view(['GET'])
 def get_all_posts(request):
@@ -225,85 +157,101 @@ def get_all_posts(request):
   if not user:
      return JsonResponse({"message": "User session error"})
 
-  public_posts = Post.objects.filter(visibility="PUBLIC").order_by('-published') # Get all PUBLIC LOCAL posts
-  
-  #public_posts = serializers.serialize('json', public_posts)
-  stream_posts_list = []
-  for post in public_posts:
-     stream_posts_list.append(post)
-
-  own_posts = Post.objects.filter(author=user, visibility="FRIENDS")
-  for post in own_posts:
-     stream_posts_list.append(post)
-
-  url = user.url+ '/espresso-api/inbox'
-  friend_following_posts = requests.get(url) # Get friend and following posts from user's inbox to integrate them with public posts
-  posts_dict = friend_following_posts.json()
-
-  for item in posts_dict["items"]:
-     stream_posts_list.append(Post.objects.get(id = item["id"]))
+  all_visible_posts = utility_get_posts(user.id, "author")
      
-  authors = [Author.objects.get(id=(post.author.id)) for post in stream_posts_list]
-
-  # Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-  print("Pre sorted stream list:", stream_posts_list)
-  stream_posts_list = sorted(stream_posts_list, key=lambda x: x.published) # sort the posts by date
-  print("Post sorted stream list:", stream_posts_list)
-
+  authors = [Author.objects.get(id=(post.author.id)) for post in all_visible_posts]
   author_data = serializers.serialize('json', authors, fields=["id", "profileImage", "displayName", "github", "displayName"])
-  
-  stream_posts = serializers.serialize('json', stream_posts_list)
+  stream_posts = serializers.serialize('json', all_visible_posts)
   
   results = '{"posts": ', stream_posts, ', "authors": ', author_data, '}'
 
   return HttpResponse(results, content_type='application/json')
 
-
-
-def get_author_posts(request, authorid):
-  '''Get all posts by an author'''
-  author = [Author.objects.get(id=authorid)]
-  
-  posts = Post.objects.filter(author=author[0]).order_by('-published')
-  data = serializers.serialize('json', posts)
-  # author_data = serializers.serialize('json', author, fields=["type", "id", "host", "displayName", "url", "github", "profileImage"])
-  author_data = serializers.serialize('json', author, fields=["id", "profileImage", "displayName", "github", "displayName"])
-
-  results = '{"posts": ', data, ', "authors": ', author_data, '}'
-  return HttpResponse(results, content_type='application/json')
-
-
 def get_post_comments(request, authorid, postid):
-    '''Get all comments on a post'''
-    post = Post.objects.get(pk=postid)
-    comments = Comment.objects.filter(postid=post)
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            if Author.objects.filter(id=uid).exists():
+              user = Author.objects.get(id=uid)
+    
+    if request.method == 'GET':
+      if not Author.objects.filter(id=authorid).exists():
+          return JsonResponse({"message": "Author not found", "success": False}, status=404)
+      if not Post.objects.filter(id=postid).exists():
+          return JsonResponse({"message": "Post not found", "success": False}, status=404)
+      
+      post = Post.objects.get(pk=postid)
+      comments = Comment.objects.filter(postid=post).order_by('-publishdate')
 
-    merged_data = []
-    for comment in comments:
-        author = Author.objects.get(pk=comment.author.id)
-        author_data = {
-            "username": author.username,
-            "type": author.type,
-            "id": str(author.id),
-            "url": author.url,
-            "host": author.host,
-            "displayName": author.displayName,
-            "github": author.github,
-            "profileImage": author.profileImage
-        }
-        comment_data = {
-            "author": author_data,
+      # Pagination
+      page = request.GET.get('page')
+      size = request.GET.get('size')
+      if page and size:
+          page = int(page)
+          size = int(size)
+          start_index = size * (page - 1)
+          end_index = size * page
+
+          if end_index > len(comments):
+              end_index = len(comments)
+          if start_index < 0:
+              start_index = 0
+          
+          if start_index > len(comments) or end_index < 0:
+              comments = []
+          else:
+              comments = comments[start_index : end_index]
+
+      merged_data = []
+      for comment in comments:
+          author = Author.objects.get(id=comment.author.id)
+          comment_data = {
+            "type": "comment",
+            "author": {
+              "type": author.type,
+              "id": str(author.id),
+              "url": author.url,
+              "host": author.host,
+              "displayName": author.displayName,
+              "github": author.github,
+              "profileImage": author.profileImage
+            },
             "comment": comment.comment,
             "contentType": comment.contenttype,
             "published": comment.publishdate.isoformat(),
-            "id": str(comment.id)
-        }
-        merged_data.append(comment_data)
+            "id": post.origin + "/comments/" + str(comment.id),
+            "likecount": comment.likecount
+          }
+          merged_data.append(comment_data)
+          
+      result = {
+          "type": "comments",
+          "page": page,
+          "size": size,
+          "post": post.id,
+          "id": post.comments,
+          "comments": merged_data
+      }
+      return JsonResponse(result, status=200, safe=False)
+    elif request.method == 'POST':
+      if user and user.is_authenticated:
+        data = json.loads(request.body)
+       
+        naive_datetime = datetime.datetime.now()
+        
+        post = Post.objects.get(id=postid)
+        post.count = F('count') + 1
 
-    data = json.dumps(merged_data, indent=4)
-
-    return HttpResponse(data, content_type='application/json')
-
+        comment = Comment.objects.create(comment=data["comment"], author=user, postid=post, publishdate=make_aware(naive_datetime), contenttype="text/plain", visibility=post.visibility)
+        
+        post.save()
+        comment.save()
+        return JsonResponse({"message": "Comment created", "success": True}, status=201)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+      
 def get_post_comment(request, authorid, postid, commentid):
     '''Get a single comment on a post'''
     comment = Comment.objects.get(id=commentid)
@@ -325,7 +273,8 @@ def get_post_comment(request, authorid, postid, commentid):
         "comment": comment.comment,
         "contentType": comment.contenttype,
         "published": comment.publishdate.isoformat(),
-        "id": str(comment.id)
+        "id": str(comment.id),
+        "likecount": comment.likecount
     }
     merged_data.append(comment_data)
 
@@ -337,7 +286,6 @@ def like_post(request, authorid, postid):
   '''Like or unlike a post'''
   post = Post.objects.get(pk=postid)
   data = {}
- 
 
   if not LikePost.objects.filter(author = request.user, post = post).exists():
       LikePost.objects.create(author = request.user, post = post)
@@ -348,22 +296,30 @@ def like_post(request, authorid, postid):
       post.likecount = F('likecount') - 1
       data["already_liked"] = True
   post.save()
-  return JsonResponse(data = data)
+  return JsonResponse(data = data, status=200)
 
 def like_comment(request, authorid, postid, commentid):
   '''Like or unlike a post'''
+  if not Author.objects.filter(id=authorid).exists():
+    return JsonResponse({"message": "Author not found", "success": False}, status=404)
+  if not Post.objects.filter(id=postid).exists():
+    return JsonResponse({"message": "Post not found", "success": False}, status=404)
+  if not Comment.objects.filter(id=commentid).exists():
+    return JsonResponse({"message": "Comment not found", "success": False}, status=404)
+  
   comment = Comment.objects.get(pk=commentid)
- 
+  data = {}
   if not LikeComment.objects.filter(author = request.user, comment = comment).exists():
       LikeComment.objects.create(author = request.user, comment = comment)
       comment.likecount = F('likecount') + 1
-
+      data["already_liked"] = False
   else:
       LikeComment.objects.get(author=request.user, comment=comment).delete()
       comment.likecount = F('likecount') - 1
+      data["already_liked"] = False
 
   comment.save()
-  return HttpResponse("Success")
+  return JsonResponse(data, safe=False, status=200)
 
 def make_comment(request):
     data ={}
@@ -395,23 +351,6 @@ def make_comment(request):
     rend = CommentView().get(request)
     return rend
 
-def delete_post(request):
-  '''Delete a post'''
-  data = {}
-
-  data = json.loads(request.body)
-  postid = data.get('postid')
-  post = Post.objects.get(pk=postid)
-
-  if request.user == post.author:
-    post.delete()
-    data['success'] = True
-    return JsonResponse(data)
-  
-  else:
-    data['success'] = False
-    return JsonResponse(data)
-
 def delete_comment(request):
   '''Delete a comment'''
   data = {}
@@ -428,24 +367,6 @@ def delete_comment(request):
   else:
     data['success'] = False
     return JsonResponse(data)
-  
-def edit_post(request):
-  '''Edit a post'''
-  data = {}
-  postid = request.POST.get('postid')
-
-  post = get_object_or_404(Post, pk=postid)
-  if request.method == 'POST':
-      post.title = request.POST.get('title')
-      post.description = request.POST.get('description')
-      post.content = request.POST.get('content')
-      post.visibility = request.POST.get('visibility')
-      post.contentType = request.POST.get('contentType')
-      post.save()
-
-  data['success'] = True
-
-  return JsonResponse(data)
 
 def share_post(request, authorid, postid):
   '''Share a post'''
@@ -558,3 +479,166 @@ def get_author_liked(request, authorid):
     data = json.dumps(merged_data, indent=4)
 
     return HttpResponse(data, content_type='application/json')
+
+def api_posts(request, authorid):
+
+  if request.method == 'GET':
+    data = { "type" : "posts"}
+    post_list = []
+
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            if Author.objects.filter(id=uid).exists():
+              user = Author.objects.get(id=uid)
+
+    # sort posts by authentication as author, friend of author, or public
+    if user and str(user.id) == str(authorid):
+      posts = utility_get_posts(authorid, "author")
+    elif user and user.id != authorid and Following.objects.filter(authorid=user.id, followingid=authorid, areFriends=True).exists():
+      posts = utility_get_posts(authorid, "friend")
+    else:
+      posts = utility_get_posts(authorid, "public")
+
+    # params
+    page = request.GET.get('page')
+    size = request.GET.get('size')
+
+    if page and size:
+      page = int(page)
+      size = int(size)
+    
+      start_index = size * (page - 1)
+      end_index = size * page
+      
+      if end_index > len(posts):
+          end_index = len(posts)
+      if start_index < 0:
+        start_index = 0
+        
+      if start_index > len(posts) or end_index < 0:
+        posts = []
+      else:
+        posts = posts[(page - 1) * size : page * size]
+
+    # serialize each post
+    for post in posts:
+        post_list.append({
+          "type": "post",
+          "title": post.title,
+          "id": post.id,
+          "source": post.source,
+          "origin": post.origin,
+          "description": post.description,
+          "contentType": post.contentType,
+          "content": post.content,
+          "author": {
+            "type": "author",
+            "id": post.author.id,
+            "host": post.author.host,
+            "displayName": post.author.displayName,
+            "url": post.author.url,
+            "github": post.author.github,
+            "profileImage": post.author.profileImage
+          },
+          "count": post.count,
+          "comments": post.comments,
+          "published": post.published,
+          "visibility": post.visibility,
+          "likecount": post.likecount,
+          "sharecount": post.sharecount,
+        })
+
+    data["items"] = post_list
+    return JsonResponse(data, status=200)
+  
+  if request.method == 'POST':
+    if request.session.session_key is not None:
+      session = Session.objects.get(session_key=request.session.session_key)
+      if session:
+          session_data = session.get_decoded()
+          uid = session_data.get('_auth_user_id')
+          user = Author.objects.get(id=uid)
+
+      if user and str(user.id) == str(authorid) and user.is_authenticated:       
+        form = PostView(request.POST)
+        if form.is_valid():
+          post = form.save(commit=False)
+          
+          post.type = "post"
+          post.title = form.cleaned_data["title"]
+          post.author = user
+          post.description = form.cleaned_data["description"]
+          post.contentType = form.cleaned_data["contentType"]
+          post.content = form.cleaned_data["content"]
+          post.published = make_aware(datetime.datetime.now())
+          post.visibility = form.cleaned_data["visibility"]
+          post.url = f"{user.url}/posts/{str(post.id)}"
+          post.comments = f"{user.url}/posts/{str(post.id)}/comments"
+
+          post.origin = f"{user.url}/posts/{str(post.id)}"
+          post.source = f"{user.url}/posts/{str(post.id)}"
+        
+          form.save(commit = True)
+          post.save()
+        return JsonResponse({"message": "Post created", "success": True, "postid" : post.id}, status=201)
+      else:
+        return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+def get_author_posts(request, authorid):
+  if Author.objects.filter(id=authorid).exists():
+    author = Author.objects.get(id=authorid)
+    posts = Post.objects.filter(author=author).order_by('-published')
+  
+    result = []
+    for post in posts:
+      result.append({
+        "type": "post",
+        "title": post.title,
+        "id": post.id,
+        "source": post.source,
+        "origin": post.origin,
+        "description": post.description,
+        "contentType": post.contentType,
+        "content": post.content,
+        "author": {
+          "type": "author",
+          "id": post.author.id,
+          "host": post.author.host,
+          "displayName": post.author.displayName,
+          "url": post.author.url,
+          "github": post.author.github,
+          "profileImage": post.author.profileImage
+        },
+        "count": post.count,
+        "comments": post.comments,
+        "published": post.published,
+        "visibility": post.visibility,
+        "likecount": post.likecount,
+        "sharecount": post.sharecount,
+      })
+    return JsonResponse(result, status=200, safe=False)
+  return HttpResponse(status=404)
+
+def api_get_image(request, authorid, postid):
+  if not Author.objects.filter(id=authorid).exists():
+    return JsonResponse({"message": "Author not found", "success": False}, status=404)
+  if not Post.objects.filter(id=postid).exists():
+    return JsonResponse({"message": "Post not found", "success": False}, status=404)
+  
+  if request.method == 'GET':
+    post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
+    if "image" in post.contentType.lower():
+      base64_string = post.content
+      no_prefix = base64_string.split(",")[1]
+      image_binary = base64.b64decode(no_prefix)
+      return HttpResponse(image_binary, content_type=post.contentType)
+    else:
+      return HttpResponseNotFound()
+  else:
+    return HttpResponseNotAllowed()
+   

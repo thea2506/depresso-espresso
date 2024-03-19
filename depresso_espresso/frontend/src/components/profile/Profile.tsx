@@ -89,7 +89,11 @@ const Profile = ({
 
     const getOtherUser = async () => {
       try {
-        const response = await axios.get(`/espresso-api/authors/${id}`);
+        const response = await axios.get(
+          checkUrl(decodeURI(`${id}`))
+            ? decodeURI(`${id}`)
+            : `/espresso-api/authors/${id}`
+        );
         const data = response.data;
         setOtherUser(data);
       } catch (error) {
@@ -114,6 +118,20 @@ const Profile = ({
     getOtherUser();
     getFollowStatus();
   }, [id]);
+
+  /**
+   * Checks if the given URL is a valid URL.
+   * @param string - The URL to check
+   * @returns boolean
+   */
+  function checkUrl(givenUrl: string) {
+    try {
+      new URL(decodeURI(givenUrl));
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
 
   /**
    * Extracts the new value input by the user and updates the corresponding state.
@@ -173,8 +191,6 @@ const Profile = ({
       github: newGithub,
       profileImage: newImageURL,
     };
-
-    console.log("SENDING PUT REQUEST TO EDIT: ID:", id);
     await axios.put(`/espresso-api/authors/${id}`, data);
     setLoading(!loading);
   };
@@ -185,7 +201,7 @@ const Profile = ({
   const handleFollowRequest = async () => {
     try {
       const response = await axios.post(
-        `/authors/create_follow_request/to/${id}`,
+        `/espresso-api/create-follow-request/to/${id}`,
         {
           type: "Follow",
           summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
@@ -205,7 +221,9 @@ const Profile = ({
    */
   const handleUnffollowRequest = async () => {
     try {
-      const response = await axios.post(`/unfollow/${id}`);
+      const response = await axios.delete(
+        `/authors/${curUser?.id}/followers/${id}`
+      );
       if (response.data.success === true) {
         setStatus("stranger");
       }
