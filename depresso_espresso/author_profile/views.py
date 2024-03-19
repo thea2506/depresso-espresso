@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
 from django.core import serializers
 import requests
+from requests.auth import HTTPBasicAuth
 from django.contrib.sessions.models import Session
 import json
 import urllib.request
@@ -114,7 +115,7 @@ def get_authors(request):
                 password = node.theirPassword
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
-                authors = requests.get(baseUrl + 'authors', auth=(username, password))
+                authors = requests.get(baseUrl + 'authors', auth=HTTPBasicAuth(username, password))
                 print(baseUrl + 'authors')
                 print("BBAAASSEEEEURLLL", baseUrl, username, password, authors)
                 for author in authors:
