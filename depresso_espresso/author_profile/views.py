@@ -117,7 +117,7 @@ def get_authors(request):
                 password = node.theirPassword
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
-                authors = requests.get(str(baseUrl + 'authors'))
+                authors = requests.get(str(baseUrl + 'authors'), auth=HTTPBasicAuth(str(username), str(password)))
                 print(baseUrl + 'authors')
                 print("BBAAASSEEEEURLLL", baseUrl, username, password, authors)
                 for author in authors:
