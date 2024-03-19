@@ -12,7 +12,7 @@ interface NotificationProps {
   author: any;
   authorid: string;
   authorpostid?: string;
-  type: "follow" | "share" | "post" | "like" | "comment";
+  type: "follow" | "share" | "post" | "like_post" | "like_comment" | "comment";
   postid?: string;
   createdAt?: string;
   refresh?: boolean;
@@ -48,7 +48,8 @@ const Notification = ({
     follow: "wants to follow you",
     share: "shared a post with you",
     post: "made a post",
-    like: "liked your post",
+    like_post: "liked your post",
+    like_comment: "liked your comment",
     comment: "commented on your post",
   };
   const formatDateString = (inputDateString: string) => {
@@ -74,7 +75,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        "/respond_to_follow_request/from/" + authorid,
+        `/authors/respond_to_follow_request/from/${authorid}`,
         data
       );
       if (response.data.success) {

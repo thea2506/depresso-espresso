@@ -134,12 +134,12 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
+      const real_postid = postId?.split("/").pop();
+      const real_authorid = author.id.split("/").pop();
       const formData = new FormData();
       formData.append("inbox", "No");
       formData.append("title", title);
       formData.append("description", description);
-
-      // TODO: source and origin and comments not covered
 
       formData.append("contentType", contentType);
       formData.append("visibility", visibility);
@@ -149,19 +149,30 @@ const PostForm = ({
         formData.append("content", base64Image);
       } else formData.append("content", content);
 
-      if (edit && postId) formData.append("postid", postId);
+      if (edit && postId) formData.append("postid", real_postid!);
 
       setForm("");
 
-      const url = edit ? "/edit_post" : "/new_post/";
-      const response = await axios.post(url, formData);
+      const url = edit
+        ? `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
+        : `/espresso-api/authors/${real_authorid}/posts/`;
+
+      let response;
+      if (edit) {
+        response = await axios.put(url, formData);
+      } else {
+        response = await axios.post(url, formData);
+      }
 
       // create notification
-      if (url == "/new_post/" && visibility.toLowerCase() != "private")
+      if (
+        url == `/espresso-api/authors/${real_authorid}/posts/` &&
+        visibility.toLowerCase() != "private"
+      )
         await axios.post("/create_notification", {
           type: "post",
-          sender_id: author.id,
-          post_id: response.data.id,
+          sender_id: real_authorid,
+          post_id: response.data.postid.split("/").pop()!,
         });
 
       openPost("refresh");
@@ -286,8 +297,8 @@ const PostForm = ({
                   }
 
                   file?.name.includes("png")
-                    ? setContentType("image/png")
-                    : setContentType("image/jpeg");
+                    ? setContentType("image/png;base64")
+                    : setContentType("image/jpeg;base64");
                 }}
               />
               Upload Image

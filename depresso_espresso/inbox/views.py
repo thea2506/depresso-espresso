@@ -7,6 +7,7 @@ import json, requests
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from django.core import serializers
+from posts.views import utility_get_posts
 
 def create_notification(request):
     data = json.loads(request.body)
@@ -46,7 +47,7 @@ def get_notifications(request, authorid):
                 "created_at": notification.created_at,
                 "type": notification.type,
             }) 
-
+            
     # share/post
     follow_list = Following.objects.filter(authorid=authorid)
     for each in follow_list:
@@ -86,47 +87,15 @@ def handle_inbox(request, authorid):
     if request.method == "GET": # Get all posts from authorid's inbox
 
         user = Author.objects.get(id=authorid)
-        # Author's inbox should contain posts from friends and followed authors
-        items = []
+        all_visible_posts = utility_get_posts(authorid) # Get all public posts
 
-        #if len(request.data) > 0:
-        #following_authors = requests.get(user.url + '/following/') # Get the authors that this user is folowing
-        
-
-
-
-
-
-        following_authors = get_followings(authorid)
-        print("following authors:", following_authors)
-        for author_ob in (following_authors):
-            following_posts = Post.objects.filter(author = author_ob, visibility = "PUBLIC")
-            items.append(serializers.serialize('json', following_posts))
-
-        
-        #friends = requests.get( user.url + '/friends/') # Get the author's friends
-        friends = get_friends(authorid)
-        print("friends:", friends)
-        for author_ob in (friends):
-             friend_posts = Post.objects.filter(author = author_ob, visibility = "FRIENDS")
-             items.append(serializers.serialize('json', friend_posts))
-
-
-        if items == ['[]']:
-            items = []
-        else:
-            #Reference: https://note.nkmk.me/en/python-dict-list-sort/ Accessed 3/16/2024
-            sorted(items, key=lambda x: x.published) # sort the posts by date
-        
+        # JUST POSTS FOR NOW
         data = {
                 "type": "inbox",
                 "author": user.id,
-                "items": items
+                "items": json.loads(serializers.serialize('json', all_visible_posts))
         }
         return JsonResponse(data)
-
-
-
 
 
     if request.method == "POST": # An author could be sent a relevant post, follow, like, or comment that the inbox must handle.
@@ -217,9 +186,7 @@ def get_friends(authorid):
     data = []
     for friend in friends:
         user = Author.objects.get(id=friend.authorid)
-        data.append({
-            user
-        })
+        data.append(user)
 
     return data
 
@@ -236,3 +203,24 @@ def get_followings(authorid):
         user = Author.objects.get(id=follow.followingid)
         data.append(user)
     return data
+
+def post_like_inbox(request, authorid):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        type = data['type'].lower()
+        send_author = data["author"]
+        object = data["object"]
+        print(object)
+        if type == "like_comment":
+            post_id = object.split("/")[len(object.split("/"))-3]
+        elif type == "like_post":
+            post_id = object.split("/")[len(object.split("/"))-1] 
+        # like only
+        if "like" in type and not Notification.objects.filter(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=post_id).exists():
+            Notification.objects.create(sender_id=send_author["id"], type=type, receiver_id=authorid, post_id=post_id)
+            return JsonResponse({"message": "Like notification created"}, status=201)
+        else:
+            return JsonResponse({"message": "Like notification already exists"}, status=200)
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+        
