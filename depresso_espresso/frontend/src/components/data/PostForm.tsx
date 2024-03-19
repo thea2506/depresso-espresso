@@ -163,11 +163,14 @@ const PostForm = ({
       }
 
       // create notification
-      if (url == "/new_post/" && visibility.toLowerCase() != "private")
+      if (
+        url == `/espresso-api/authors/${author.id}/posts/` &&
+        visibility.toLowerCase() != "private"
+      )
         await axios.post("/create_notification", {
           type: "post",
           sender_id: author.id,
-          post_id: response.data.id,
+          post_id: response.data.postid,
         });
 
       openPost("refresh");

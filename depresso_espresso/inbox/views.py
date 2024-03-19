@@ -48,6 +48,8 @@ def get_notifications(request, authorid):
                 "type": notification.type,
             }) 
 
+    print("DTAA")
+    print(data)
     # share/post
     follow_list = Following.objects.filter(authorid=authorid)
     for each in follow_list:

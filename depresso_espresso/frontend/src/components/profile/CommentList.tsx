@@ -65,7 +65,7 @@ const CommentList = ({
     const fetchComments = async () => {
       try {
         const response = await axios.post(
-          `/authors/${post.author.pk}/posts/${post.id}/comments`
+          `/authors/${post.author.id}/posts/${post.id}/comments`
         );
         if (response.status === 200 && response.data.length > 0) {
           if (response.data.length > 0) {
@@ -98,7 +98,7 @@ const CommentList = ({
 
     fetchProfile();
     fetchComments();
-  }, [post.author.pk, post.id, refresh]);
+  }, [post.author.id, post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
@@ -106,12 +106,13 @@ const CommentList = ({
       formField.append("comment", comment);
       formField.append("postid", post.id);
 
+      console.log("post", post);
       const response = await axios.post("/make_comment", formField);
 
       await axios.post("/create_notification", {
         type: "comment",
         sender_id: curUser!.id,
-        receiver_id: post.author.pk,
+        receiver_id: post.author.id,
         post_id: post.id,
       });
 

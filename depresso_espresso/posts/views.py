@@ -169,7 +169,7 @@ def get_all_posts(request):
 def get_post_comments(request, authorid, postid):
     '''Get all comments on a post'''
     post = Post.objects.get(pk=postid)
-    comments = Comment.objects.filter(postid=post)
+    comments = Comment.objects.filter(postid=post).order_by('-publishdate')
 
     merged_data = []
     for comment in comments:
@@ -433,13 +433,10 @@ def api_posts(request, authorid):
 
     # sort posts by authentication as author, friend of author, or public
     if user and str(user.id) == str(authorid):
-      print("user is author")
       posts = utility_get_posts(authorid, "author")
     elif user and user.id != authorid and Following.objects.filter(authorid=user.id, followingid=authorid, areFriends=True).exists():
-      print("user is friend")
       posts = utility_get_posts(authorid, "friend")
     else:
-      print("user is public")
       posts = utility_get_posts(authorid, "public")
 
     # params
@@ -523,17 +520,17 @@ def api_posts(request, authorid):
         
           form.save(commit = True)
           post.save()
-        return JsonResponse({"message": "Post created", "success": True}, status=201)
+        return JsonResponse({"message": "Post created", "success": True, "postid" : post.id}, status=201)
       else:
         return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 def get_author_posts(request, authorid):
-   if Author.objects.filter(id=authorid).exists():
+  if Author.objects.filter(id=authorid).exists():
     author = Author.objects.get(id=authorid)
-    posts = Post.objects.filter(author=author)
-    
+    posts = Post.objects.filter(author=author).order_by('-published')
+  
     result = []
     for post in posts:
       result.append({
@@ -565,4 +562,4 @@ def get_author_posts(request, authorid):
 
 
 def api_get_image(request, authorid, postid):
-   pass
+  pass
