@@ -168,35 +168,83 @@ def get_all_posts(request):
   return HttpResponse(results, content_type='application/json')
 
 def get_post_comments(request, authorid, postid):
-    '''Get all comments on a post'''
-    post = Post.objects.get(pk=postid)
-    comments = Comment.objects.filter(postid=post).order_by('-publishdate')
+    if request.method == 'GET':
+      if not Author.objects.filter(id=authorid).exists():
+          return JsonResponse({"message": "Author not found", "success": False}, status=404)
+      if not Post.objects.filter(id=postid).exists():
+          return JsonResponse({"message": "Post not found", "success": False}, status=404)
+      
+      post = Post.objects.get(pk=postid)
+      comments = Comment.objects.filter(postid=post).order_by('-publishdate')
 
-    merged_data = []
-    for comment in comments:
-        author = Author.objects.get(pk=comment.author.id)
-        author_data = {
-            "username": author.username,
-            "type": author.type,
-            "id": str(author.id),
-            "url": author.url,
-            "host": author.host,
-            "displayName": author.displayName,
-            "github": author.github,
-            "profileImage": author.profileImage
-        }
-        comment_data = {
-            "author": author_data,
+      # Pagination
+      page = request.GET.get('page')
+      size = request.GET.get('size')
+      if page and size:
+          page = int(page)
+          size = int(size)
+          start_index = size * (page - 1)
+          end_index = size * page
+
+          if end_index > len(comments):
+              end_index = len(comments)
+          if start_index < 0:
+              start_index = 0
+          
+          if start_index > len(comments) or end_index < 0:
+              comments = []
+          else:
+              comments = comments[start_index : end_index]
+
+      merged_data = []
+      for comment in comments:
+          author = Author.objects.get(id=comment.author.id)
+          comment_data = {
+            "type": "comment",
+            "author": {
+              "type": author.type,
+              "id": str(author.id),
+              "url": author.url,
+              "host": author.host,
+              "displayName": author.displayName,
+              "github": author.github,
+              "profileImage": author.profileImage
+            },
             "comment": comment.comment,
             "contentType": comment.contenttype,
             "published": comment.publishdate.isoformat(),
             "id": str(comment.id)
-        }
-        merged_data.append(comment_data)
-
-    data = json.dumps(merged_data, indent=4)
-
-    return HttpResponse(data, content_type='application/json')
+          }
+          merged_data.append(comment_data)
+          
+      result = {
+          "type": "comments",
+          "page": page,
+          "size": size,
+          "post": post.id,
+          "id": post.comments,
+          "comments": merged_data
+      }
+      return JsonResponse(result, status=200, safe=False)
+    elif request.method == 'POST':
+      form = CommentView(request.POST)
+      if form.is_valid():
+        comment = form.save(commit=False)
+        comment.comment = form.cleaned_data["comment"]
+        comment.author = request.user
+        naive_datetime = datetime.datetime.now()
+        comment.publishdate = make_aware(naive_datetime)
+        postid = form.cleaned_data.get("postid")
+        post = Post.objects.get(pk=postid.id)
+        comment.postid = post
+        comment.visibility = post.visibility
+        post.count = F('count') + 1
+        post.save()
+        form.save(commit = True)
+        comment.save()
+        return JsonResponse({"message": "Comment created", "success": True}, status=201)
+      else:
+        return JsonResponse({"message": "Comment not created", "success": False}, status=400)
 
 def get_post_comment(request, authorid, postid, commentid):
     '''Get a single comment on a post'''

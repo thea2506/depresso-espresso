@@ -36,6 +36,9 @@ urlpatterns = [
 
     # 3. GET //service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
     path('espresso-api/authors/<str:authorid>/posts/<str:postid>/image', views.api_get_image, name ='api_get_image'),
+
+    # 4. GET //service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
+    path('espresso-api/authors/<str:authorid>/posts/<str:postid>/comments', views.get_post_comments, name ='api_get_comments'),
 ]
 
 

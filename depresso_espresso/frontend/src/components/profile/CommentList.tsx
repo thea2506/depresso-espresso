@@ -64,30 +64,25 @@ const CommentList = ({
 
     const fetchComments = async () => {
       try {
-        const response = await axios.post(
-          `/authors/${post.author.id}/posts/${post.id}/comments`
+        const response = await axios.get(
+          `espresso-api/authors/${post.author.id}/posts/${post.id}/comments`
         );
-        if (response.status === 200 && response.data.length > 0) {
-          if (response.data.length > 0) {
-            const commentModels = response.data.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (rawcomment: any) => {
-                return {
-                  type: "comment",
-                  author: rawcomment.author,
-                  comment: rawcomment.comment,
-                  contenttype: rawcomment.contenttype,
-                  published: rawcomment.published,
-                  likecount: rawcomment.likecount,
-                  id: rawcomment.id,
-                };
-              }
-            );
-            setComments(commentModels);
-          } else {
-            console.log("No comments found");
-            setComments([]);
-          }
+        if (response.status === 200) {
+          const comment_list = response.data.comments;
+          const commentModels = comment_list.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (rawcomment: any) => {
+              return {
+                type: rawcomment.type,
+                author: rawcomment.author,
+                comment: rawcomment.comment,
+                contenttype: rawcomment.contenttype,
+                published: rawcomment.published,
+                id: rawcomment.id,
+              };
+            }
+          );
+          setComments(commentModels);
         } else {
           console.error("Failed to fetch comments");
         }
@@ -105,8 +100,6 @@ const CommentList = ({
       const formField = new FormData();
       formField.append("comment", comment);
       formField.append("postid", post.id);
-
-      console.log("post", post);
       const response = await axios.post("/make_comment", formField);
 
       await axios.post("/create_notification", {
