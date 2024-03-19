@@ -181,12 +181,20 @@ def get_followers(request, authorid):
           node = checkBasic(request)
           if not node:
              return JsonResponse({"message:" "External Auth Failed"}, status=401)
-          
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)      
     followers = Following.objects.filter(followingid=authorid)
+    paginator = Paginator(followers, int(size))
+    try:
+       followers_page = paginator.page(page)
+    except PageNotAnInteger:
+        followers_page = paginator.page(1)
+    except EmptyPage:
+        followers_page = paginator.page(paginator.num_pages)
     items = []
     data = {}
 
-    for follower in followers:
+    for follower in followers_page:
       user = Author.objects.get(id=follower.authorid)
       items.append({
         "type": user.type,
