@@ -11,6 +11,7 @@ urlpatterns = [
     path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>/like_comment", views.like_comment, name="like_comment"),
 
     # Getting stuff
+    path("authors/<str:authorid>/posts", views.get_author_posts, name="get_author_posts"),
     path("authors/<str:authorid>/liked", views.get_author_liked, name="get_author_liked"),
     path("authors/<str:authorid>/posts/<str:postid>", views.frontend_explorer, name="post_frontend"),
     
@@ -32,6 +33,9 @@ urlpatterns = [
 
     # 2. GET/POST //service/authors/{AUTHOR_ID}/posts - parameter: page, size
     path('espresso-api/authors/<str:authorid>/posts/', views.api_posts, name ='api_get_posts'),
+
+    # 3. GET //service/authors/{AUTHOR_ID}/posts/{POST_ID}/image
+    path('espresso-api/authors/<str:authorid>/posts/<str:postid>/image', views.api_get_image, name ='api_get_image'),
 ]
 
 

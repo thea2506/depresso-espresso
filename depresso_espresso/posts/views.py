@@ -147,7 +147,6 @@ def utility_get_posts(authorid, mode):
   sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
   return sorted_items
 
-
 @api_view(['GET'])
 def get_all_posts(request):
   "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
@@ -529,3 +528,41 @@ def api_posts(request, authorid):
         return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
   else:
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+def get_author_posts(request, authorid):
+   if Author.objects.filter(id=authorid).exists():
+    author = Author.objects.get(id=authorid)
+    posts = Post.objects.filter(author=author)
+    
+    result = []
+    for post in posts:
+      result.append({
+        "type": "post",
+        "title": post.title,
+        "id": post.id,
+        "source": post.source,
+        "origin": post.origin,
+        "description": post.description,
+        "contentType": post.contentType,
+        "content": post.content,
+        "author": {
+          "type": "author",
+          "id": post.author.id,
+          "host": post.author.host,
+          "displayName": post.author.displayName,
+          "url": post.author.url,
+          "github": post.author.github,
+          "profileImage": post.author.profileImage
+        },
+        "count": post.count,
+        "comments": post.comments,
+        "published": post.published,
+        "visibility": post.visibility,
+        "likecount": post.likecount,
+        "sharecount": post.sharecount,
+      })
+    return JsonResponse(result, status=200, safe=False)
+
+
+def api_get_image(request, authorid, postid):
+   pass

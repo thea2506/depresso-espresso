@@ -76,9 +76,7 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get(
-          `espresso-api/authors/${authorId}/posts/`
-        );
+        const response = await axios.get(`/authors/${authorId}/posts`);
         const posts = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = posts.map((rawpost: any) => {
