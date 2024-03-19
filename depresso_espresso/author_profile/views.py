@@ -63,7 +63,7 @@ def get_authors(request):
     ''' LOCAL and REMOTE
         Handles getting all LOCAL authors on our server with and without an optional search parameter
         GET ://service/authors/ or GET ://service/authors?page=10&size=5'''
-
+    user = None
     if request.session.session_key is not None:
 
         session = Session.objects.get(session_key=request.session.session_key)
@@ -74,7 +74,7 @@ def get_authors(request):
 
     if request.method == "GET":
 
-        if user.is_authenticated == False:
+        if user == None:
             # This part of the function is meant to be used by remote servers only
             # handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
             print("NOOOOOOOOOOOOOOOOOOOOOOOOOODDDEEEEEEEEE")
