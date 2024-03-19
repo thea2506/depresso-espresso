@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from authentication.serializer import AuthorSerializer
 from posts.models import Comment, LikeComment, LikePost, Post
-from authentication.models import Author, Following, FollowRequest, Node
+from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
 from django.core import serializers
@@ -12,6 +12,8 @@ import json
 import urllib.request
 from urllib.parse import unquote
 from django.db.models import Q
+from authentication.serializer import *
+from inbox.models import Notification, NotificationItem
 
 
 @api_view(["GET", "PUT"])
@@ -151,38 +153,6 @@ def get_authors(request):
         return HttpResponse(res, content_type="application/json")
 
 
-@api_view(['GET'])
-def get_followers(request, authorid):
-    ''' LOCAL and REMOTE   
-        GET ://service/authors/{AUTHOR_ID}/followers: Get all followers of an author'''
-    if request.method == "GET":
-        if not Author.objects.filter(id=authorid).exists():
-            return JsonResponse({"message": "Author not found"}, status=404)
-
-        followers = Following.objects.filter(followingid=authorid)
-        items = []
-        data = {}
-
-        for follower in followers:
-            user = Author.objects.get(id=follower.authorid)
-            items.append({
-                "type": user.type,
-                "id": user.id,
-                "url": user.url,
-                "host": user.host,
-                "displayName": user.displayName,
-                "username": user.username,
-                "github": user.github,
-                "profileImage": user.profileImage
-            })
-
-            data = {"type": "followers", "items": items}
-
-        return JsonResponse(data, safe=False)
-    else:
-        return JsonResponse({"message": "Method not allowed"}, status=405)
-
-
 @api_view(['GET', 'DELETE', 'PUT'])
 def handle_follow(request, authorid, foreignid):
     ''' LOCAL AND REMOTE GET ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
@@ -297,28 +267,85 @@ def handle_follow(request, authorid, foreignid):
             return JsonResponse({"message": message, "success": True})
 
 
-@api_view(['POST'])
-def create_follow_request(request, foreignid):
+@api_view(['GET', 'DELETE', 'PUT'])
+def api_add_follower(request, authorid, foreignid):
     '''LOCAL + REMOTE'''
+    if not Author.objects.filter(id=authorid).exists():
+        return JsonResponse({"message": "Author not found"}, status=404)
+    user = None
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            user = Author.objects.get(id=uid)
 
-    if request.method == 'POST':
-        author = request.data["actor"]
-        foreign_author = request.data["object"]
+    if request.method == 'PUT':
+        foreign_author = request.data["actor"]
+        # author = request.data["object"]
+        if user.is_authenticated == False:
+            return JsonResponse({"message": "User not authenticated"}, status=401)
+        if str(user.id) != authorid:
+            return JsonResponse({"message": "User not authorized"}, status=401)
+        decision = request.data["decision"]
+        if not (decision == "decline"):
+            Follower.objects.create(author=Author.objects.get(
+                id=authorid), follower_author=foreign_author)
 
-        # follow logic
-        if Following.objects.filter(authorid=author["id"], followingid=foreignid).exists():
-            message = "You are already following this author"
-            return JsonResponse({"message": message, "success": False}, status=405)
+        notification_object = Notification.objects.get(
+            author=Author.objects.get(id=authorid))
 
-        elif FollowRequest.objects.filter(requester=author["id"], receiver=foreignid).exists():
-            message = author["displayName"], "has already sent a follow request to", foreign_author["displayName"]
-            return JsonResponse({"message": message, "success": False}, status=405)
+        notification_items = NotificationItem.objects.filter(
+            notification=notification_object)
 
-        elif not FollowRequest.objects.filter(requester=author["id"], receiver=foreignid).exists():
-            FollowRequest.objects.create(
-                requester=author["id"], receiver=foreignid)
-            message = author["displayName"], "has successfully sent a follow request to", foreign_author["displayName"]
-            return JsonResponse({"message": message, "success": True})
+        for item in notification_items:
+            if str(item.content_type) == "Authentication | follow" and str(item.content_object.object.id) == authorid:
+                item.delete()
+                break
+
+        follow_object = Follow.objects.filter(
+            object=Author.objects.get(id=authorid))
+        for follow in follow_object:
+            id_url = follow.actor["id"]
+            id_segment = id_url.split("/")
+            id = id_segment[len(id_segment) - 1]
+            if str(id) == foreignid:
+                follow.delete()
+                break
+        return JsonResponse({"success": True, "decision": decision}, status=201)
+    elif request.method == 'GET':
+        author_object = Author.objects.get(id=authorid)
+        followers = Follower.objects.filter(author=author_object)
+        for follower in followers:
+            follower_object = follower.follower_author
+            id_url = follower_object["id"]
+            id_segment = id_url.split("/")
+            if id_segment[len(id_segment) - 1] == foreignid:
+                return JsonResponse({
+                    "type": "Follow",
+                    "summary": follower.follower_author["displayName"] + f" is following {author_object.displayName}",
+                    "actor": follower.follower_author,
+                    "object": AuthorSerializer(instance=author_object, context={
+                        "request": request}).data}, status=200)
+        if Follow.objects.filter(object=author_object).exists():
+            follow_object = Follow.objects.filter(object=author_object)
+            for follow in follow_object:
+                if follow.actor["id"] == foreignid:
+                    return JsonResponse({"status": "pending"}, status=404)
+            return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
+
+        return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
+    elif request.method == 'DELETE':
+        author_object = Author.objects.get(id=authorid)
+        followers = Follower.objects.filter(author=author_object)
+        for follower in followers:
+            follower_object = follower.follower_author
+            id_url = follower_object["id"]
+            id_segment = id_url.split("/")
+            if id_segment[len(id_segment) - 1] == foreignid:
+                follower.delete()
+                return JsonResponse({"message": "Follower removed successfully", "success": True}, status=200)
+        return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
 
 
 @api_view(['PUT'])
@@ -538,28 +565,16 @@ def api_get_authors(request):
 
 @api_view(['GET'])
 def api_get_followers(request, authorid):
-    data = {"type": "followers"}
-    follower_list = []
+    data = {"type": "followers", "items": []}
 
     if request.method == "GET":
         if not Author.objects.filter(id=authorid).exists():
             return JsonResponse({"message": "Author not found"}, status=404)
-
-        followers = Following.objects.filter(followingid=authorid)
-
+        author_object = Author.objects.get(id=authorid)
+        followers = Follower.objects.filter(author=author_object)
         for follower in followers:
-            author = Author.objects.get(id=follower.authorid)
-            follower_list.append({
-                "type": author.type,
-                "id": author.id,
-                "url": author.url,
-                "host": author.host,
-                "displayName": author.displayName,
-                "github": author.github,
-                "profileImage": author.profileImage
-            })
-        data["items"] = follower_list
-        return JsonResponse(data)
+            data["items"].append(follower.follower_author)
+        return JsonResponse(data, status=200)
     else:
         return JsonResponse({"message": "Method not allowed"}, status=405)
 

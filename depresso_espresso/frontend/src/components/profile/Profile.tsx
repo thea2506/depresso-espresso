@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#region Imports
 import { Button } from "../Button";
 import Popup from "reactjs-popup";
@@ -103,21 +104,25 @@ const Profile = ({
 
     const getFollowStatus = async () => {
       try {
-        const response = await axios.get("/check_follow_status/", {
-          params: { id: id },
-        });
-
-        if (response.data.success === true) {
-          setStatus(response.data.status);
+        const real_id = id?.split("/").pop();
+        const response = await axios.get(
+          `/espresso-api/authors/${real_id}/followers/${curUser?.id}`
+        );
+        if (response.status === 200) {
+          setStatus("followed");
+        } else {
+          setStatus("stranger");
         }
-      } catch (error) {
-        console.error("Failed to fetch follow status in ProfilePage", error);
+      } catch (error: any) {
+        if (error.response.data.status === "pending") {
+          setStatus("pending");
+        } else setStatus("stranger");
       }
     };
     getCurrentUser();
     getOtherUser();
     getFollowStatus();
-  }, [id]);
+  }, [curUser?.id, id, loading]);
 
   /**
    * Checks if the given URL is a valid URL.
@@ -202,7 +207,7 @@ const Profile = ({
     try {
       const real_id = id?.split("/").pop();
       const response = await axios.post(
-        `/espresso-api/authors/${real_id}/inbox/`,
+        `/espresso-api/authors/${real_id}/inbox`,
         {
           type: "Follow",
           summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
@@ -210,9 +215,10 @@ const Profile = ({
           object: otherUser,
         }
       );
-      if (response.data.success === true) {
+      if (response.status === 200) {
         setStatus("pending");
       }
+      setLoading(!loading);
     } catch (error) {
       toast.error("Failed to send follow request", myToast);
     }
@@ -223,17 +229,24 @@ const Profile = ({
    */
   const handleUnffollowRequest = async () => {
     try {
+      const real_id = id?.split("/").pop();
       const response = await axios.delete(
-        `/authors/${curUser?.id}/followers/${id}`
+        `/espresso-api/authors/${real_id}/followers/${curUser?.id}`
       );
+      if (response.data.success) {
+        console.log(response.data.message);
+      }
       if (response.data.success === true) {
         setStatus("stranger");
       }
+      setLoading(!loading);
     } catch (error) {
       toast.error("Failed to unfollow", myToast);
     }
   };
   //#endregion
+
+  console.log("status", status);
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
       <ToastContainer />

@@ -9,6 +9,7 @@ import { useNavigate } from "react-router";
 
 //#region interface
 interface NotificationProps {
+  curUser: any;
   author: any;
   authorid: string;
   authorpostid?: string;
@@ -35,6 +36,7 @@ interface NotificationProps {
  * @returns {JSX.Element} The rendered notification component.
  */
 const Notification = ({
+  curUser,
   author,
   authorid,
   authorpostid,
@@ -67,15 +69,17 @@ const Notification = ({
 
   //#region functions
   const handleAccept = async () => {
-    const formField = new FormData();
-    formField.append("id", authorid);
-    formField.append("decision", "accept");
-
-    const data = { id: authorid, decision: "accept" };
+    const data = {
+      actor: author,
+      object: curUser,
+      type: "Follow",
+      summary: `${author.displayName} wants to follow ${curUser.displayName}`,
+      decision: "accept",
+    };
 
     try {
       const response = await axios.put(
-        `/authors/respond_to_follow_request/from/${authorid}`,
+        `/espresso-api/authors/${curUser.id}/followers/${authorid}`,
         data
       );
       if (response.data.success) {
@@ -88,15 +92,17 @@ const Notification = ({
   };
 
   const handleDecline = async () => {
-    const formField = new FormData();
-    formField.append("id", authorid);
-    formField.append("decision", "decline");
-
-    const data = { id: authorid, decision: "decline" };
+    const data = {
+      actor: author,
+      object: curUser,
+      type: "Follow",
+      summary: `${author.displayName} wants to follow ${curUser.displayName}`,
+      decision: "decline",
+    };
 
     try {
       const response = await axios.put(
-        "/respond_to_follow_request/from/" + authorid,
+        `/espresso-api/authors/${curUser.id}/followers/${authorid}`,
         data
       );
       if (response.data.success) {
