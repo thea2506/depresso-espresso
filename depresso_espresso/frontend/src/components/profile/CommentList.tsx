@@ -123,12 +123,12 @@ const CommentList = ({
         }
       );
 
-      await axios.post("/create_notification", {
-        type: "comment",
-        sender_id: curUser!.id,
-        receiver_id: real_authorid,
-        post_id: real_postid,
-      });
+      // await axios.post("/create_notification", {
+      //   type: "comment",
+      //   sender_id: curUser!.id,
+      //   receiver_id: real_authorid,
+      //   post_id: real_postid,
+      // });
 
       if (response.data.success) {
         console.log("Comment creation successful");

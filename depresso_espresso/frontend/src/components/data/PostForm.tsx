@@ -165,15 +165,15 @@ const PostForm = ({
       }
 
       // create notification
-      if (
-        url == `/espresso-api/authors/${real_authorid}/posts/` &&
-        visibility.toLowerCase() != "private"
-      )
-        await axios.post("/create_notification", {
-          type: "post",
-          sender_id: real_authorid,
-          post_id: response.data.postid.split("/").pop()!,
-        });
+      // if (
+      //   url == `/espresso-api/authors/${real_authorid}/posts/` &&
+      //   visibility.toLowerCase() != "private"
+      // )
+      //   await axios.post("/create_notification", {
+      //     type: "post",
+      //     sender_id: real_authorid,
+      //     object_id: response.data.postid.split("/").pop()!,
+      //   });
 
       openPost("refresh");
       closePopup && closePopup();

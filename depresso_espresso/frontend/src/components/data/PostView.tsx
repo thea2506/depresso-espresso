@@ -216,7 +216,7 @@ const PostView = ({
           <UserDisplay
             displayName={post.author.displayName}
             user_img_url={post.author.profileImage}
-            link={`/authors/${post.author.id}`}
+            link={`/authors/${post.author.id.split("/").pop()}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
