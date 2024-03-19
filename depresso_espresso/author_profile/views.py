@@ -15,10 +15,10 @@ from django.db.models import Q
 
 
 @api_view(["GET", "PUT"])
-def author_profile(request, authorid):
+def api_author(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
         LOCAL PUT ://service/authors/{AUTHOR_ID}: Updates the profile information for authorid'''
-
+    user = None
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
@@ -26,7 +26,7 @@ def author_profile(request, authorid):
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
 
-       # Update user profile information
+    # Update user profile information
     if request.method == "PUT":
         if user.is_authenticated == True:
             author = get_object_or_404(Author, pk=authorid)
