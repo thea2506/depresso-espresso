@@ -117,7 +117,7 @@ def get_authors(request):
                 authors = requests.get(
                     baseUrl + '/authors/', auth=(username, password))
 
-                for author in authors["items"]:
+                for author in authors:
 
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
