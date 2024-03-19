@@ -8,6 +8,7 @@ from django.core import serializers
 import requests
 from django.contrib.sessions.models import Session
 import json
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 @api_view(["GET","PUT"])
@@ -137,6 +138,8 @@ def get_authors(request):
               new_author.isExternalAuthor = True
 
       search_terms = request.GET.get('search')
+      page = request.GET.get('page')
+      size = request.GET.get('size')
       
 
       # Get authors on our db
@@ -146,9 +149,18 @@ def get_authors(request):
 
       else:
         authors = Author.objects.all()
+      paginator = Paginator(authors, size)
+
+      try:
+         authors_page = paginator.page(page)
+      except PageNotAnInteger:
+          authors_page = paginator.page(1)
+      except EmptyPage:
+          authors_page = paginator.page(paginator.num_pages)
       
       items = []
-      for author in authors:
+
+      for author in authors_page:
         items.append(author)
 
     res = serializers.serialize("json", items, fields=["profileImage", "username", "github", "displayName", "url"])
