@@ -78,9 +78,9 @@ def get_authors(request):
             # This part of the function is meant to be used by remote servers only
             # handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
             print("NOOOOOOOOOOOOOOOOOOOOOOOOOODDDEEEEEEEEE")
-            node = checkBasic(request)
-            if not node:
-                return JsonResponse({"message:" "External Auth Failed"}, status=401)
+            # node = checkBasic(request)
+            # if not node:
+            #     return JsonResponse({"message:" "External Auth Failed"}, status=401)
 
             # Only send the external server our locally created authors
             authors = Author.objects.filter(isExternalAuthor=False)
