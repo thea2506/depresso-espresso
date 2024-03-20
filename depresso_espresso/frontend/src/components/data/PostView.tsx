@@ -92,29 +92,31 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    const real_postid = post.id.split("/").pop();
     const real_authorid = post.author.id.split("/").pop();
-    const like_response = await axios.post(
-      `/authors/${real_authorid}/posts/${real_postid}/like_post`
-    );
-
-    if (!like_response.data.already_liked) {
-      await axios.post(`/espresso-api/authors/${real_authorid}/inbox/`, {
-        summary: `${curUser.displayName} liked your post`,
-        type: "like_post",
-        object: post.origin,
-        author: {
-          type: "author",
-          id: curUser.id,
-          host: curUser.host,
-          displayName: curUser.displayName,
-          url: curUser.url,
-          github: curUser.github,
-          profileImage: curUser.profileImage,
-        },
-      });
+    try {
+      const response = await axios.post(
+        `/espresso-api/authors/${real_authorid}/inbox/`,
+        {
+          summary: `${curUser.displayName} liked your post`,
+          type: "like_post",
+          object: post.id,
+          author: {
+            type: "author",
+            id: curUser.id,
+            host: curUser.host,
+            displayName: curUser.displayName,
+            url: curUser.url,
+            github: curUser.github,
+            profileImage: curUser.profileImage,
+          },
+        }
+      );
+      if (response.status === 201) {
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
     }
-    setRefresh(!refresh);
   };
 
   const handleDelete = async () => {
@@ -197,7 +199,7 @@ const PostView = ({
             oldContent={post.content}
             oldImageFile={post.content}
             oldVisibility={post.visibility}
-            oldContentType={post.contenttype}
+            oldContentType={post.contentType}
             postId={post.id}
             edit={true}
             refresh={refresh}
@@ -243,15 +245,15 @@ const PostView = ({
 
         <div className="flex flex-col gap-y-2 text-start">
           <p className="font-semibold text-primary">Content</p>
-          {post.contenttype === "text/markdown" && (
+          {post.contentType === "text/markdown" && (
             <Markdown className="p-4 bg-white text-start rounded-xl">
               {mdContent}
             </Markdown>
           )}
-          {post.contenttype === "text/plain" && (
+          {post.contentType === "text/plain" && (
             <p className="p-4 bg-white text-start rounded-xl">{post.content}</p>
           )}
-          {post.contenttype?.includes("image") && (
+          {post.contentType?.includes("image") && (
             <img
               src={post.content}
               alt="post"
@@ -277,18 +279,17 @@ const PostView = ({
             </div>
           ))}
 
-          {curUser.id === post.author.id && (
-            <GoPencil
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={() => setOpen(true)}
-            />
-          )}
-
-          {curUser.id === post.author.id && (
-            <GoTrash
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={handleDelete}
-            />
+          {curUser.id === post.author.id.split("/").pop() && (
+            <>
+              <GoPencil
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={() => setOpen(true)}
+              />
+              <GoTrash
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={handleDelete}
+              />
+            </>
           )}
         </div>
       </div>

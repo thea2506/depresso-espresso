@@ -20,6 +20,8 @@ from urllib.parse import unquote
 import base64
 from posts.serializers import PostSerializer, CommentSerializer
 from django.core import serializers as django_serializers
+from authentication.models import *
+from authentication.serializer import *
 
 
 class PostView(forms.ModelForm):
@@ -128,34 +130,30 @@ def handle_author_post(request, authorid, postid):
             return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
 
-def utility_get_posts(authorid, mode):
+def utility_get_posts(author_id, mode):
     '''Get all visible posts for an author'''
     items = []
 
-    # Get all PUBLIC posts
-    public_posts = Post.objects.filter(
-        visibility="PUBLIC").order_by('-published')
-    items = chain(items, public_posts)
-
+    author_object = Author.objects.get(id=author_id)
+    print("MODE", mode)
     # Author
     if mode == "author":
-        friends = Following.objects.filter(authorid=authorid, areFriends=True)
-        for friend in friends:
-            friend_data = Author.objects.get(id=friend.followingid)
-            friends_posts = Post.objects.filter(
-                author=friend_data, visibility="FRIENDS").order_by('-published')
-            items = chain(items, friends_posts)
+        # All of my post
         items = chain(items, Post.objects.filter(
-            author=authorid, visibility="FRIENDS").order_by('-published'))
-        items = chain(items, Post.objects.filter(
-            author=authorid, visibility="UNLISTED").order_by('-published'))
+            author=author_object).order_by('-published'))
 
-    # Friend of author
-    elif mode == "friend":
+    # Friend of author, author_object now is a friend, not the user
+    else:
+        if mode == "friend":
+            # Get their public posts
+            items = chain(items, Post.objects.filter(
+                author=author_object, visibility="FRIENDS").order_by('-published'))
+
         items = chain(items, Post.objects.filter(
-            author=authorid, visibility="FRIENDS").order_by('-published'))
+            author=author_object, visibility="PUBLIC").order_by('-published'))
 
     sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
+    print("ST", items, sorted_items)
     return sorted_items
 
 
@@ -491,7 +489,8 @@ def get_author_liked(request, authorid):
 
 
 def api_posts(request, authorid):
-    print(request.META.get("HTTP_REFERER"))
+    if not Author.objects.filter(id=authorid).exists():
+        return JsonResponse({"message": "Author not found", "success": False}, status=404)
     if request.method == 'GET':
         user = None
         if request.session.session_key is not None:
@@ -502,15 +501,22 @@ def api_posts(request, authorid):
                 uid = session_data.get('_auth_user_id')
                 if Author.objects.filter(id=uid).exists():
                     user = Author.objects.get(id=uid)
-        if user:
-            print(user.displayName)
+
         # sort posts by authentication as author, friend of author, or public
         if user and str(user.id) == str(authorid):
             posts = utility_get_posts(authorid, "author")
-        elif user and user.id != authorid and Following.objects.filter(authorid=user.id, followingid=authorid, areFriends=True).exists():
-            posts = utility_get_posts(authorid, "friend")
-        else:
-            posts = utility_get_posts(authorid, "public")
+        elif user and user.id != authorid:
+            author_object = Author.objects.get(id=authorid)
+            author_json = AuthorSerializer(
+                instance=author_object, context={"request": request}
+            ).data
+            user_json = AuthorSerializer(
+                instance=user, context={"request": request}
+            ).data
+            if Follower.objects.filter(author=user, follower_author=author_json).exists() and Follower.objects.filter(author=author_object, follower_author=user_json).exists():
+                posts = utility_get_posts(authorid, "friend")
+            else:
+                posts = utility_get_posts(authorid, "public")
 
         # params
         page = request.GET.get('page')

@@ -287,7 +287,9 @@ def api_add_follower(request, authorid, foreignid):
             return JsonResponse({"message": "User not authenticated"}, status=401)
         if str(user.id) != authorid:
             return JsonResponse({"message": "User not authorized"}, status=401)
+
         decision = request.data["decision"]
+
         if not (decision == "decline"):
             Follower.objects.create(author=Author.objects.get(
                 id=authorid), follower_author=foreign_author)
@@ -306,26 +308,31 @@ def api_add_follower(request, authorid, foreignid):
         follow_object = Follow.objects.filter(
             object=Author.objects.get(id=authorid))
         for follow in follow_object:
-            if str(follow.actor["id"]) == foreignid:
+            if str(follow.actor["id"]) == unquote(foreignid):
                 follow.delete()
                 break
         return JsonResponse({"success": True, "decision": decision}, status=201)
+
     elif request.method == 'GET':
         author_object = Author.objects.get(id=authorid)
         followers = Follower.objects.filter(author=author_object)
+
         for follower in followers:
             follower_object = follower.follower_author
-            if str(follower_object["id"]) == foreignid:
+            if str(follower_object["id"]) == unquote(foreignid):
+
                 return JsonResponse({
                     "type": "Follow",
                     "summary": follower_object["displayName"] + f" is following {author_object.displayName}",
                     "actor": follower_object,
                     "object": AuthorSerializer(instance=author_object, context={
-                        "request": request}).data}, status=200)
+                        "request": request}).data
+                }, status=200)
+
         if Follow.objects.filter(object=author_object).exists():
             follow_object = Follow.objects.filter(object=author_object)
             for follow in follow_object:
-                if follow.actor["id"] == foreignid:
+                if follow.actor["id"] == unquote(foreignid):
                     return JsonResponse({"status": "pending"}, status=404)
             return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
 
@@ -334,7 +341,7 @@ def api_add_follower(request, authorid, foreignid):
         author_object = Author.objects.get(id=authorid)
         followers = Follower.objects.filter(author=author_object)
         for follower in followers:
-            if str(follower_object["id"]) == foreignid:
+            if str(follower_object["id"]) == unquote(foreignid):
                 follower.delete()
                 return JsonResponse({"message": "Follower removed successfully", "success": True}, status=200)
         return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)

@@ -75,43 +75,59 @@ const Profile = ({
 
   const [open, setOpen] = useState<boolean>(false);
   const closeModal = () => setOpen(false);
-  //#endregion
 
+  //#endregion
   //#region Functions
+
   useEffect(() => {
     const getCurrentUser = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success == true) setCurUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch current user in ProfilePage", error);
-      }
+      const response = await axios.get(`/curUser`);
+      if (response.data) setCurUser(response.data);
     };
 
+    getCurrentUser();
+  }, [id]);
+
+  useEffect(() => {
     const getOtherUser = async () => {
-      try {
-        const response = await axios.get(
-          checkUrl(decodeURI(`${id}`))
-            ? decodeURI(`${id}`)
-            : `/espresso-api/authors/${id}`
-        );
-        const data = response.data;
-        setOtherUser(data);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
+      const response = await axios.get(
+        checkUrl(decodeURI(`${id}`))
+          ? decodeURI(`${id}`)
+          : `/espresso-api/authors/${id}`
+      );
+      const data = response.data;
+      setOtherUser(data);
     };
 
     const getFollowStatus = async () => {
       try {
-        const real_id = id?.split("/").pop();
-        const response = await axios.get(
-          `/espresso-api/authors/${real_id}/followers/${curUser?.id}`
+        const actor_object = await axios.get(
+          `/espresso-api/authors/${curUser?.id}`
         );
-        if (response.status === 200) {
-          setStatus("followed");
-        } else {
-          setStatus("stranger");
+        if (actor_object.status === 200) {
+          const my_id = actor_object.data.id.toString();
+          const response = await axios.get(
+            `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
+          );
+          if (response.status === 200) {
+            // further check if they are friends
+
+            // sent a request to "my_id" to check for followers of "id"
+
+            const response2 = await axios.get(
+              `${my_id}/followers/${encodeURIComponent(
+                encodeURIComponent(id!)
+              )}`
+            );
+
+            if (response2.status === 200) {
+              setStatus("friends");
+            } else {
+              setStatus("followed");
+            }
+          } else {
+            setStatus("stranger");
+          }
         }
       } catch (error: any) {
         if (error.response.data.status === "pending") {
@@ -119,10 +135,9 @@ const Profile = ({
         } else setStatus("stranger");
       }
     };
-    getCurrentUser();
     getOtherUser();
-    getFollowStatus();
-  }, [curUser?.id, id, loading]);
+    if (curUser && curUser.id) getFollowStatus();
+  }, [curUser, id, loading]);
 
   /**
    * Checks if the given URL is a valid URL.
@@ -205,16 +220,15 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const real_id = id?.split("/").pop();
-      const response = await axios.post(
-        `/espresso-api/authors/${real_id}/inbox`,
-        {
-          type: "Follow",
-          summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
-          actor: curUser,
-          object: otherUser,
-        }
+      const actor_object = await axios.get(
+        `/espresso-api/authors/${curUser?.id}`
       );
+      const response = await axios.post(`${id}/inbox`, {
+        type: "Follow",
+        summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
+        actor: actor_object.data,
+        object: otherUser,
+      });
       if (response.status === 200) {
         setStatus("pending");
       }
@@ -229,13 +243,10 @@ const Profile = ({
    */
   const handleUnffollowRequest = async () => {
     try {
-      const real_id = id?.split("/").pop();
+      const real_id = id;
       const response = await axios.delete(
-        `/espresso-api/authors/${real_id}/followers/${curUser?.id}`
+        `${real_id}/followers/${curUser?.id}`
       );
-      if (response.data.success) {
-        console.log(response.data.message);
-      }
       if (response.data.success === true) {
         setStatus("stranger");
       }
@@ -246,7 +257,6 @@ const Profile = ({
   };
   //#endregion
 
-  console.log("status", status);
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
       <ToastContainer />
@@ -260,7 +270,7 @@ const Profile = ({
         </div>
 
         {/* Edit button */}
-        {curUser?.id === id ? (
+        {curUser?.id === id?.split("/").pop() ? (
           <Button
             buttonType="icon"
             icon={editIcon}
@@ -270,7 +280,7 @@ const Profile = ({
         ) : null}
 
         {/* Follow button */}
-        {curUser?.id !== id && status === "stranger" ? (
+        {curUser?.id !== id?.split("/").pop() && status === "stranger" ? (
           <Button
             buttonType="icon"
             icon={<GoPlusCircle className="w-8 h-8" />}
@@ -280,7 +290,7 @@ const Profile = ({
         ) : null}
 
         {/* Pending */}
-        {curUser?.id !== id && status === "pending" ? (
+        {curUser?.id !== id?.split("/").pop() && status === "pending" ? (
           <Button
             buttonType="icon"
             icon={<GoClock className="w-8 h-8" />}
@@ -289,7 +299,9 @@ const Profile = ({
         ) : null}
 
         {/* Unfollow button */}
-        {curUser?.id !== id && status !== "stranger" && status !== "pending" ? (
+        {curUser?.id !== id?.split("/").pop() &&
+        status !== "stranger" &&
+        status !== "pending" ? (
           <Button
             buttonType="icon"
             icon={<GoCheckCircle className="w-8 h-8" />}
@@ -355,7 +367,7 @@ const Profile = ({
           <p className="text-xl font-semibold md:text-2xl opacity-95">
             {display_name}
           </p>
-          {status === "friend" && (
+          {status?.toLowerCase() === "friends" && (
             <GoCodeOfConduct className="w-6 h-6 text-primary" />
           )}
         </div>

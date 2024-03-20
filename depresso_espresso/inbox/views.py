@@ -270,15 +270,21 @@ def create_like_notification(request, author_object, data):
 
     # like comment
     if "comments" in object_url:
-        post_id = object_segments[-3]
-        comment_id = object_segments[-1]
+        post_id = object_segments[len(object_segments) - 3]
+        comment_id = object_segments[len(object_segments) - 1]
         comment = Comment.objects.get(id=comment_id)
         post = comment.post
     # like post
     else:
-        post_id = object_segments[-1]
+        post_id = object_segments[len(object_segments) - 1]
         post = Post.objects.get(id=post_id)
         comment = None
+
+    if Like.objects.filter(author_object=data["author"], post_object=post, comment_object=comment).exists():
+        like_object = Like.objects.get(
+            author_object=data["author"], post_object=post, comment_object=comment)
+        like_object.delete()
+        return JsonResponse({"message": "Like notification deleted", "success": True}, status=200)
 
     like_object = Like.objects.create(
         author_object=data["author"], post_object=post, comment_object=comment)
@@ -320,6 +326,7 @@ def create_post_notification(request, author_object, data):
     )
 
     if serializer.is_valid():
+
         notification_object = Notification.objects.get_or_create(
             author=author_object)[0]
         create_notification_item(notification_object, post_object)

@@ -60,12 +60,13 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `/espresso-api/authors/${curUser.id}/followers/${notificationObject.actor.id}`,
+        `/espresso-api/authors/${curUser.id}/followers/${encodeURIComponent(
+          encodeURIComponent(notificationObject.actor.id)
+        )}`,
         data
       );
       if (response.data.success) {
         setRefresh(!refresh);
-        console.log(response.data.message);
       }
     } catch (error) {
       console.error("An error occurred", error);
@@ -83,12 +84,13 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `/espresso-api/authors/${curUser.id}/followers/${notificationObject.actor.id}`,
+        `/espresso-api/authors/${curUser.id}/followers/${encodeURIComponent(
+          encodeURIComponent(notificationObject.actor.id)
+        )}`,
         data
       );
       if (response.data.success) {
         setRefresh(!refresh);
-        console.log(response.data.message);
       }
     } catch (error) {
       console.error("An error occurred", error);
@@ -121,15 +123,7 @@ const Notification = ({
     }
   };
   //#endregion
-  console.log(
-    notificationObject.author
-      ? notificationObject.author.url.substring(
-          notificationObject.author.url.indexOf("espresso-api")
-        )
-      : notificationObject.actor.url.substring(
-          notificationObject.author.url.indexOf("espresso-api")
-        )
-  );
+
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}
@@ -142,7 +136,7 @@ const Notification = ({
                   "espresso-api".length
               )
             : notificationObject.actor.url.substring(
-                notificationObject.author.url.indexOf("espresso-api") +
+                notificationObject.actor.url.indexOf("espresso-api") +
                   "espresso-api".length
               )
         }

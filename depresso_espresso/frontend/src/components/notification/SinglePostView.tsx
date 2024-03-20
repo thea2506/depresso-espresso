@@ -33,7 +33,6 @@ const SinglePostView = () => {
         );
 
         const post = response.data;
-        console.log(post);
 
         const postModel = {
           title: post.title,

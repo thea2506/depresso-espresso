@@ -126,7 +126,6 @@ const CommentList = ({
       );
 
       if (response.data.success) {
-        console.log("I RUN BITCH");
         const comment_object = response.data.comment;
         await axios.post(
           `/espresso-api/authors/${real_authorid}/inbox`,
@@ -144,29 +143,30 @@ const CommentList = ({
   };
 
   const handleLikeComment = async (comment: CommentModel) => {
-    const real_postid = post.id.split("/").pop();
     const real_authorid = post.author.id.split("/").pop();
-    const real_commentid = comment.id.split("/").pop();
-    const like_response = await axios.post(
-      `/authors/${real_authorid}/posts/${real_postid}/comments/${real_commentid}/like_comment`
-    );
-    const real_commentauthorid = comment.author.id.split("/").pop();
-    if (!like_response.data.already_liked) {
-      setRefresh(!refresh);
-      await axios.post(`/espresso-api/authors/${real_commentauthorid}/inbox/`, {
-        summary: `${curUser!.displayName} liked your comment`,
-        type: "like_comment",
-        object: comment.id,
-        author: {
-          type: "author",
-          id: curUser!.id,
-          host: curUser!.host,
-          displayName: curUser!.displayName,
-          url: curUser!.url,
-          github: curUser!.github,
-          profileImage: curUser!.profileImage,
-        },
-      });
+    try {
+      const response = await axios.post(
+        `/espresso-api/authors/${real_authorid}/inbox/`,
+        {
+          summary: `${curUser!.displayName} liked your comment`,
+          type: "Like",
+          object: comment.id,
+          author: {
+            type: "author",
+            id: curUser!.id,
+            host: curUser!.host,
+            displayName: curUser!.displayName,
+            url: curUser!.url,
+            github: curUser!.github,
+            profileImage: curUser!.profileImage,
+          },
+        }
+      );
+      if (response.status == 201) {
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
     }
   };
 

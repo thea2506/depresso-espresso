@@ -73,6 +73,7 @@ const NotiPage = () => {
         </div>
       ))} */}
       {notifications?.map((notification: any, index: number) => {
+        if (!notification) return;
         const type = notification.type.toLowerCase();
         if (type === "follow")
           return (
