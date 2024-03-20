@@ -293,7 +293,21 @@ def create_like_notification(request, author_object, data):
 
 
 def create_comment_notification(request, author_object, data):
-    pass
+    parsed_url = urlparse(data["id"])
+    path_segments = parsed_url.path.split("/")
+    comment_id = path_segments[path_segments.index("comments") + 1]
+    comment_object = Comment.objects.get(id=comment_id)
+    serializer = CommentSerializer(
+        instance=comment_object, data=data, context={"request": request}
+    )
+
+    if serializer.is_valid():
+        notification_object = Notification.objects.get_or_create(
+            Notification, author=author_object)[0]
+        create_notification_item(notification_object, comment_object)
+        return send_notification_serializer_response(notification_object, request)
+    else:
+        return JsonResponse(serializer.errors, status=404)
 
 
 def create_post_notification(request, author_object, data):

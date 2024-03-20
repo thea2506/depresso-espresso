@@ -96,10 +96,29 @@ const Notification = ({
   };
 
   const handleSeeMore = async () => {
-    const real_post_id = notificationObject.id.split("/").pop();
+    const real_post_id = notificationObject.id.split("/");
     const real_author_id = notificationObject.author.id.split("/").pop();
-    console.log(`/authors/${real_author_id}/posts/${real_post_id}`);
-    navigate(`/authors/${real_author_id}/posts/${real_post_id}`);
+
+    switch (type) {
+      case "post":
+        navigate(
+          `/authors/${real_author_id}/posts/${
+            real_post_id[real_post_id.length - 1]
+          }`
+        );
+        break;
+
+      case "comment":
+        navigate(
+          `/authors/${curUser.id}/posts/${
+            real_post_id[real_post_id.length - 3]
+          }`
+        );
+        break;
+
+      default:
+        break;
+    }
   };
   //#endregion
   console.log(
