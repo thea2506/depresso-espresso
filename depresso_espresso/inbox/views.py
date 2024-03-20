@@ -26,8 +26,8 @@ def api_inbox(request, authorid):
 
     # LOCAL + REMOTE
     if request.method == "POST":
-        if not isinstance(user, Author):
-            return JsonResponse({"message": "Local users only"}, status=401)
+        # if not isinstance(user, Author):
+        #     return JsonResponse({"message": "Local users only"}, status=401)
 
         data = json.loads(request.body)
         if "type" not in data:

@@ -296,8 +296,8 @@ def api_add_follower(request, authorid, foreignid):
 
     # LOCAL
     if request.method == 'PUT':
-        # if not isinstance(user, Author) or str(user.id) != str(authorid):
-        #     return JsonResponse({"message": "Local Users Only"}, status=404)
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local Users Only"}, status=404)
 
         foreign_author = request.data["actor"]
         # author = request.data["object"]
