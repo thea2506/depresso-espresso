@@ -15,8 +15,8 @@ class NodeConfigForm(forms.ModelForm):
     """A form for configuring optional node to node connections"""
     class Meta:
         model = Node
-        fields = ('ourUsername', 'ourPassword',
-                  'theirUsername', 'theirPassword', 'baseUrl')
+        fields = ('username', 'password',
+                  'host', 'is_active', 'is_authenticated')
 
 
 class RegisterConfigForm(forms.ModelForm):
@@ -81,8 +81,8 @@ class RegisterConfigAdmin(admin.ModelAdmin):
 
 
 class NodeAdmin(admin.ModelAdmin):
-    fields = ('ourUsername', 'ourPassword',
-              'theirUsername', 'theirPassword', 'baseUrl')
+    fields = ('username', 'password',
+              'host', 'is_active', 'is_authenticated')
 
 
 @admin.register(Following)

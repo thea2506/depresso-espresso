@@ -22,6 +22,7 @@ from posts.serializers import PostSerializer, CommentSerializer
 from django.core import serializers as django_serializers
 from authentication.models import *
 from authentication.serializer import *
+from authentication.checkbasic import my_authenticate
 
 
 class PostView(forms.ModelForm):
@@ -50,38 +51,34 @@ class CommentView(forms.ModelForm):
 
 @api_view(['GET', 'DELETE', 'PUT'])
 def handle_author_post(request, authorid, postid):
+    ''' GET [local, remote] get the public post whose id is POST_ID
+        DELETE [local] remove the post whose id is POST_ID
+        PUT [local] update a post where its id is POST_ID
+    '''
 
-    if request.session.session_key is not None:
-        session = Session.objects.get(session_key=request.session.session_key)
-        if session:
-            session_data = session.get_decoded()
-            uid = session_data.get('_auth_user_id')
-            user = Author.objects.get(id=uid)
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
 
-    # Get the author (LOCAL or REMOTE)
     if Author.objects.filter(id=authorid).exists():
         author = Author.objects.get(id=authorid)
     else:
-        response = urllib.request.urlopen(unquote(authorid))
-        if response != 200:
-            return JsonResponse({"message": "Foreign author not found", "success": False}, status=404)
-        author = json.loads(response.read())
+        return JsonResponse({"message": "Author not found", "success": False}, status=404)
 
+    # LOCAL + REMOTE
     if request.method == 'GET':
-        # LOCAL POST
         if Post.objects.filter(id=postid, author=author).exists():
             post = Post.objects.get(id=postid)
             post = PostSerializer(post, context={"request": request}).data
-
-        # REMOTE POST
         else:
-            response = urllib.request.urlopen(f"{unquote(postid)}")
-            if response != 200:
-                return JsonResponse({"message": "Post not found", "success": False}, status=404)
-            post = json.loads(response.read())
+            return JsonResponse({"message": "Post not found", "success": False}, status=404)
         return JsonResponse(post, status=200)
 
+    # LOCAL
     if request.method == 'DELETE':
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local users only"}, status=401)
+
         if Post.objects.filter(id=postid, author=author).exists():
             post = Post.objects.get(id=postid)
             if user == post.author and user.is_authenticated:
@@ -92,7 +89,11 @@ def handle_author_post(request, authorid, postid):
         else:
             return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
+    # LOCAL
     if request.method == 'PUT':
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local users only"}, status=401)
+
         if Post.objects.filter(id=postid, author=author).exists():
             post = Post.objects.get(id=postid)
             if user == post.author and user.is_authenticated:
@@ -157,14 +158,11 @@ def get_all_posts(request):
 
 
 def api_get_comments(request, authorid, postid):
-    if request.session.session_key is not None:
-        session = Session.objects.get(session_key=request.session.session_key)
-        if session:
-            session_data = session.get_decoded()
-            uid = session_data.get('_auth_user_id')
-            if Author.objects.filter(id=uid).exists():
-                user = Author.objects.get(id=uid)
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
 
+    # LOCAL + REMOTE
     if request.method == 'GET':
         if not Author.objects.filter(id=authorid).exists():
             return JsonResponse({"message": "Author not found", "success": False}, status=404)
@@ -206,7 +204,11 @@ def api_get_comments(request, authorid, postid):
         }
         return JsonResponse(result, status=200, safe=False)
 
+    # LOCAL
     elif request.method == 'POST':
+        if not isinstance(user, Author):
+            return JsonResponse({"message": "Local users only"}, status=401)
+
         if user and user.is_authenticated:
             data = json.loads(request.body)
 
@@ -352,23 +354,19 @@ def frontend_explorer(request, **kwargs):
 
 
 def api_posts(request, authorid):
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
     if not Author.objects.filter(id=authorid).exists():
         return JsonResponse({"message": "Author not found", "success": False}, status=404)
-    if request.method == 'GET':
-        user = None
-        if request.session.session_key is not None:
-            session = Session.objects.get(
-                session_key=request.session.session_key)
-            if session:
-                session_data = session.get_decoded()
-                uid = session_data.get('_auth_user_id')
-                if Author.objects.filter(id=uid).exists():
-                    user = Author.objects.get(id=uid)
 
+    # LOCAL + REMOTE
+    if request.method == 'GET':
         # sort posts by authentication as author, friend of author, or public
-        if user and str(user.id) == str(authorid):
+        if user and str(user.id) == str(authorid) and isinstance(user, Author):
             posts = utility_get_posts(authorid, "author")
-        elif user and user.id != authorid:
+        elif user and user.id != authorid and isinstance(user, Author):
             author_object = Author.objects.get(id=authorid)
             author_json = AuthorSerializer(
                 instance=author_object, context={"request": request}
@@ -380,6 +378,8 @@ def api_posts(request, authorid):
                 posts = utility_get_posts(authorid, "friend")
             else:
                 posts = utility_get_posts(authorid, "public")
+        else:
+            posts = utility_get_posts(authorid, "public")
 
         # params
         page = request.GET.get('page')
@@ -410,7 +410,11 @@ def api_posts(request, authorid):
             "items": post_serializer.data
         }, status=200)
 
+    # LOCAL
     if request.method == 'POST':
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local users only"}, status=401)
+
         if request.session.session_key is not None:
             session = Session.objects.get(
                 session_key=request.session.session_key)
@@ -486,11 +490,16 @@ def get_author_posts(request, authorid):
 
 
 def api_get_image(request, authorid, postid):
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
     if not Author.objects.filter(id=authorid).exists():
         return JsonResponse({"message": "Author not found", "success": False}, status=404)
     if not Post.objects.filter(id=postid).exists():
         return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
+    # LOCAL + REMOTE
     if request.method == 'GET':
         post = Post.objects.get(
             id=postid, author=Author.objects.get(id=authorid))

@@ -43,7 +43,7 @@ urlpatterns = [
     path('espresso-api/authors/<str:authorid>/posts/<str:postid>/comments',
          views.api_get_comments, name='api_get_comments'),
 
-    # 5. GET //service/posts/
+    # 5. GET //service/posts/ - FOR OUR LOCAL FE, NOT REQUIRED
     path('espresso-api/posts/',
          views.api_get_feed, name='api_get_feed'),
 ]
