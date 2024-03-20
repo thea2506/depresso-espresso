@@ -125,6 +125,9 @@ const Discover = () => {
             username: "localhost",
             password: "canada123!",
           },
+          headers: {
+            "Referrer-Policy": "no-referrer-when-downgrade",
+          },
         }
       );
       if (response.status === 200) {
