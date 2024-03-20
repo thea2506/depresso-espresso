@@ -18,7 +18,7 @@ urlpatterns = [
     path('authors/<str:authorid>/followers/',
          views.api_get_followers, name='get_followers'),
     path('authors/<str:authorid>/followers/<str:foreignid>', views.handle_follow,
-         name='remove follower/ add follower/ check if follower'),
+         name='handle_follow'),
     # path('authors/create_follow_request/to/<path:foreignid>', views.create_follow_request, name='create_follow_request'),
     path('authors/respond_to_follow_request/from/<path:foreignid>',
          views.respond_to_follow_request, name='respond_to_follow_request'),
