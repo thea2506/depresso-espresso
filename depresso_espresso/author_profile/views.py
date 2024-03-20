@@ -122,24 +122,19 @@ def get_authors(request):
                 username = node.theirUsername
                 password = node.theirPassword
                 baseUrl = node.baseUrl
-                # send get request to node to retrieve external author info
-                #This sets up the https connection
+
                 host = str(baseUrl).replace("https://", "")
                 host = host[:-1]
-                print(host)
                 client = HTTPSConnection(host)
-                #then connect
+
                 headers = {"Authorization": "Basic {}".format(b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
                 client.request('GET', '/authors', headers=headers)
-                #get the response back
                 res = client.getresponse()
-                # at this point you could check the status etc
-                # this gets the page text
                 data = res.read()
 
-                # authors = requests.get(str(baseUrl + 'authors'), auth=HTTPBasicAuth(username, password))
-                print(data)
-                author_data = data.json()
+                authors = requests.get(str(baseUrl + 'authors'), auth=(username, password))
+                print(data, authors)
+                author_data = authors.json()
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
