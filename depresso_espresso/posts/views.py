@@ -230,6 +230,7 @@ def api_get_comments(request, authorid, postid):
             "comments": comment_serializer.data
         }
         return JsonResponse(result, status=200, safe=False)
+
     elif request.method == 'POST':
         if user and user.is_authenticated:
             data = json.loads(request.body)
@@ -244,7 +245,10 @@ def api_get_comments(request, authorid, postid):
 
             post.save()
             comment.save()
-            return JsonResponse({"message": "Comment created", "success": True}, status=201)
+
+            comment_obj = CommentSerializer(
+                comment, context={"request": request}).data
+            return JsonResponse({"message": "Comment created", "success": True, "comment": comment_obj}, status=201)
         else:
             return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
 
@@ -567,7 +571,7 @@ def api_posts(request, authorid):
 
                     form.save(commit=True)
                     post.save()
-                    return JsonResponse({"message": "Post created", "success": True, "postid": post.id}, status=201)
+                    return JsonResponse({"message": "Post created", "success": True, "postid": post.id, "object": PostSerializer(instance=post, context={"request": request}).data}, status=201)
                 else:
                     return JsonResponse({"message": "Invalid form", "success": False}, status=400)
             else:

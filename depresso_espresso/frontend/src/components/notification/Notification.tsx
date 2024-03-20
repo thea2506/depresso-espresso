@@ -9,12 +9,9 @@ import { useNavigate } from "react-router";
 
 //#region interface
 interface NotificationProps {
-  author: any;
-  authorid: string;
-  authorpostid?: string;
+  curUser: any;
   type: "follow" | "share" | "post" | "like_post" | "like_comment" | "comment";
-  postid?: string;
-  createdAt?: string;
+  notificationObject: any;
   refresh?: boolean;
   setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -35,12 +32,9 @@ interface NotificationProps {
  * @returns {JSX.Element} The rendered notification component.
  */
 const Notification = ({
-  author,
-  authorid,
-  authorpostid,
+  curUser,
+  notificationObject,
   type,
-  postid,
-  createdAt,
   refresh,
   setRefresh,
 }: NotificationProps): JSX.Element => {
@@ -52,30 +46,21 @@ const Notification = ({
     like_comment: "liked your comment",
     comment: "commented on your post",
   };
-  const formatDateString = (inputDateString: string) => {
-    const date = new Date(inputDateString);
-    const formattedDate = date.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return formattedDate;
-  };
   const navigate = useNavigate();
 
   //#region functions
   const handleAccept = async () => {
-    const formField = new FormData();
-    formField.append("id", authorid);
-    formField.append("decision", "accept");
-
-    const data = { id: authorid, decision: "accept" };
+    const data = {
+      actor: notificationObject.actor,
+      object: curUser,
+      type: "Follow",
+      summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
+      decision: "accept",
+    };
 
     try {
       const response = await axios.put(
-        `/authors/respond_to_follow_request/from/${authorid}`,
+        `/espresso-api/authors/${curUser.id}/followers/${notificationObject.actor.id}`,
         data
       );
       if (response.data.success) {
@@ -88,15 +73,17 @@ const Notification = ({
   };
 
   const handleDecline = async () => {
-    const formField = new FormData();
-    formField.append("id", authorid);
-    formField.append("decision", "decline");
-
-    const data = { id: authorid, decision: "decline" };
+    const data = {
+      actor: notificationObject.actor,
+      object: curUser,
+      type: "Follow",
+      summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
+      decision: "decline",
+    };
 
     try {
       const response = await axios.put(
-        "/respond_to_follow_request/from/" + authorid,
+        `/espresso-api/authors/${curUser.id}/followers/${notificationObject.actor.id}`,
         data
       );
       if (response.data.success) {
@@ -109,25 +96,75 @@ const Notification = ({
   };
 
   const handleSeeMore = async () => {
-    navigate(`/authors/${authorpostid}/posts/${postid}`);
+    const real_post_id = notificationObject.id.split("/");
+    const real_author_id = notificationObject.author.id.split("/").pop();
+
+    switch (type) {
+      case "post":
+        navigate(
+          `/authors/${real_author_id}/posts/${
+            real_post_id[real_post_id.length - 1]
+          }`
+        );
+        break;
+
+      case "comment":
+        navigate(
+          `/authors/${curUser.id}/posts/${
+            real_post_id[real_post_id.length - 3]
+          }`
+        );
+        break;
+
+      default:
+        break;
+    }
   };
   //#endregion
-
+  console.log(
+    notificationObject.author
+      ? notificationObject.author.url.substring(
+          notificationObject.author.url.indexOf("espresso-api")
+        )
+      : notificationObject.actor.url.substring(
+          notificationObject.author.url.indexOf("espresso-api")
+        )
+  );
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}
       <a
         className="flex items-center gap-x-4"
-        href={author.url}
+        href={
+          notificationObject.author
+            ? notificationObject.author.url.substring(
+                notificationObject.author.url.indexOf("espresso-api") +
+                  "espresso-api".length
+              )
+            : notificationObject.actor.url.substring(
+                notificationObject.author.url.indexOf("espresso-api") +
+                  "espresso-api".length
+              )
+        }
       >
         <img
           className="rounded-full w-14 h-14"
-          src={author.profileImage || defaultImg}
+          src={
+            (notificationObject.author
+              ? notificationObject.author
+              : notificationObject.actor
+            ).profileImage || defaultImg
+          }
           alt="Profile Picture"
         />
         <div>
           <span className="font-semibold text-secondary-dark">
-            {author.displayName}{" "}
+            {
+              (notificationObject.author
+                ? notificationObject.author
+                : notificationObject.actor
+              ).displayName
+            }{" "}
           </span>
           {messages[type]}
         </div>
@@ -153,9 +190,6 @@ const Notification = ({
         </div>
       ) : (
         <div className="flex items-center justify-center gap-x-4">
-          <div className="text-sm opacity-95">
-            {formatDateString(createdAt!)}
-          </div>
           <Button
             buttonType="icon"
             icon={<GoSearch />}
