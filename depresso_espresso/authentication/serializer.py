@@ -1,26 +1,55 @@
 # https://uofa-cmput404.github.io/labsignments/heroku.html#serializing-and-deserializing-queries-optional-but-highly-recommended-to-do
 from rest_framework import serializers
+from rest_framework.serializers import *
+
+from utils import *
 from .models import *
 
-class AuthorSerializer(serializers.Serializer):
-    github_link = serializers.URLField()
-    profile_image = serializers.URLField()
-    follows = serializers.CharField() # This may be the incorrect field type for a many to many field
-    friends = serializers.CharField()
-    first_name = serializers.CharField() # This may be the incorrect field type for a many to many field
-    last_name = serializers.CharField()
 
-    def create(self, validated_data):
-        """
-        Create and return a new `Author` instance, given the validated data
-        """
-        return Author.object.create(**validated_data)
+class AuthorSerializer(serializers.ModelSerializer):
+    host = SerializerMethodField("get_host_url")
+    id = SerializerMethodField("get_id_url")
+    url = SerializerMethodField("get_id_url")
 
-    def update(self, instance, validated_data):
-        """
-        Update and return an existing `Author` instance, given the validated data
-        """
-        instance.github_link = validated_data.get('github_link', instance.github_link)
-        instance.profile_image = validated_data.get('profile_image', instance.pub_date)
-        instance.save()
-        return instance
+    class Meta:
+        model = Author
+        fields = ("type", "id", "displayName", "github",
+                  "host", "profileImage", "url")
+
+    def get_host_url(self, _):
+        return f"{self.context['request'].build_absolute_uri('/')}"
+
+    def get_id_url(self, obj):
+        return build_default_author_uri(obj=obj, request=self.context["request"], source="author")
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    actor = serializers.JSONField()
+    object = SerializerMethodField("get_object")
+    summary = SerializerMethodField("get_summary")
+    type = SerializerMethodField("get_type")
+
+    class Meta:
+        model = Follow
+        fields = ("type", "summary", "actor", "object")
+
+    def get_object(self, obj):
+        return AuthorSerializer(obj.object, context=self.context).data
+
+    def get_summary(self, obj):
+        actor_display_name = obj.actor["displayName"]
+        return f"{actor_display_name} wants to follow {obj.object.displayName}"
+
+    def get_type(self, _):
+        return "Follow"
+
+
+class FollowerSerializer(serializers.ModelSerializer):
+    author = serializers.JSONField()
+
+    class Meta:
+        model = Follower
+        fields = ("type", "actor", "object")
+
+    def get_object(self, obj):
+        return AuthorSerializer(obj.author, context=self.context).data

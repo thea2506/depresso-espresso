@@ -8,5 +8,6 @@ def checkBasic(request):
     auth_header = request.META.get('HTTP_AUTHORIZATION', '')
     token_type, _, credentials = auth_header.partition(' ')
     username, password = base64.b64decode(credentials).split(':')
-    node = Node.objects.get(username=username, password=password)
+    node = Node.objects.get(theirusername=username, theirpassword=password)
+    print("NODE CHECKBASSICCCCCCCCCCCCCCCCC", node)
     return node
