@@ -125,6 +125,7 @@ def get_authors(request):
                 # send get request to node to retrieve external author info
                 #This sets up the https connection
                 host = str(baseUrl).replace("https://", "")
+                host = host[:-1]
                 print(host)
                 client = HTTPSConnection(host)
                 #then connect
