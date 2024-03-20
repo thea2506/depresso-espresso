@@ -133,7 +133,7 @@ def get_authors(request):
                 res = client.getresponse()
                 authorsBytes = res.read()
 
-                author_data = authorsBytes.json()
+                author_data = json.loads(authorsBytes)
                 print(author_data)
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
