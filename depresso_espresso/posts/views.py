@@ -308,39 +308,43 @@ def delete_comment(request):
         return JsonResponse(data)
 
 
-def share_post(request, authorid, postid):
+def api_share_post(request, authorid, postid):
     '''Share a post'''
-    data = {}
+    if request.session.session_key is not None:
+        session = Session.objects.get(
+            session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+            if Author.objects.filter(id=uid).exists():
+                user = Author.objects.get(id=uid)
 
     post = Post.objects.get(pk=postid)
-    postAuthor = Author.objects.get(id=authorid)
-
-    sharingAuthor = request.user
-
+    post_json = PostSerializer(post, context={"request": request}).data
     if request.method == 'POST':
-        if sharingAuthor == postAuthor:
-            print("horrible sharing failure")
-            data['success'] = False
-            data['message'] = "Sharing own post"
+        if not Post.objects.filter(author=user, origin=post.origin).exists():
+            shared_post = Post.objects.create(
+                # Unchanged fierlds
+                title=post.title,
+                description=post.description,
+                contentType=post.contentType,
+                content=post.content,
+                visibility=post.visibility,
+                origin=post.origin,
 
-        elif not Share.objects.filter(author=request.user, post=post).exists() and post.visibility == "PUBLIC":
-            print("great sharing success")
-            Share.objects.create(author=request.user, post=post)
-            post.sharecount = F('sharecount') + 1
-            post.save()
-            data['success'] = True
+                # Changed fields
+                author=user,
+                published=make_aware(datetime.datetime.now()),
+                source=post_json["id"],
+                likecount=0,
+                sharecount=0,
+                count=0,
+            )
+            return JsonResponse({"message": "Post shared", "success": True, "object": PostSerializer(instance=shared_post, context={"request": request}).data}, status=201)
 
-        elif not Share.objects.filter(author=request.user, post=post).exists() and post.visibility != "PUBLIC":
-            print("horrible sharing failure")
-            data['success'] = False
-            data['message'] = "Post not shareable"
-
-        elif Share.objects.filter(author=request.user, post=post).exists():
-            print("horrible sharing failure")
-            data['success'] = False
-            data['message'] = "Already shared"
-
-    return JsonResponse(data)
+        return JsonResponse({"message": "Post already shared", "success": False}, status=400)
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
 def frontend_explorer(request, **kwargs):
@@ -477,11 +481,11 @@ def api_posts(request, authorid):
                     post.content = form.cleaned_data["content"]
                     post.published = make_aware(datetime.datetime.now())
                     post.visibility = form.cleaned_data["visibility"]
-                    post.url = f"{user.url}/posts/{str(post.id)}"
-                    post.comments = f"{user.url}/posts/{str(post.id)}/comments"
+                    post.url = f"{user.host}espresso-api/authors/{user.id}/posts/{str(post.id)}"
+                    post.comments = f"{user.url}posts/{str(post.id)}/comments"
 
-                    post.origin = f"{user.url}/posts/{str(post.id)}"
-                    post.source = f"{user.url}/posts/{str(post.id)}"
+                    post.origin = f"{user.host}espresso-api/authors/{user.id}/posts/{str(post.id)}"
+                    post.source = f"{user.host}espresso-api/authors/{user.id}/posts/{str(post.id)}"
 
                     form.save(commit=True)
                     post.save()

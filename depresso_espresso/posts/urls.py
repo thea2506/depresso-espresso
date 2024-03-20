@@ -4,10 +4,6 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    # Creating stuff
-    path("authors/<str:authorid>/posts/<str:postid>/share_post",
-         views.share_post, name="share_post"),
-
     # Getting stuff
     path("authors/<str:authorid>/posts",
          views.get_author_posts, name="get_author_posts"),
@@ -27,6 +23,9 @@ urlpatterns = [
     # explorer
     path("discover", views.frontend_explorer, name="frontend_explorer"),
 
+
+    path("espresso-api/authors/<str:authorid>/posts/<str:postid>/share_post",
+         views.api_share_post, name="api_share_post"),
 
     # REQUIRED API ENDPOINTS (Post Covered)
     # 1. GET/DELETE/PUT //service/authors/{AUTHOR_ID}/posts/{POST_ID}
