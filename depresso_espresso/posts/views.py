@@ -23,6 +23,7 @@ from django.core import serializers as django_serializers
 from authentication.models import *
 from authentication.serializer import *
 from authentication.checkbasic import my_authenticate
+import requests
 
 
 class PostView(forms.ModelForm):
@@ -549,11 +550,19 @@ def api_get_feed(request):
 
         for friend in friends:
             raw_id = friend.follower_author["id"].split("/")[-1]
-            friend_object = Author.objects.get(
-                id=raw_id)
-            other_posts = Post.objects.filter(
-                author=friend_object, visibility="FRIENDS").order_by('-published')
-            all_posts = chain(all_posts, other_posts)
+            if not Author.objects.filter(id=raw_id).exists():
+                # Not local author
+                session = requests.Session()
+                session.auth = (user.username, user.password)
+                response = session.get(friend.follower_author["id"]+"/posts/")
+                posts_json = response.json()["items"]
+                pass
+            else:
+                friend_object = Author.objects.get(
+                    id=raw_id)
+                other_posts = Post.objects.filter(
+                    author=friend_object, visibility="FRIENDS").order_by('-published')
+                all_posts = chain(all_posts, other_posts)
 
         sorted_posts = sorted(
             all_posts, key=attrgetter('published'), reverse=True)
