@@ -200,7 +200,8 @@ MEDIA_URL = ""
 # reference: https://swesadiqul.medium.com/basic-authentication-in-django-rest-framework-bd9900bdb413 Md Sadiqul Islam 3/11/24
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

@@ -132,7 +132,7 @@ def get_authors(request):
                 res = client.getresponse()
                 data = res.read()
 
-                authors = requests.get(str(baseUrl + 'authors'), auth=(username, password))
+                authors = requests.get(str(baseUrl + 'authors'), auth=(str(username), str(password)))
                 print(data, authors)
                 author_data = authors.json()
                 for author in author_data["items"]:
