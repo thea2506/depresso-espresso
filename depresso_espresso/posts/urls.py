@@ -50,6 +50,10 @@ urlpatterns = [
     # 4. GET/POST //service/authors/{AUTHOR_ID}/posts/{POST_ID}/comments
     path('espresso-api/authors/<str:authorid>/posts/<str:postid>/comments',
          views.api_get_comments, name='api_get_comments'),
+
+    # 5. GET //service/posts/
+    path('espresso-api/posts/',
+         views.api_get_feed, name='api_get_feed'),
 ]
 
 

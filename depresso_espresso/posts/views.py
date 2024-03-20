@@ -153,7 +153,6 @@ def utility_get_posts(author_id, mode):
             author=author_object, visibility="PUBLIC").order_by('-published'))
 
     sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
-    print("ST", items, sorted_items)
     return sorted_items
 
 
@@ -640,3 +639,61 @@ def api_get_image(request, authorid, postid):
             return HttpResponseNotFound()
     else:
         return HttpResponseNotAllowed()
+
+
+def api_get_feed(request):
+    if request.method == 'GET':
+        user = None
+        if request.session.session_key is not None:
+            session = Session.objects.get(
+                session_key=request.session.session_key)
+            if session:
+                session_data = session.get_decoded()
+                uid = session_data.get('_auth_user_id')
+                if Author.objects.filter(id=uid).exists():
+                    user = Author.objects.get(id=uid)
+
+        if not user:
+            return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
+
+        all_posts = []
+
+        # Public posts
+        public_posts = Post.objects.filter(
+            visibility="PUBLIC").order_by('-published')
+
+        # Unlisted posts + Friends posts from current user
+        unlisted_posts = Post.objects.filter(
+            visibility="UNLISTED", author=user).order_by('-published')
+        friend_posts = Post.objects.filter(
+            author=user, visibility="FRIENDS").order_by('-published')
+
+        all_posts = chain(all_posts, public_posts,
+                          unlisted_posts, friend_posts)
+
+        # Friends posts from friends
+        friends = Follower.objects.filter(author=user)
+
+        for friend in friends:
+            raw_id = friend.follower_author["id"].split("/")[-1]
+            friend_object = Author.objects.get(
+                id=raw_id)
+            other_posts = Post.objects.filter(
+                author=friend_object, visibility="FRIENDS").order_by('-published')
+            all_posts = chain(all_posts, other_posts)
+
+        sorted_posts = sorted(
+            all_posts, key=attrgetter('published'), reverse=True)
+
+        # Return the posts
+        post_serializer = PostSerializer(
+            sorted_posts, many=True, context={"request": request}
+        )
+
+        return JsonResponse({
+            "type": "posts",
+            "items": post_serializer.data
+        }, status=200)
+
+    else:
+        return JsonResponse({"message": "Method not allowed"}, status=405)

@@ -62,7 +62,7 @@ const Home = () => {
      */
     const retrievePosts = async () => {
       try {
-        const response = await axios.get(`${author.id}/posts/`);
+        const response = await axios.get(`/espresso-api/posts/`);
         const allData = response.data;
         const posts = allData.items;
 
