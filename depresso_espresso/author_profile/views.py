@@ -672,7 +672,8 @@ def api_all_authors(request):
     session.auth = (MY_NODE_USERNAME, MY_NODE_PASSWORD)
     for node in nodes:
         if node.host.startswith("http://") or node.host.startswith("https://"):
-            auth = session.get(node.host+"/authors/")
-            print(auth.json())
-
+            auth = session.get(node.host+"authors/")
+            if auth.status_code == 200:
+                authors = auth.json()["items"]
+                print(authors)
     return JsonResponse({"message": "All authors retrieved successfully"}, status=200)
