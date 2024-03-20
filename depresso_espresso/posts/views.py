@@ -160,7 +160,6 @@ def new_local_post(request):
       
           # Send this post to the inboxes of authors who are friends with the posting author
           elif post.visibility == "FRIENDS":
-             
              following = Following.objects.filter(followingid=user.id, areFriends=True) # Users who will receive this post in their inbox
 
              for following_user in following:
@@ -288,6 +287,7 @@ def get_post_comments(request, authorid, postid):
     '''Get all comments on a post'''
     post = Post.objects.get(pk=postid)
     comments = Comment.objects.filter(postid=post)
+ 
 
     merged_data = []
     for comment in comments:
@@ -307,7 +307,7 @@ def get_post_comments(request, authorid, postid):
             "comment": comment.comment,
             "contentType": comment.contenttype,
             "published": comment.publishdate.isoformat(),
-            "id": str(comment.id)
+            "id": str(comment.id)    
         }
         merged_data.append(comment_data)
 
@@ -364,17 +364,22 @@ def like_post(request, authorid, postid):
 def like_comment(request, authorid, postid, commentid):
   '''Like or unlike a post'''
   comment = Comment.objects.get(pk=commentid)
+  action_performed = "liked"
  
   if not LikeComment.objects.filter(author = request.user, comment = comment).exists():
       LikeComment.objects.create(author = request.user, comment = comment)
       comment.likecount = F('likecount') + 1
+      comment.save()
 
   else:
       LikeComment.objects.get(author=request.user, comment=comment).delete()
       comment.likecount = F('likecount') - 1
+      action_performed = "unliked"
+      comment.save()
 
-  comment.save()
-  return HttpResponse("Success")
+  comment.refresh_from_db()
+  
+  return JsonResponse({"success": True, "action": action_performed, "likecount": comment.likecount})
 
 def make_comment(request):
     data ={}

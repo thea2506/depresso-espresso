@@ -10,6 +10,7 @@ import { CommentModel } from "../data/CommentModel";
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
 import { AuthorModel } from "../data/AuthorModel";
+import { act } from "react-dom/test-utils";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -102,9 +103,22 @@ const CommentList = ({
   }, [post.author.pk, post.id, refresh]);
 
   const handleLikeToggle = async (commentId: string) => {
-      await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
-      console.log("Like successful");
-      setRefresh(!refresh);
+    try{  
+      const respone = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
+      const {likecount, action} = respone.data;
+      const updatedComments = comments.map((comment) => {
+        if (comment.id === commentId) {
+          return { ...comment, likecount};
+        }
+        return comment;
+      });
+      console.log("Like count updated", action, likecount);
+  
+      // Set the updated comments array to trigger re-render
+      setComments(updatedComments);
+    } catch (error) {
+      console.error("An error occurred while liking a comment", error);
+    }
   };
         
 
@@ -179,7 +193,7 @@ const CommentList = ({
             className={`flex items-center justify-center gap-x-1 text-primary`}
           >
             <GoHeart/>
-            <p>{comment.likecount !== undefined ? comment.likecount : 0}</p>
+            <p>{comment.likecount}</p>
 
           </button>
           
