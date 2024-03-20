@@ -89,18 +89,14 @@ const PostForm = ({
 
   useEffect(() => {
     const getFollowers = async () => {
-      const real_id = author?.id?.split("/").pop();
-      if (real_id)
-        try {
-          const response = await axios.get(
-            `/espresso-api/authors/${real_id}/followers`
-          );
-          setFollowers(response.data.items);
-        } catch (error) {
-          console.error("An error occurred", error);
-        }
+      try {
+        const response = await axios.get(`${author.id}/followers`);
+        setFollowers(response.data.items);
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
     };
-    getFollowers();
+    if (author.id) getFollowers();
   }, [author.id]);
 
   //#region functions
@@ -152,8 +148,8 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      const real_postid = postId?.split("/").pop();
-      const real_authorid = author.id.split("/").pop();
+      // const real_postid = postId?.split("/").pop();
+      // const real_authorid = author.id.split("/").pop();
       const formData = new FormData();
       formData.append("inbox", "No");
       formData.append("title", title);
@@ -167,13 +163,11 @@ const PostForm = ({
         formData.append("content", base64Image);
       } else formData.append("content", content);
 
-      if (edit && postId) formData.append("postid", real_postid!);
+      if (edit && postId) formData.append("postid", postId);
 
       setForm("");
 
-      const url = edit
-        ? `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
-        : `/espresso-api/authors/${real_authorid}/posts/`;
+      const url = edit ? `${postId}` : `${author.id}/posts/`;
 
       let response;
       if (edit) {
@@ -181,13 +175,25 @@ const PostForm = ({
       } else {
         response = await axios.post(url, formData);
         const post_object = response.data.object;
-        followers.forEach(async (follower: any) => {
-          const follower_id = follower.id.split("/").pop();
-          await axios.post(
-            `/espresso-api/authors/${follower_id}/inbox`,
-            post_object
-          );
-        });
+        if (visibility.toUpperCase() === "PUBLIC") {
+          followers.forEach(async (follower: any) => {
+            // const follower_id = follower.id.split("/").pop();
+            await axios.post(`${follower.id}/inbox`, post_object);
+          });
+        } else if (visibility.toUpperCase() === "FRIENDS") {
+          followers.forEach(async (follower: any) => {
+            try {
+              await axios.get(
+                `${follower.id}/followers/${encodeURIComponent(
+                  encodeURIComponent(author.id)
+                )}`
+              );
+              await axios.post(`${follower.id}/inbox`, post_object);
+            } catch (error) {
+              console.log("Not friends");
+            }
+          });
+        }
       }
 
       openPost("refresh");

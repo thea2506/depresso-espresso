@@ -1,9 +1,7 @@
-from .models import Post, Comment, LikePost, LikeComment, Share
+from .models import Post, Comment, Share, Like
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
-from django.core.exceptions import ValidationError
 
 # Register your models here.
 
@@ -62,14 +60,8 @@ class CommentsAdmin(admin.ModelAdmin):
     list_display = ('post', 'author', 'published', 'comment', "id")
 
 
-@admin.register(LikePost)
-class LikePostAdmin(admin.ModelAdmin):
-    list_display = ('author', 'post')
-
-
-@admin.register(LikeComment)
-class LikeCommentAdmin(admin.ModelAdmin):
-    list_display = ('author', 'comment')
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'type', 'author', 'post', "comment")
 
 
 @admin.register(Share)
@@ -79,3 +71,4 @@ class ShareAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostsAdmin)
 admin.site.register(Comment, CommentsAdmin)
+admin.site.register(Like)

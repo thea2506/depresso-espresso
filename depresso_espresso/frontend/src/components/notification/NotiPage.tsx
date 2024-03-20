@@ -23,19 +23,6 @@ const NotiPage = () => {
       }
     };
 
-    // get follow requests
-    // const getFollowRequests = async () => {
-    //   try {
-    //     const response = await axios.get("/get_follow_requests", {
-    //       params: { id: curUser?.id },
-    //     });
-    //     if (response.data.message != "No new requests")
-    //       setFollowRequests(response.data);
-    //   } catch (error) {
-    //     console.error("An error occurred", error);
-    //   }
-    // };
-
     // get the notifications
     const getNotifications = async () => {
       if (!curUser?.id) return;
@@ -55,24 +42,24 @@ const NotiPage = () => {
     getNotifications();
   }, [curUser?.id, refresh]);
 
+  const handleClearInbox = async () => {
+    await axios.delete(`/espresso-api/authors/${curUser?.id}/inbox`);
+    setRefresh(!refresh);
+  };
+
   return (
     <div className="flex flex-col justify-center mx-8 sm:mx-12 lg:mx-[20%] gap-y-6 md:item-center">
       <div className="flex items-center justify-between text-secondary-dark">
         <p>Your inbox</p>
-        <p className="cursor-pointer hover:text-primary">Clear Activity</p>
+        <p
+          className="cursor-pointer hover:text-primary"
+          onClick={handleClearInbox}
+        >
+          Clear Activity
+        </p>
       </div>
-      {/* {followRequests?.map((request: any, index: number) => (
-        <div key={index}>
-          <Notification
-            refresh={refresh}
-            setRefresh={setRefresh}
-            author={request.fields}
-            authorid={request.pk}
-            type="follow"
-          />
-        </div>
-      ))} */}
-      {notifications?.map((notification: any, index: number) => {
+      {notifications?.reverse().map((notification: any, index: number) => {
+        if (!notification) return;
         const type = notification.type.toLowerCase();
         if (type === "follow")
           return (

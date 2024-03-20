@@ -1,48 +1,68 @@
 //#region imports
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
 import { PostModel } from "../data/PostModel";
 import PostList from "../profile/PostList";
+import { AuthorModel } from "../data/AuthorModel";
 //#endregion
 
 const Home = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [author, setAuthor] = useState<any>({});
+  const [user, setUser] = useState<any>({});
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [refresh, setRefresh] = useState(false);
-
-  const navigate = useNavigate();
+  const [author, setAuthor] = useState<AuthorModel>({} as AuthorModel);
 
   useEffect(() => {
     //#region funtions
     /**
      * Retrieves the user data from the backend
      */
-    const retrieveData = async () => {
+
+    const retrieveCurrentUser = async () => {
       try {
         const response = await axios.get("/curUser");
         if (response.data.success == true) {
           const userData = response.data;
-          setAuthor(userData);
+          setUser(userData);
         }
       } catch (error) {
         console.error(error);
       }
     };
 
+    //#endregion
+
+    retrieveCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    /**
+     * Retrieves the author Object from the backend
+     */
+
+    const retrieveAuthor = async () => {
+      try {
+        const response = await axios.get(`/espresso-api/authors/${user.id}`);
+        const authorData = response.data;
+        setAuthor(authorData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    if (user.id) retrieveAuthor();
+  }, [user]);
+
+  useEffect(() => {
     /**
      * Retrieves the posts from the backend
      */
     const retrievePosts = async () => {
       try {
-        const real_authorid = author?.id?.split("/").pop();
-        const response = await axios.get(
-          `/espresso-api/authors/${real_authorid}/posts/`
-        );
+        const response = await axios.get(`/espresso-api/posts/`);
         const allData = response.data;
         const posts = allData.items;
 
@@ -53,14 +73,14 @@ const Home = () => {
             id: rawpost.id,
             author: rawpost.author,
             description: rawpost.description,
-            contenttype: rawpost.contentType,
+            contentType: rawpost.contentType,
             content: rawpost.content,
             count: rawpost.count,
             origin: rawpost.origin,
             source: rawpost.source,
             published: rawpost.published,
             visibility: rawpost.visibility,
-            likecount: rawpost.likecount,
+            likecount: rawpost.like_count,
             sharecount: rawpost.sharecount,
           };
         });
@@ -69,9 +89,9 @@ const Home = () => {
         console.error(error);
       }
     };
-    retrieveData();
-    retrievePosts();
-  }, [author.id, navigate, refresh]);
+
+    if (author.id) retrievePosts();
+  }, [author, refresh]);
 
   //#endregion
   return (

@@ -32,6 +32,9 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
+  const [thisProfileUser, setThisProfileUser] = useState<AuthorModel | null>(
+    null
+  );
 
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,40 +49,44 @@ const ProfilePage = () => {
         setDisplayName(data.displayName);
         setGithubLink(data.github);
         setProfileImage(data.profileImage);
+        setThisProfileUser(data);
       } catch (error) {
         console.error("An error occurred", error);
       }
     };
+    if (authorId) getData();
+  }, [authorId, loading]);
 
+  useEffect(() => {
     const fetchFollowers = async () => {
-      try {
-        console.log("authorId", authorId);
-        const response = await axios.get(`/authors/${authorId}/followers/`);
-        const data = response.data;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const followerModels = data?.items?.map((rawauthor: any) => ({
-          type: rawauthor.type,
-          id: rawauthor.id,
-          url: rawauthor.url,
-          host: rawauthor.host,
-          displayName: rawauthor.displayName,
-          username: rawauthor.username,
-          github: rawauthor.github,
-          profileImage: rawauthor.profileImage,
-        }));
-        if (followerModels) setFollowers(followerModels);
-      } catch (error) {
-        console.error(error);
-      }
+      if (thisProfileUser && thisProfileUser.id)
+        try {
+          const response = await axios.get(`${thisProfileUser!.id}/followers`);
+          const data = response.data;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const followerModels = data?.items?.map((rawauthor: any) => ({
+            type: rawauthor.type,
+            id: rawauthor.id,
+            url: rawauthor.url,
+            host: rawauthor.host,
+            displayName: rawauthor.displayName,
+            username: rawauthor.username,
+            github: rawauthor.github,
+            profileImage: rawauthor.profileImage,
+          }));
+          if (followerModels) setFollowers(followerModels);
+        } catch (error) {
+          /* empty */
+        }
     };
     fetchFollowers();
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get(`/authors/${authorId}/posts`);
+        const response = await axios.get(`${thisProfileUser!.id}/posts/`);
         const posts = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = posts.map((rawpost: any) => {
+        const postModels = posts.items.map((rawpost: any) => {
           return {
             title: rawpost.title,
             id: rawpost.id,
@@ -90,7 +97,7 @@ const ProfilePage = () => {
             count: rawpost.count,
             published: rawpost.published,
             visibility: rawpost.visibility,
-            likecount: rawpost.likecount,
+            likecount: rawpost.like_count,
             sharecount: rawpost.sharecount,
             origin: rawpost.origin,
             source: rawpost.source,
@@ -98,24 +105,25 @@ const ProfilePage = () => {
         });
         setPosts(postModels);
       } catch (error) {
-        console.error(error);
+        // empty
       }
     };
-    getData();
-    retrievePosts();
-  }, [authorId, loading]);
+    if (thisProfileUser && thisProfileUser.id) retrievePosts();
+  }, [thisProfileUser, loading]);
 
   //#endregion
   return (
     <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
-      <Profile
-        id={authorId}
-        display_name={displayName}
-        imageURL={profileImage}
-        github={githubLink}
-        loading={loading}
-        setLoading={setLoading}
-      />
+      {thisProfileUser && (
+        <Profile
+          id={thisProfileUser!.id}
+          display_name={displayName}
+          imageURL={profileImage}
+          github={githubLink}
+          loading={loading}
+          setLoading={setLoading}
+        />
+      )}
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
           <Button

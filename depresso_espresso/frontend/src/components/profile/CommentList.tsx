@@ -82,7 +82,7 @@ const CommentList = ({
                 contenttype: rawcomment.contenttype,
                 published: rawcomment.published,
                 id: rawcomment.id,
-                likecount: rawcomment.likecount,
+                likecount: rawcomment.like_count,
               };
             }
           );
@@ -126,7 +126,6 @@ const CommentList = ({
       );
 
       if (response.data.success) {
-        console.log("I RUN BITCH");
         const comment_object = response.data.comment;
         await axios.post(
           `/espresso-api/authors/${real_authorid}/inbox`,
@@ -144,18 +143,11 @@ const CommentList = ({
   };
 
   const handleLikeComment = async (comment: CommentModel) => {
-    const real_postid = post.id.split("/").pop();
     const real_authorid = post.author.id.split("/").pop();
-    const real_commentid = comment.id.split("/").pop();
-    const like_response = await axios.post(
-      `/authors/${real_authorid}/posts/${real_postid}/comments/${real_commentid}/like_comment`
-    );
-    const real_commentauthorid = comment.author.id.split("/").pop();
-    if (!like_response.data.already_liked) {
-      setRefresh(!refresh);
-      await axios.post(`/espresso-api/authors/${real_commentauthorid}/inbox/`, {
+    try {
+      await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
         summary: `${curUser!.displayName} liked your comment`,
-        type: "like_comment",
+        type: "Like",
         object: comment.id,
         author: {
           type: "author",
@@ -167,6 +159,9 @@ const CommentList = ({
           profileImage: curUser!.profileImage,
         },
       });
+      setRefresh(!refresh);
+    } catch (error) {
+      console.error("An error occurred", error);
     }
   };
 

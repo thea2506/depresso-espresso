@@ -1,38 +1,36 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from authentication.serializer import AuthorSerializer
-from posts.models import Comment, LikeComment, LikePost, Post
+from posts.models import Comment, Post, Like
 from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
-from authentication.checkbasic import checkBasic
+from authentication.checkbasic import checkBasic, my_authenticate
 from django.core import serializers as serial
-import requests
-from requests.auth import HTTPBasicAuth
 from django.contrib.sessions.models import Session
 import json
 import urllib.request
 from urllib.parse import unquote
-from django.db.models import Q
 from authentication.serializer import *
 from inbox.models import Notification, NotificationItem
 from http.client import HTTPSConnection
 from base64 import b64encode
+from posts.serializers import *
 
 
 @api_view(["GET", "PUT"])
 def api_author(request, authorid):
     ''' LOCAL and REMOTE GET ://service/authors/{AUTHOR_ID}: Returns the profile information for authorid
         LOCAL PUT ://service/authors/{AUTHOR_ID}: Updates the profile information for authorid'''
-    user = None
-    if request.session.session_key is not None:
-        session = Session.objects.get(session_key=request.session.session_key)
-        if session:
-            session_data = session.get_decoded()
-            uid = session_data.get('_auth_user_id')
-            user = Author.objects.get(id=uid)
+
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
 
     # Update user profile information
     if request.method == "PUT":
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local Users Only"}, status=404)
+
         if user.is_authenticated == True:
             author = get_object_or_404(Author, pk=authorid)
             data = json.loads(request.body)
@@ -59,11 +57,13 @@ def api_author(request, authorid):
         return JsonResponse(data)
 
     else:
-        return render(request, "index.html")
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 def basic_auth(username, password):
     token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
     return f'Basic {token}'
+
 
 @api_view(['GET'])
 def get_authors(request):
@@ -78,6 +78,7 @@ def get_authors(request):
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
+
     if request.method == "GET":
 
         if user == None:
@@ -126,22 +127,24 @@ def get_authors(request):
                 host = host[:-1]
                 client = HTTPSConnection(host)
 
-                headers = {"Authorization": "Basic {}".format(b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
+                headers = {"Authorization": "Basic {}".format(
+                    b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
                 client.request('GET', '/authors', headers=headers)
                 response = client.getresponse()
                 authorsBytes = response.read()
                 author_data = json.loads(authorsBytes)
-                
+
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
                         # if author does not exist, create a new one
-                        host=author["host"]
-                        displayName=author["displayName"]
-                        url=author["url"]
-                        username=author["username"]
+                        host = author["host"]
+                        displayName = author["displayName"]
+                        url = author["url"]
+                        username = author["username"]
 
-                        Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
+                        Author.objects.create(
+                            host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
             search_terms = request.GET.get('search')
 
@@ -159,7 +162,7 @@ def get_authors(request):
                 items.append(author)
 
         res = serial.serialize("json", items, fields=[
-                                    "profileImage", "username", "github", "displayName", "url"])
+            "profileImage", "username", "github", "displayName", "url"])
         return HttpResponse(res, content_type="application/json")
 
 
@@ -279,25 +282,28 @@ def handle_follow(request, authorid, foreignid):
 
 @api_view(['GET', 'DELETE', 'PUT'])
 def api_add_follower(request, authorid, foreignid):
-    '''LOCAL + REMOTE'''
-    if not Author.objects.filter(id=authorid).exists():
-        return JsonResponse({"message": "Author not found"}, status=404)
-    user = None
-    if request.session.session_key is not None:
-        session = Session.objects.get(session_key=request.session.session_key)
-        if session:
-            session_data = session.get_decoded()
-            uid = session_data.get('_auth_user_id')
-            user = Author.objects.get(id=uid)
+    ''' GET [local, remote] check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
+    PUT [local]: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
+    DELETE [local]: remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
+    '''
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
 
+    # LOCAL
     if request.method == 'PUT':
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local Users Only"}, status=404)
+
         foreign_author = request.data["actor"]
         # author = request.data["object"]
         if user.is_authenticated == False:
             return JsonResponse({"message": "User not authenticated"}, status=401)
         if str(user.id) != authorid:
             return JsonResponse({"message": "User not authorized"}, status=401)
+
         decision = request.data["decision"]
+
         if not (decision == "decline"):
             Follower.objects.create(author=Author.objects.get(
                 id=authorid), follower_author=foreign_author)
@@ -316,35 +322,46 @@ def api_add_follower(request, authorid, foreignid):
         follow_object = Follow.objects.filter(
             object=Author.objects.get(id=authorid))
         for follow in follow_object:
-            if str(follow.actor["id"]) == foreignid:
+            if str(follow.actor["id"]) == unquote(foreignid):
                 follow.delete()
                 break
         return JsonResponse({"success": True, "decision": decision}, status=201)
+
+    # LOCAL + REMOTE
     elif request.method == 'GET':
         author_object = Author.objects.get(id=authorid)
         followers = Follower.objects.filter(author=author_object)
+
         for follower in followers:
             follower_object = follower.follower_author
-            if str(follower_object["id"]) == foreignid:
+            if str(follower_object["id"]) == unquote(foreignid):
+
                 return JsonResponse({
                     "type": "Follow",
                     "summary": follower_object["displayName"] + f" is following {author_object.displayName}",
                     "actor": follower_object,
                     "object": AuthorSerializer(instance=author_object, context={
-                        "request": request}).data}, status=200)
+                        "request": request}).data
+                }, status=200)
+
         if Follow.objects.filter(object=author_object).exists():
             follow_object = Follow.objects.filter(object=author_object)
             for follow in follow_object:
-                if follow.actor["id"] == foreignid:
+                if follow.actor["id"] == unquote(foreignid):
                     return JsonResponse({"status": "pending"}, status=404)
             return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
 
         return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
+
+    # LOCAL
     elif request.method == 'DELETE':
+        if not isinstance(user, Author) or str(user.id) != str(authorid):
+            return JsonResponse({"message": "Local Users Only"}, status=404)
+
         author_object = Author.objects.get(id=authorid)
         followers = Follower.objects.filter(author=author_object)
         for follower in followers:
-            if str(follower_object["id"]) == foreignid:
+            if str(follower_object["id"]) == unquote(foreignid):
                 follower.delete()
                 return JsonResponse({"message": "Follower removed successfully", "success": True}, status=200)
         return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)
@@ -491,7 +508,7 @@ def get_follow_requests(request):  # Can this be extended to be inbox?
                 requesters.append(requester)
 
             res = serial.serialize("json", requesters, fields=[
-                                        "profileImage", "username", "github", "displayName", "url"])
+                "profileImage", "username", "github", "displayName", "url"])
 
             return HttpResponse(res, content_type="application/json")
         return JsonResponse({"message": "No new requests"})
@@ -513,6 +530,12 @@ def get_image(request, image_file):
 # Required API Endpoints
 @api_view(['GET'])
 def api_get_authors(request):
+    ''' GET [local, remote]: retrieve all profiles on the server (paginated)
+    '''
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
     page = request.GET.get("page")
     size = request.GET.get("size")
     data = {"type": "author"}
@@ -567,6 +590,12 @@ def api_get_authors(request):
 
 @api_view(['GET'])
 def api_get_followers(request, authorid):
+    '''GET [local, remote]: get a list of authors who are AUTHOR_ID's followers'''
+
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
     data = {"type": "followers", "items": []}
 
     if request.method == "GET":
@@ -582,32 +611,23 @@ def api_get_followers(request, authorid):
 
 
 def api_get_likes(request, authorid, postid):
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
+    # LOCAL + REMOTE
     if request.method != "GET":
         return HttpResponse(status=405)
     if not Author.objects.filter(id=authorid).exists():
         return HttpResponse(status=404)
     if not Post.objects.filter(id=postid).exists():
         return HttpResponse(status=404)
-    post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
-    likes = LikePost.objects.filter(Q(post=post), ~Q(
-        author=Author.objects.get(id=authorid)))
-    data = []
-    for like in likes:
-        item = {
-            "summary": f"{like.author.displayName} liked your post",
-            "type": "Like",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": like.post.source
-        }
-        data.append(item)
+    author = Author.objects.get(id=authorid)
+    post = Post.objects.get(id=postid, author=author)
+    likes = Like.objects.filter(post=post)
+    data = {"types": "Like", "items": []}
+    data["items"] = LikeSerializer(instance=likes, many=True, context={
+                                   "request": request}).data
     return JsonResponse(data, safe=False, status=200)
 
 
@@ -620,69 +640,38 @@ def api_get_likes_comment(request, authorid, postid, commentid):
         return HttpResponse(status=404)
     if not Comment.objects.filter(id=commentid).exists():
         return HttpResponse(status=404)
-    comment = Comment.objects.get(id=commentid, postid=Post.objects.get(
-        id=postid, author=Author.objects.get(id=authorid)))
-    likes = LikeComment.objects.filter(
-        Q(comment=comment), ~Q(author=Author.objects.get(id=authorid)))
-    data = []
-    for like in likes:
-        item = {
-            "summary": f"{like.author.displayName} liked your comment",
-            "type": "Like",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": comment.comment
-        }
-        data.append(item)
+
+    author = Author.objects.get(id=authorid)
+    comment = Comment.objects.get(id=commentid, post=Post.objects.get(
+        id=postid, author=author))
+
+    data = {"types": "Like", "items": []}
+    data["items"] = CommentSerializer(instance=comment, context={
+        "request": request}).data
+
     return JsonResponse(data, safe=False, status=200)
 
 
 def api_get_author_liked(request, authorid):
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+
     if request.method != "GET":
         return HttpResponse(status=405)
     if not Author.objects.filter(id=authorid).exists():
         return HttpResponse(status=404)
     author = Author.objects.get(id=authorid)
-    liked_posts = LikePost.objects.filter(author=author)
-    liked_comments = LikeComment.objects.filter(author=author)
-    data = []
-    for like in liked_posts:
-        item = {
-            "summary": f"{like.author.displayName} liked your post",
-            "type": "like_post",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": like.post.source
-        }
-        data.append(item)
-    for like in liked_comments:
-        item = {
-            "summary": f"{like.author.displayName} liked your comment",
-            "type": "like_comment",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": like.comment.postid.origin + "/comments/" + str(like.comment.id)
-        }
-        data.append(item)
-    return JsonResponse({"type": "liked", "items": data}, safe=False, status=200)
+    author_json = AuthorSerializer(instance=author, context={
+                                   "request": request}).data
+    print(author_json)
+    liked_objects = Like.objects.filter(author__id__endswith=authorid)
+
+    data = {"type": "liked", "items": []}
+
+    print(liked_objects)
+
+    data["items"] = LikeSerializer(instance=liked_objects, many=True, context={
+                                   "request": request}).data
+
+    return JsonResponse(data, safe=False, status=200)
