@@ -549,6 +549,7 @@ def api_get_feed(request):
         friends = Follower.objects.filter(author=user)
 
         for friend in friends:
+            print(friend.follower_author["id"])
             raw_id = friend.follower_author["id"].split("/")[-1]
             if not Author.objects.filter(id=raw_id).exists():
                 # Not local author
@@ -556,7 +557,7 @@ def api_get_feed(request):
                 session.auth = (user.username, user.password)
                 response = session.get(friend.follower_author["id"]+"/posts/")
                 posts_json = response.json()
-                print(posts_json)
+                # print("POSTS", posts_json)
                 pass
             else:
                 friend_object = Author.objects.get(
