@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import django_on_heroku
 from pathlib import Path
 import os
+import dj_database_url
+
 
 LOGIN_URL = "/signin"
 
@@ -116,16 +118,19 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 
 # commented out to work with heroku-postgres
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'SocialDistribution',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'SocialDistribution',
+#         'USER': 'postgres',
+#         'PASSWORD': '',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
+
+DATABASES = {'default': dj_database_url.config()}
+# DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 
 # DATABASES = {
