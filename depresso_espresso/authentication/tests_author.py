@@ -28,14 +28,28 @@ class HandleFollowTestCase(TestCase):
             profileImage="http://localhost:8000/media/profile.jpg"
         )
         self.following = Following.objects.create(
-            authorid=2,
-            followingid=1,
+            authorid=self.author2.id,
+            followingid=self.author1.id,
             areFriends=False
         )
+        
+
+    def test_get_followers(self):
+        url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['type'], 'followers')
+        self.assertEqual(len(response.json()['items']), 2)
 
     def test_get_followers_not_found(self):
-        url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
+        url = reverse('handle_follow', args=[self.author2.id, self.author1.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], 'Author not found')
 
+    def test_remove_follower(self):
+        url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['success'], True)
+        self.assertEqual(Following.objects.filter(authorid=2, followingid=1).exists(), False)
