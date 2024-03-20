@@ -8,6 +8,7 @@ from authentication.checkbasic import checkBasic, my_authenticate
 from django.core import serializers as serial
 from django.contrib.sessions.models import Session
 import json
+import requests
 
 import urllib.request
 from urllib.parse import unquote
