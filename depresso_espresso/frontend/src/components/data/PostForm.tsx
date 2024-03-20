@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#region imports
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
@@ -84,6 +85,19 @@ const PostForm = ({
   const [content, setContent] = useState(oldContent || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [base64Image, setBase64Image] = useState("");
+  const [followers, setFollowers] = useState([]);
+
+  useEffect(() => {
+    const getFollowers = async () => {
+      try {
+        const response = await axios.get(`${author.id}/followers`);
+        setFollowers(response.data.items);
+      } catch (error) {
+        console.error("An error occurred", error);
+      }
+    };
+    if (author.id) getFollowers();
+  }, [author.id]);
 
   //#region functions
   const openPost = (newForm: string) => {
@@ -134,12 +148,12 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
+      // const real_postid = postId?.split("/").pop();
+      // const real_authorid = author.id.split("/").pop();
       const formData = new FormData();
       formData.append("inbox", "No");
       formData.append("title", title);
       formData.append("description", description);
-
-      // TODO: source and origin and comments not covered
 
       formData.append("contentType", contentType);
       formData.append("visibility", visibility);
@@ -153,16 +167,34 @@ const PostForm = ({
 
       setForm("");
 
-      const url = edit ? "/edit_post" : "/new_post/";
-      const response = await axios.post(url, formData);
+      const url = edit ? `${postId}` : `${author.id}/posts/`;
 
-      // create notification
-      if (url == "/new_post/" && visibility.toLowerCase() != "private")
-        await axios.post("/create_notification", {
-          type: "post",
-          sender_id: author.id,
-          post_id: response.data.id,
-        });
+      let response;
+      if (edit) {
+        response = await axios.put(url, formData);
+      } else {
+        response = await axios.post(url, formData);
+        const post_object = response.data.object;
+        if (visibility.toUpperCase() === "PUBLIC") {
+          followers.forEach(async (follower: any) => {
+            // const follower_id = follower.id.split("/").pop();
+            await axios.post(`${follower.id}/inbox`, post_object);
+          });
+        } else if (visibility.toUpperCase() === "FRIENDS") {
+          followers.forEach(async (follower: any) => {
+            try {
+              await axios.get(
+                `${follower.id}/followers/${encodeURIComponent(
+                  encodeURIComponent(author.id)
+                )}`
+              );
+              await axios.post(`${follower.id}/inbox`, post_object);
+            } catch (error) {
+              console.log("Not friends");
+            }
+          });
+        }
+      }
 
       openPost("refresh");
       closePopup && closePopup();
@@ -286,8 +318,8 @@ const PostForm = ({
                   }
 
                   file?.name.includes("png")
-                    ? setContentType("image/png")
-                    : setContentType("image/jpeg");
+                    ? setContentType("image/png;base64")
+                    : setContentType("image/jpeg;base64");
                 }}
               />
               Upload Image

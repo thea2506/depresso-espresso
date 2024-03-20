@@ -32,24 +32,23 @@ const SinglePostView = () => {
           `/espresso-api/authors/${authorid}/posts/${postid}`
         );
 
-        const allData = response.data;
-        const author = allData.author[0];
-        const rawpost = allData.post[0];
-        author.fields.id = author.pk;
+        const post = response.data;
 
         const postModel = {
-          title: rawpost.fields.title,
-          id: rawpost.pk,
-          author: author,
-          description: rawpost.fields.description,
-          contenttype: rawpost.fields.contentType,
-          content: rawpost.fields.content,
-          count: rawpost.fields.count,
-          published: rawpost.fields.published,
-          visibility: rawpost.fields.visibility,
-          likecount: rawpost.fields.likecount,
-          sharecount: rawpost.fields.sharecount,
+          title: post.title,
+          id: post.id,
+          author: post.author,
+          description: post.description,
+          contentType: post.contentType,
+          content: post.content,
+          count: post.count,
+          published: post.published,
+          visibility: post.visibility,
+          likecount: post.like_count,
+          origin: post.origin,
+          source: post.source,
         };
+
         setPost(postModel);
       } catch (error) {
         console.error("An error occurred", error);
@@ -58,6 +57,8 @@ const SinglePostView = () => {
     fetchPost();
     retrieveData();
   }, [authorid, postid, refresh]);
+
+  console.log(post?.content);
 
   return (
     <div className="flex flex-col w-full px-4 gap-y-4 sm:px-12 md:px-20 md:items-center md:justify-center">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#region Imports
 import { Button } from "../Button";
 import Popup from "reactjs-popup";
@@ -74,46 +75,91 @@ const Profile = ({
 
   const [open, setOpen] = useState<boolean>(false);
   const closeModal = () => setOpen(false);
-  //#endregion
 
+  //#endregion
   //#region Functions
+
   useEffect(() => {
     const getCurrentUser = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success == true) setCurUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch current user in ProfilePage", error);
-      }
+      const response = await axios.get(`/curUser`);
+      if (response.data) setCurUser(response.data);
     };
 
+    getCurrentUser();
+  }, [id, loading]);
+
+  useEffect(() => {
     const getOtherUser = async () => {
-      try {
-        const response = await axios.get(`/espresso-api/authors/${id}`);
-        const data = response.data;
-        setOtherUser(data);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
+      const response = await axios.get(
+        checkUrl(decodeURI(`${id}`))
+          ? decodeURI(`${id}`)
+          : `/espresso-api/authors/${id}`
+      );
+      const data = response.data;
+      setOtherUser(data);
     };
 
     const getFollowStatus = async () => {
       try {
-        const response = await axios.get("/check_follow_status/", {
-          params: { id: id },
-        });
+        const actor_object = await axios.get(
+          `/espresso-api/authors/${curUser?.id}`
+        );
+        if (actor_object.status === 200) {
+          const my_id = actor_object.data.id.toString();
+          try {
+            const response = await axios.get(
+              `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
+            );
 
-        if (response.data.success === true) {
-          setStatus(response.data.status);
+            if (response.status === 200) {
+              // further check if they are friends
+              // sent a request to "my_id" to check for followers of "id
+              try {
+                const response2 = await axios.get(
+                  `${my_id}/followers/${encodeURIComponent(
+                    encodeURIComponent(id!)
+                  )}`
+                );
+                if (response2.status === 200) {
+                  setStatus("friends");
+                } else {
+                  setStatus("followed");
+                }
+              } catch (error) {
+                console.log("not friend");
+              }
+            } else {
+              setStatus("stranger");
+            }
+          } catch (error: any) {
+            if (error.response.data.status === "pending") {
+              setStatus("pending");
+            } else setStatus("stranger");
+          }
         }
-      } catch (error) {
-        console.error("Failed to fetch follow status in ProfilePage", error);
+      } catch (error: any) {
+        if (error.response.data.status === "pending") {
+          setStatus("pending");
+        } else setStatus("stranger");
       }
     };
-    getCurrentUser();
     getOtherUser();
-    getFollowStatus();
-  }, [id]);
+    if (curUser && curUser.id) getFollowStatus();
+  }, [curUser, id, loading]);
+
+  /**
+   * Checks if the given URL is a valid URL.
+   * @param string - The URL to check
+   * @returns boolean
+   */
+  function checkUrl(givenUrl: string) {
+    try {
+      new URL(decodeURI(givenUrl));
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
 
   /**
    * Extracts the new value input by the user and updates the corresponding state.
@@ -155,28 +201,30 @@ const Profile = ({
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
+      .then(async () => {
+        // toast.success("Profile updated successfully", myToast);
+        // closeModal();
+        const formField = new FormData();
+        if (newDisplayName !== "")
+          formField.append("displayName", newDisplayName);
+        formField.append("github", newGithub);
+        formField.append("profileImage", newImageURL);
+
+        const data = {
+          displayName: newDisplayName,
+          github: newGithub,
+          profileImage: newImageURL,
+        };
+        await axios.put(`${id}`, data);
+      })
       .then(() => {
-        toast.success("Profile updated successfully", myToast);
+        // toast.success("Profile updated successfully", myToast);
         closeModal();
+        setLoading(!loading);
       })
       .catch((error) => {
         toast.error(error.message, myToast);
       });
-
-    const formField = new FormData();
-    if (newDisplayName !== "") formField.append("displayName", newDisplayName);
-    formField.append("github", newGithub);
-    formField.append("profileImage", newImageURL);
-
-    const data = {
-      displayName: newDisplayName,
-      github: newGithub,
-      profileImage: newImageURL,
-    };
-
-    console.log("SENDING PUT REQUEST TO EDIT: ID:", id);
-    await axios.put(`/espresso-api/authors/${id}`, data);
-    setLoading(!loading);
   };
 
   /**
@@ -184,36 +232,43 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(
-        `/authors/create_follow_request/to/${id}`,
-        {
-          type: "Follow",
-          summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
-          actor: curUser,
-          object: otherUser,
-        }
+      const actor_object = await axios.get(
+        `/espresso-api/authors/${curUser?.id}`
       );
-      if (response.data.success === true) {
+      const response = await axios.post(`${id}/inbox`, {
+        type: "Follow",
+        summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
+        actor: actor_object.data,
+        object: otherUser,
+      });
+      if (response.status === 200) {
         setStatus("pending");
       }
+      setLoading(!loading);
     } catch (error) {
       toast.error("Failed to send follow request", myToast);
     }
   };
+
   /**
    * Unfollow a user
    */
   const handleUnffollowRequest = async () => {
     try {
-      const response = await axios.post(`/unfollow/${id}`);
+      const real_id = id;
+      const response = await axios.delete(
+        `${real_id}/followers/${curUser?.id}`
+      );
       if (response.data.success === true) {
         setStatus("stranger");
       }
+      setLoading(!loading);
     } catch (error) {
       toast.error("Failed to unfollow", myToast);
     }
   };
   //#endregion
+
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
       <ToastContainer />
@@ -227,7 +282,7 @@ const Profile = ({
         </div>
 
         {/* Edit button */}
-        {curUser?.id === id ? (
+        {curUser?.id === id?.split("/").pop() ? (
           <Button
             buttonType="icon"
             icon={editIcon}
@@ -237,7 +292,7 @@ const Profile = ({
         ) : null}
 
         {/* Follow button */}
-        {curUser?.id !== id && status === "stranger" ? (
+        {curUser?.id !== id?.split("/").pop() && status === "stranger" ? (
           <Button
             buttonType="icon"
             icon={<GoPlusCircle className="w-8 h-8" />}
@@ -247,7 +302,7 @@ const Profile = ({
         ) : null}
 
         {/* Pending */}
-        {curUser?.id !== id && status === "pending" ? (
+        {curUser?.id !== id?.split("/").pop() && status === "pending" ? (
           <Button
             buttonType="icon"
             icon={<GoClock className="w-8 h-8" />}
@@ -256,7 +311,9 @@ const Profile = ({
         ) : null}
 
         {/* Unfollow button */}
-        {curUser?.id !== id && status !== "stranger" && status !== "pending" ? (
+        {curUser?.id !== id?.split("/").pop() &&
+        status !== "stranger" &&
+        status !== "pending" ? (
           <Button
             buttonType="icon"
             icon={<GoCheckCircle className="w-8 h-8" />}
@@ -322,7 +379,7 @@ const Profile = ({
           <p className="text-xl font-semibold md:text-2xl opacity-95">
             {display_name}
           </p>
-          {status === "friend" && (
+          {status?.toLowerCase() === "friends" && (
             <GoCodeOfConduct className="w-6 h-6 text-primary" />
           )}
         </div>
