@@ -5,7 +5,7 @@ from posts.models import Comment, LikeComment, LikePost, Post
 from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
-from django.core import serializers
+from django.core import serializers as serial
 import requests
 from requests.auth import HTTPBasicAuth
 from django.contrib.sessions.models import Session
@@ -146,7 +146,7 @@ def get_authors(request):
             for author in authors:
                 items.append(author)
 
-        res = serializers.serialize("json", items, fields=[
+        res = serial.serialize("json", items, fields=[
                                     "profileImage", "username", "github", "displayName", "url"])
         return HttpResponse(res, content_type="application/json")
 
@@ -478,7 +478,7 @@ def get_follow_requests(request):  # Can this be extended to be inbox?
                 requester = Author.objects.get(id=follow_request.requester)
                 requesters.append(requester)
 
-            res = serializers.serialize("json", requesters, fields=[
+            res = serial.serialize("json", requesters, fields=[
                                         "profileImage", "username", "github", "displayName", "url"])
 
             return HttpResponse(res, content_type="application/json")
