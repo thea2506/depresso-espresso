@@ -1,3 +1,4 @@
+from itertools import chain
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from authentication.serializer import AuthorSerializer
@@ -662,19 +663,25 @@ def api_get_author_liked(request, authorid):
 @api_view(['GET'])
 def api_all_authors(request):
     my_host = request.META['HTTP_HOST']
-    print("MY HOST", my_host)
+
+    data = {"type": "authors", "items": []}
+
     # Local authors
     local_authors = Author.objects.filter(Q(host__contains=my_host))
-    # for local_author in local_authors:
-    #     print(local_author.displayName)
 
+    # Remote authors
     nodes = Node.objects.all()
     session = requests.Session()
     session.auth = (MY_NODE_USERNAME, MY_NODE_PASSWORD)
+
+    data["items"] = AuthorSerializer(instance=local_authors, many=True, context={
+                                     "request": request}).data
+
     for node in nodes:
         if node.host.startswith("http://") or node.host.startswith("https://"):
             auth = session.get(node.host+"authors/")
             if auth.status_code == 200:
-                authors = auth.json()["items"]
-                print(authors)
-    return JsonResponse({"message": "All authors retrieved successfully"}, status=200)
+                for item in auth.json()["items"]:
+                    data["items"].append(item)
+
+    return JsonResponse(data, status=200)
