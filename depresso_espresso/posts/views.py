@@ -24,6 +24,7 @@ from authentication.models import *
 from authentication.serializer import *
 from authentication.checkbasic import my_authenticate
 import requests
+from operator import itemgetter
 
 
 class PostView(forms.ModelForm):
@@ -542,6 +543,13 @@ def api_get_feed(request):
         friend_posts = Post.objects.filter(
             author=user, visibility="FRIENDS").order_by('-published')
 
+        unlisted_posts = PostSerializer(
+            instance=unlisted_posts, many=True, context={"request": request}).data
+        friend_posts = PostSerializer(instance=friend_posts, many=True, context={
+                                      "request": request}).data
+        public_posts = PostSerializer(instance=public_posts, many=True, context={
+                                      "request": request}).data
+
         all_posts = chain(all_posts, public_posts,
                           unlisted_posts, friend_posts)
 
@@ -549,14 +557,16 @@ def api_get_feed(request):
         friends = Follower.objects.filter(author=user)
 
         for friend in friends:
-            print(friend.follower_author["id"])
+            print("FRIEND", friend.follower_author)
             raw_id = friend.follower_author["id"].split("/")[-1]
             if not Author.objects.filter(id=raw_id).exists():
                 # Not local author
                 session = requests.Session()
                 session.auth = (MY_NODE_USERNAME, MY_NODE_PASSWORD)
-                response = session.get(friend.follower_author["id"]+"/posts/")
+                response = session.get(friend.follower_author["url"]+"/posts/")
                 posts_json = response.json()
+                post_json_items = posts_json["items"]
+                all_posts = chain(all_posts, post_json_items)
                 # print("POSTS", posts_json)
                 pass
             else:
@@ -564,19 +574,22 @@ def api_get_feed(request):
                     id=raw_id)
                 other_posts = Post.objects.filter(
                     author=friend_object, visibility="FRIENDS").order_by('-published')
+                other_posts = PostSerializer(
+                    other_posts, many=True, context={"request": request}
+                ).data
                 all_posts = chain(all_posts, other_posts)
 
         sorted_posts = sorted(
-            all_posts, key=attrgetter('published'), reverse=True)
+            all_posts, key=itemgetter('published'), reverse=True)
 
         # Return the posts
-        post_serializer = PostSerializer(
-            sorted_posts, many=True, context={"request": request}
-        )
+        # post_serializer = PostSerializer(
+        #     sorted_posts, many=True, context={"request": request}
+        # )
 
         return JsonResponse({
             "type": "posts",
-            "items": post_serializer.data
+            "items": sorted_posts
         }, status=200)
 
     else:
