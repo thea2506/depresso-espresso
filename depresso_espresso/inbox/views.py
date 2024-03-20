@@ -112,15 +112,12 @@ def handle_inbox(request, authorid):
                     external_author = Author.objects.get(url=request.POST.get("author")["url"]) # get author of post if they already exist in the db (Compare url instead of id because the incoming request data format should contain the author's entire url as an id which is incompatible with our database)
 
                 else: # Create new author if this author doesn't exist
-                     
-                    external_author = Author.objects.create()
-                    if not external_author:
-                        return JsonResponse({"message": "Error creating new author"})
-                    external_author.host = request.POST.get("author")["host"]
-                    external_author.displayName = request.POST.get("author")["displayName"]
-                    external_author.url = request.POST.get("author")["url"]
-                    external_author.username = request.POST.get("author")["id"]
-                    external_author.isExternalAuthor = True
+                    host = request.POST.get("author")["host"]
+                    displayName = request.POST.get("author")["displayName"]
+                    url = request.POST.get("author")["url"]
+                    username = request.POST.get("author")["id"]
+                
+                    Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
                     
                 data = { # Send this data as a post request to our internal new_external_post function in posts/views.py
                     "title":  request.POST.get("title"),
@@ -144,14 +141,12 @@ def handle_inbox(request, authorid):
                     external_author = Author.objects.get(url=request.data["actor"]["url"]) # get author of request if they already exist in the db (Compare url instead of id because the incoming request data format should contain the author's entire url as an id which is incompatible with our database)
                     
                 else:
-                    external_author = Author.objects.create()
-                    if not external_author:
-                        return JsonResponse({"message": "Error creating new author"})
-                    external_author.host = request.POST.get("actor")["host"]
-                    external_author.displayName = request.POST.get("actor")["displayName"]
-                    external_author.url = request.POST.get("actor")["url"]
-                    external_author.username = request.POST.get("actor")["id"]
-                    external_author.isExternalAuthor = True
+                    host = request.POST.get("actor")["host"]
+                    displayName = request.POST.get("actor")["displayName"]
+                    url = request.POST.get("actor")["url"]
+                    username = request.POST.get("actor")["id"]
+
+                    Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
                 if not Author.objects.filter(url=request.POST.get("object")["url"]).exists():
                      return JsonResponse({"message": "The author specified in 'object' field does not exist"})
