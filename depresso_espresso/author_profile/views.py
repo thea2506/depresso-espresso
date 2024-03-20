@@ -5,8 +5,9 @@ from posts.models import Comment, Post, Like
 from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
-from django.core import serializers
+from django.core import serializers as serial
 import requests
+from requests.auth import HTTPBasicAuth
 from django.contrib.sessions.models import Session
 import json
 import urllib.request
@@ -14,6 +15,8 @@ from urllib.parse import unquote
 from django.db.models import Q
 from authentication.serializer import *
 from inbox.models import Notification, NotificationItem
+from http.client import HTTPSConnection
+from base64 import b64encode
 from posts.serializers import *
 
 
@@ -60,12 +63,17 @@ def api_author(request, authorid):
         return render(request, "index.html")
 
 
+def basic_auth(username, password):
+    token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
+    return f'Basic {token}'
+
+
 @api_view(['GET'])
 def get_authors(request):
     ''' LOCAL and REMOTE
         Handles getting all LOCAL authors on our server with and without an optional search parameter
         GET ://service/authors/ or GET ://service/authors?page=10&size=5'''
-
+    user = None
     if request.session.session_key is not None:
 
         session = Session.objects.get(session_key=request.session.session_key)
@@ -73,10 +81,9 @@ def get_authors(request):
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
-
     if request.method == "GET":
 
-        if user.is_authenticated == False:
+        if user == None:
             # This part of the function is meant to be used by remote servers only
             # handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
             node = checkBasic(request)
@@ -113,26 +120,33 @@ def get_authors(request):
             # Poll all external nodes for their authors
             nodes = Node.objects.all()
             for node in nodes:
-                username = node["theirUsername"]
-                password = node["theirPassword"]
-                baseUrl = node["baseUrl"]
-                # send get request to node to retrieve external author info
-                authors = requests.get(
-                    baseUrl + '/authors/', auth=(username, password))
+                username = node.theirUsername
+                password = node.theirPassword
+                baseUrl = node.baseUrl
 
-                for author in authors["items"]:
+                # Code taken from https://stackoverflow.com/a/7000784
+                host = str(baseUrl).replace("https://", "")
+                host = host[:-1]
+                client = HTTPSConnection(host)
 
+                headers = {"Authorization": "Basic {}".format(
+                    b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
+                client.request('GET', '/authors', headers=headers)
+                response = client.getresponse()
+                authorsBytes = response.read()
+                author_data = json.loads(authorsBytes)
+
+                for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
                         # if author does not exist, create a new one
-                        new_author = Author.objects.create()
-                        if not new_author:
-                            return JsonResponse({"message": "Error creating new author"})
-                        new_author.host = author["host"]
-                        new_author.displayName = author["displayName"]
-                        new_author.url = author["url"]
-                        new_author.username = author["username"]
-                        new_author.isExternalAuthor = True
+                        host = author["host"]
+                        displayName = author["displayName"]
+                        url = author["url"]
+                        username = author["username"]
+
+                        Author.objects.create(
+                            host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
             search_terms = request.GET.get('search')
 
@@ -149,8 +163,8 @@ def get_authors(request):
             for author in authors:
                 items.append(author)
 
-        res = serializers.serialize("json", items, fields=[
-                                    "profileImage", "username", "github", "displayName", "url"])
+        res = serial.serialize("json", items, fields=[
+            "profileImage", "username", "github", "displayName", "url"])
         return HttpResponse(res, content_type="application/json")
 
 
@@ -488,8 +502,8 @@ def get_follow_requests(request):  # Can this be extended to be inbox?
                 requester = Author.objects.get(id=follow_request.requester)
                 requesters.append(requester)
 
-            res = serializers.serialize("json", requesters, fields=[
-                                        "profileImage", "username", "github", "displayName", "url"])
+            res = serial.serialize("json", requesters, fields=[
+                "profileImage", "username", "github", "displayName", "url"])
 
             return HttpResponse(res, content_type="application/json")
         return JsonResponse({"message": "No new requests"})

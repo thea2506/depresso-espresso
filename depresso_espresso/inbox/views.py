@@ -165,15 +165,13 @@ def handle_inbox(request, authorid):
                         url=request.data["actor"]["url"])
 
                 else:
-                    external_author = Author.objects.create()
-                    if not external_author:
-                        return JsonResponse({"message": "Error creating new author"})
-                    external_author.host = request.POST.get("actor")["host"]
-                    external_author.displayName = request.POST.get("actor")[
+                    host = request.POST.get("actor")["host"]
+                    displayName = request.POST.get("actor")[
                         "displayName"]
-                    external_author.url = request.POST.get("actor")["url"]
-                    external_author.username = request.POST.get("actor")["id"]
-                    external_author.isExternalAuthor = True
+                    url = request.POST.get("actor")["url"]
+                    username = request.POST.get("actor")["id"]
+
+                    Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
                 if not Author.objects.filter(url=request.POST.get("object")["url"]).exists():
                     return JsonResponse({"message": "The author specified in 'object' field does not exist"})
