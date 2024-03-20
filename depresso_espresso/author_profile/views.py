@@ -15,6 +15,8 @@ from urllib.parse import unquote
 from django.db.models import Q
 from authentication.serializer import *
 from inbox.models import Notification, NotificationItem
+from http.client import HTTPSConnection
+from base64 import b64encode
 
 
 @api_view(["GET", "PUT"])
@@ -59,6 +61,9 @@ def api_author(request, authorid):
     else:
         return render(request, "index.html")
 
+def basic_auth(username, password):
+    token = b64encode(f"{username}:{password}".encode('utf-8')).decode("ascii")
+    return f'Basic {token}'
 
 @api_view(['GET'])
 def get_authors(request):
@@ -118,8 +123,20 @@ def get_authors(request):
                 password = node.theirPassword
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
-                authors = requests.get(str(baseUrl + 'authors'), auth=HTTPBasicAuth(username, password))
-                author_data = authors.json()
+                #This sets up the https connection
+                c = HTTPSConnection("www.google.com")
+                #then connect
+                headers = { 'Authorization' : basic_auth(username, password) }
+                c.request('GET', '/', headers=headers)
+                #get the response back
+                res = c.getresponse()
+                # at this point you could check the status etc
+                # this gets the page text
+                data = res.read()
+
+                # authors = requests.get(str(baseUrl + 'authors'), auth=HTTPBasicAuth(username, password))
+                print(data)
+                author_data = data.json()
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
