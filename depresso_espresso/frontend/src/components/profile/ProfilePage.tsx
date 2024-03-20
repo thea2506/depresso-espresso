@@ -44,7 +44,12 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/espresso-api/authors/${authorId}`);
+        const response = await axios.get(`/espresso-api/authors/${authorId}`, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);
@@ -61,7 +66,12 @@ const ProfilePage = () => {
     const fetchFollowers = async () => {
       if (thisProfileUser && thisProfileUser.id)
         try {
-          const response = await axios.get(`${thisProfileUser!.id}/followers`);
+          const response = await axios.get(`${thisProfileUser!.id}/followers`, {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          });
           const data = response.data;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const followerModels = data?.items?.map((rawauthor: any) => ({
@@ -83,7 +93,12 @@ const ProfilePage = () => {
 
     const retrievePosts = async () => {
       try {
-        const response = await axios.get(`${thisProfileUser!.id}/posts/`);
+        const response = await axios.get(`${thisProfileUser!.id}/posts/`, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
         const posts = response.data;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const postModels = posts.items.map((rawpost: any) => {

@@ -93,7 +93,13 @@ const Profile = ({
       const response = await axios.get(
         checkUrl(decodeURI(`${id}`))
           ? decodeURI(`${id}`)
-          : `/espresso-api/authors/${id}`
+          : `/espresso-api/authors/${id}`,
+        {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        }
       );
       const data = response.data;
       setOtherUser(data);
@@ -102,13 +108,27 @@ const Profile = ({
     const getFollowStatus = async () => {
       try {
         const actor_object = await axios.get(
-          `/espresso-api/authors/${curUser?.id}`
+          `/espresso-api/authors/${curUser?.id}`,
+          {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          }
         );
         if (actor_object.status === 200) {
           const my_id = actor_object.data.id.toString();
           try {
             const response = await axios.get(
-              `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
+              `${id}/followers/${encodeURIComponent(
+                encodeURIComponent(my_id)
+              )}`,
+              {
+                auth: {
+                  username: import.meta.env.VITE_USERNAME,
+                  password: import.meta.env.VITE_PASSWORD,
+                },
+              }
             );
 
             if (response.status === 200) {
@@ -118,7 +138,13 @@ const Profile = ({
                 const response2 = await axios.get(
                   `${my_id}/followers/${encodeURIComponent(
                     encodeURIComponent(id!)
-                  )}`
+                  )}`,
+                  {
+                    auth: {
+                      username: import.meta.env.VITE_USERNAME,
+                      password: import.meta.env.VITE_PASSWORD,
+                    },
+                  }
                 );
                 if (response2.status === 200) {
                   setStatus("friends");
@@ -235,12 +261,21 @@ const Profile = ({
       const actor_object = await axios.get(
         `/espresso-api/authors/${curUser?.id}`
       );
-      const response = await axios.post(`${id}/inbox`, {
-        type: "Follow",
-        summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
-        actor: actor_object.data,
-        object: otherUser,
-      });
+      const response = await axios.post(
+        `${id}/inbox`,
+        {
+          type: "Follow",
+          summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
+          actor: actor_object.data,
+          object: otherUser,
+        },
+        {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        }
+      );
       if (response.status === 200) {
         setStatus("pending");
       }

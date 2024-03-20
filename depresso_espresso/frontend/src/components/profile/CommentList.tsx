@@ -122,6 +122,12 @@ const CommentList = ({
           },
           comment: comment,
           contenttype: "text/plain",
+        },
+        {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
         }
       );
 
@@ -129,7 +135,13 @@ const CommentList = ({
         const comment_object = response.data.comment;
         await axios.post(
           `/espresso-api/authors/${real_authorid}/inbox`,
-          comment_object
+          comment_object,
+          {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          }
         );
 
         setRefresh(!refresh);
@@ -145,20 +157,29 @@ const CommentList = ({
   const handleLikeComment = async (comment: CommentModel) => {
     const real_authorid = post.author.id.split("/").pop();
     try {
-      await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
-        summary: `${curUser!.displayName} liked your comment`,
-        type: "Like",
-        object: comment.id,
-        author: {
-          type: "author",
-          id: curUser!.id,
-          host: curUser!.host,
-          displayName: curUser!.displayName,
-          url: curUser!.url,
-          github: curUser!.github,
-          profileImage: curUser!.profileImage,
+      await axios.post(
+        `/espresso-api/authors/${real_authorid}/inbox`,
+        {
+          summary: `${curUser!.displayName} liked your comment`,
+          type: "Like",
+          object: comment.id,
+          author: {
+            type: "author",
+            id: curUser!.id,
+            host: curUser!.host,
+            displayName: curUser!.displayName,
+            url: curUser!.url,
+            github: curUser!.github,
+            profileImage: curUser!.profileImage,
+          },
         },
-      });
+        {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        }
+      );
       setRefresh(!refresh);
     } catch (error) {
       console.error("An error occurred", error);

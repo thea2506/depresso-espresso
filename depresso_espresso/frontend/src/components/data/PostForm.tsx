@@ -90,7 +90,12 @@ const PostForm = ({
   useEffect(() => {
     const getFollowers = async () => {
       try {
-        const response = await axios.get(`${author.id}/followers`);
+        const response = await axios.get(`${author.id}/followers`, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
         setFollowers(response.data.items);
       } catch (error) {
         console.error("An error occurred", error);
@@ -171,14 +176,29 @@ const PostForm = ({
 
       let response;
       if (edit) {
-        response = await axios.put(url, formData);
+        response = await axios.put(url, formData, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
       } else {
-        response = await axios.post(url, formData);
+        response = await axios.post(url, formData, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
         const post_object = response.data.object;
         if (visibility.toUpperCase() === "PUBLIC") {
           followers.forEach(async (follower: any) => {
             // const follower_id = follower.id.split("/").pop();
-            await axios.post(`${follower.id}/inbox`, post_object);
+            await axios.post(`${follower.id}/inbox`, post_object, {
+              auth: {
+                username: import.meta.env.VITE_USERNAME,
+                password: import.meta.env.VITE_PASSWORD,
+              },
+            });
           });
         } else if (visibility.toUpperCase() === "FRIENDS") {
           followers.forEach(async (follower: any) => {
@@ -186,9 +206,20 @@ const PostForm = ({
               await axios.get(
                 `${follower.id}/followers/${encodeURIComponent(
                   encodeURIComponent(author.id)
-                )}`
+                )}`,
+                {
+                  auth: {
+                    username: import.meta.env.VITE_USERNAME,
+                    password: import.meta.env.VITE_PASSWORD,
+                  },
+                }
               );
-              await axios.post(`${follower.id}/inbox`, post_object);
+              await axios.post(`${follower.id}/inbox`, post_object, {
+                auth: {
+                  username: import.meta.env.VITE_USERNAME,
+                  password: import.meta.env.VITE_PASSWORD,
+                },
+              });
             } catch (error) {
               console.log("Not friends");
             }

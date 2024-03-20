@@ -28,7 +28,13 @@ const NotiPage = () => {
       if (!curUser?.id) return;
       try {
         const response = await axios.get(
-          `/espresso-api/authors/${curUser?.id}/inbox`
+          `/espresso-api/authors/${curUser?.id}/inbox`,
+          {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          }
         );
         console.log(response.data);
         if (response.status === 200) setNotifications(response.data.items);

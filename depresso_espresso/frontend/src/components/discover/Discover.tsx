@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // import AuthorSearch from "../data/AuthorSearch";
 import { useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { AuthorModel } from "../data/AuthorModel";
 import { Button } from "../Button";
 import {
