@@ -11,7 +11,6 @@ import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
 import { AuthorModel } from "../data/AuthorModel";
 
-import { GoHeart } from "react-icons/go";
 import { act } from "react-dom/test-utils";
 
 
