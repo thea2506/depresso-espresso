@@ -33,6 +33,8 @@ class HandleFollowTestCase(TestCase):
             areFriends=False
         )
         
+        self.client.force_login(user=self.author1)
+        
 
     def test_get_followers(self):
         url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
@@ -47,9 +49,27 @@ class HandleFollowTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], 'Author not found')
 
+    def test_add_follower(self):
+      self.client.force_login(user=self.author1)
+      url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
+      response = self.client.put(url)
+      self.assertEqual(response.status_code, 200)
+      self.assertEqual(response.json()['success'], True)
+      self.assertEqual(Following.objects.filter(authorid=self.author2.id, followingid=self.author1.id).exists(), True)
+
     def test_remove_follower(self):
         url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['success'], True)
-        self.assertEqual(Following.objects.filter(authorid=2, followingid=1).exists(), False)
+        self.assertEqual(Following.objects.filter(authorid=self.author1.id, followingid=self.author2.id).exists(), False)
+
+    def test_remove_follower_unfriend(self):
+        self.following.areFriends = True
+        self.following.save()
+        url = reverse('handle_follow', args=[self.author1.id, self.author2.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['success'], True)
+        self.assertEqual(Following.objects.filter(authorid=self.author1.id, followingid=self.author2.id).exists(), False)
+        self.assertEqual(response.json()['message'], ['Author 2', 'unfollowed', 'Author 1'])
