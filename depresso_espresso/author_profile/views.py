@@ -287,7 +287,7 @@ def handle_follow(request, authorid, foreignid):
 @api_view(['GET', 'DELETE', 'PUT'])
 def api_add_follower(request, authorid, foreignid):
     ''' GET [local, remote] check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
-    PUT [local]: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
+    PUT [local, remote]: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
     DELETE [local]: remove FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID
     '''
     user = my_authenticate(request)
@@ -296,8 +296,8 @@ def api_add_follower(request, authorid, foreignid):
 
     # LOCAL
     if request.method == 'PUT':
-        if not isinstance(user, Author) or str(user.id) != str(authorid):
-            return JsonResponse({"message": "Local Users Only"}, status=404)
+        # if not isinstance(user, Author) or str(user.id) != str(authorid):
+        #     return JsonResponse({"message": "Local Users Only"}, status=404)
 
         foreign_author = request.data["actor"]
         # author = request.data["object"]

@@ -33,6 +33,9 @@ const myToast: ToastOptions<unknown> = {
   closeButton: false,
 };
 
+const MY_USERNAME = import.meta.env.VITE_USERNAME;
+const MY_USERPASSWORD = import.meta.env.VITE_PASSWORD;
+
 const Discover = () => {
   const [allAuthors, setAllAuthors] = useState<AuthorModel[]>([]);
   const [user, setUser] = useState<AuthorModel | null>(null);
@@ -81,7 +84,8 @@ const Discover = () => {
         await axios.get(
           `${author.url}/followers/${encodeURIComponent(
             encodeURIComponent(user.url)
-          )}`
+          )}`,
+          { auth: { username: MY_USERNAME, password: MY_USERPASSWORD } }
         );
         if (followers.some((elem) => elem.id === author.id)) {
           return "friends";
