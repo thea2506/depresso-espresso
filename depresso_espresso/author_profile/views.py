@@ -117,9 +117,9 @@ def get_authors(request):
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
                 authors = requests.get(
-                    baseUrl + '/authors/', auth=(username, password))
+                    baseUrl + 'authors', auth=(username, password))
 
-                for author in authors:
+                for author in authors["items"]:
 
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
@@ -127,10 +127,10 @@ def get_authors(request):
                         new_author = Author.objects.create()
                         if not new_author:
                             return JsonResponse({"message": "Error creating new author"})
-                        new_author.host = author.host
-                        new_author.displayName = author.displayName
-                        new_author.url = author.url
-                        new_author.username = author.username
+                        new_author.host = author["host"]
+                        new_author.displayName = author["displayName"]
+                        new_author.url = author["url"]
+                        new_author.username = author["username"]
                         new_author.isExternalAuthor = True
 
             search_terms = request.GET.get('search')
