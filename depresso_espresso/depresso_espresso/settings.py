@@ -82,6 +82,10 @@ LOGIN_EXEMPT_URLS = (
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:8000',
+    'https://espresso-depresso-3e4b6938ea78.herokuapp.com',
+    'https://espresso-a3b726fa7f99.herokuapp.com',
+    'https://espresso-depresso-3e4b6938ea78.herokuapp.com/',
+    'https://espresso-a3b726fa7f99.herokuapp.com/',
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'

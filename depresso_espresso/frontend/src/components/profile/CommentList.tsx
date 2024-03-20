@@ -94,6 +94,7 @@ const CommentList = ({
         console.error("An error occurred", error);
       }
     };
+
     fetchProfile();
     fetchComments();
   }, [post.author.id, post.id, refresh]);
@@ -105,6 +106,7 @@ const CommentList = ({
       formField.append("postid", post.id);
       const real_postid = post.id.split("/").pop();
       const real_authorid = post.author.id.split("/").pop();
+
       const response = await axios.post(
         `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`,
         {
@@ -123,15 +125,14 @@ const CommentList = ({
         }
       );
 
-      // await axios.post("/create_notification", {
-      //   type: "comment",
-      //   sender_id: curUser!.id,
-      //   receiver_id: real_authorid,
-      //   post_id: real_postid,
-      // });
-
       if (response.data.success) {
-        console.log("Comment creation successful");
+        console.log("I RUN BITCH");
+        const comment_object = response.data.comment;
+        await axios.post(
+          `/espresso-api/authors/${real_authorid}/inbox`,
+          comment_object
+        );
+
         setRefresh(!refresh);
         setComment("");
       } else {

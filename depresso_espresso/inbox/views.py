@@ -164,15 +164,13 @@ def handle_inbox(request, authorid):
                         url=request.data["actor"]["url"])
 
                 else:
-                    external_author = Author.objects.create()
-                    if not external_author:
-                        return JsonResponse({"message": "Error creating new author"})
-                    external_author.host = request.POST.get("actor")["host"]
-                    external_author.displayName = request.POST.get("actor")[
+                    host = request.POST.get("actor")["host"]
+                    displayName = request.POST.get("actor")[
                         "displayName"]
-                    external_author.url = request.POST.get("actor")["url"]
-                    external_author.username = request.POST.get("actor")["id"]
-                    external_author.isExternalAuthor = True
+                    url = request.POST.get("actor")["url"]
+                    username = request.POST.get("actor")["id"]
+
+                    Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
                 if not Author.objects.filter(url=request.POST.get("object")["url"]).exists():
                     return JsonResponse({"message": "The author specified in 'object' field does not exist"})
@@ -292,7 +290,21 @@ def create_like_notification(request, author_object, data):
 
 
 def create_comment_notification(request, author_object, data):
-    pass
+    parsed_url = urlparse(data["id"])
+    path_segments = parsed_url.path.split("/")
+    comment_id = path_segments[path_segments.index("comments") + 1]
+    comment_object = Comment.objects.get(id=comment_id)
+    serializer = CommentSerializer(
+        instance=comment_object, data=data, context={"request": request}
+    )
+
+    if serializer.is_valid():
+        notification_object = Notification.objects.get_or_create(
+            Notification, author=author_object)[0]
+        create_notification_item(notification_object, comment_object)
+        return send_notification_serializer_response(notification_object, request)
+    else:
+        return JsonResponse(serializer.errors, status=404)
 
 
 def create_post_notification(request, author_object, data):
