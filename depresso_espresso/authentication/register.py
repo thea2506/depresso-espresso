@@ -33,7 +33,7 @@ class Register(UserCreationForm):
 
         user.username = self.cleaned_data["username"]
         user.displayName = self.cleaned_data["displayName"]
-        user.host = f"http://{host}/espresso-api"
+        user.host = f"http://{host}/"
         user.set_password(self.cleaned_data["password1"])
         user.url = f"http://{host}/espresso-api/authors/{user.id}"
 

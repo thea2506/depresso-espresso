@@ -541,8 +541,7 @@ def api_get_authors(request):
 
     page = request.GET.get("page")
     size = request.GET.get("size")
-    data = {"type": "author"}
-    author_list = []
+    data = {"type": "authors"}
 
     if request.method == "GET":
         authors = Author.objects.all()
@@ -559,33 +558,12 @@ def api_get_authors(request):
                 start_index = 0
 
             if start_index > len(authors) or end_index < 0:
-                author_list = []
+                authors = []
             else:
                 authors = authors[start_index: end_index]
-                for author in authors:
-                    author_list.append({
-                        "type": author.type,
-                        "id": author.id,
-                        "url": author.url,
-                        "host": author.host,
-                        "displayName": author.displayName,
-                        "username": author.username,
-                        "github": author.github,
-                        "profileImage": author.profileImage
-                    })
-        else:
-            for author in authors:
-                author_list.append({
-                    "type": author.type,
-                    "id": author.id,
-                    "url": author.url,
-                    "host": author.host,
-                    "displayName": author.displayName,
-                    "username": author.username,
-                    "github": author.github,
-                    "profileImage": author.profileImage
-                })
-        data["items"] = author_list
+
+        data["items"] = AuthorSerializer(instance=authors, many=True, context={
+                                         "request": request}).data
         return JsonResponse(data)
     else:
         return JsonResponse({"message": "Method not allowed"}, status=405)
