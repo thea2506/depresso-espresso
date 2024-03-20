@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#region imports
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
@@ -84,6 +85,23 @@ const PostForm = ({
   const [content, setContent] = useState(oldContent || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [base64Image, setBase64Image] = useState("");
+  const [followers, setFollowers] = useState([]);
+
+  useEffect(() => {
+    const getFollowers = async () => {
+      const real_id = author?.id?.split("/").pop();
+      if (real_id)
+        try {
+          const response = await axios.get(
+            `/espresso-api/authors/${real_id}/followers`
+          );
+          setFollowers(response.data.items);
+        } catch (error) {
+          console.error("An error occurred", error);
+        }
+    };
+    getFollowers();
+  }, [author.id]);
 
   //#region functions
   const openPost = (newForm: string) => {
@@ -162,18 +180,15 @@ const PostForm = ({
         response = await axios.put(url, formData);
       } else {
         response = await axios.post(url, formData);
+        const post_object = response.data.object;
+        followers.forEach(async (follower: any) => {
+          const follower_id = follower.id.split("/").pop();
+          await axios.post(
+            `/espresso-api/authors/${follower_id}/inbox`,
+            post_object
+          );
+        });
       }
-
-      // create notification
-      // if (
-      //   url == `/espresso-api/authors/${real_authorid}/posts/` &&
-      //   visibility.toLowerCase() != "private"
-      // )
-      //   await axios.post("/create_notification", {
-      //     type: "post",
-      //     sender_id: real_authorid,
-      //     object_id: response.data.postid.split("/").pop()!,
-      //   });
 
       openPost("refresh");
       closePopup && closePopup();

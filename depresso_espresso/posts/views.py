@@ -567,7 +567,7 @@ def api_posts(request, authorid):
 
                     form.save(commit=True)
                     post.save()
-                    return JsonResponse({"message": "Post created", "success": True, "postid": post.id}, status=201)
+                    return JsonResponse({"message": "Post created", "success": True, "postid": post.id, "object": PostSerializer(instance=post, context={"request": request}).data}, status=201)
                 else:
                     return JsonResponse({"message": "Invalid form", "success": False}, status=400)
             else:

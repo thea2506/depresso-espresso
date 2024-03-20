@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, RegisterConfig, Following, FollowRequest, Node
+from .models import Author, RegisterConfig, Following, FollowRequest, Node, Follower, Follow
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -14,10 +14,10 @@ from django.core.exceptions import ValidationError
 class NodeConfigForm(forms.ModelForm):
     """A form for configuring optional node to node connections"""
     class Meta:
-            model = Node
-            fields = ('ourUsername', 'ourPassword', 'theirUsername', 'theirPassword', 'baseUrl')
- 
-    
+        model = Node
+        fields = ('ourUsername', 'ourPassword',
+                  'theirUsername', 'theirPassword', 'baseUrl')
+
 
 class RegisterConfigForm(forms.ModelForm):
     """A form for configuring optional user registration admin perms"""
@@ -34,8 +34,9 @@ class RegisterConfigForm(forms.ModelForm):
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. From django documentation."""
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-    
+    password2 = forms.CharField(
+        label='Password confirmation', widget=forms.PasswordInput)
+
     class Meta:
         model = Author
         fields = "__all__"
@@ -56,6 +57,7 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class UserChangeForm(forms.ModelForm):
     """A form for updating users. From django documentation."""
     password = ReadOnlyPasswordHashField()
@@ -68,23 +70,33 @@ class UserChangeForm(forms.ModelForm):
         # Regardless of what the user provides, return the initial value.
         return self.initial["password"]
 
+
 class AuthorAdmin(admin.ModelAdmin):
-    fields = ("id", "username", "displayName", "url", "type", "host", "github", "profileImage", "is_active", "password", "allowRegister")
+    fields = ("id", "username", "displayName", "url", "type", "host",
+              "github", "profileImage", "is_active", "password", "allowRegister")
+
 
 class RegisterConfigAdmin(admin.ModelAdmin):
     fields = ('requireRegisterPerms',)
 
+
 class NodeAdmin(admin.ModelAdmin):
-    fields = ('ourUsername', 'ourPassword', 'theirUsername', 'theirPassword', 'baseUrl')
+    fields = ('ourUsername', 'ourPassword',
+              'theirUsername', 'theirPassword', 'baseUrl')
+
 
 @admin.register(Following)
 class FollowingAdmin(admin.ModelAdmin):
     list_display = ('authorid', 'followingid', 'areFriends', 'created_at')
 
+
 @admin.register(FollowRequest)
 class FollowRequestAdmin(admin.ModelAdmin):
     list_display = ('requester', 'receiver')
 
+
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(RegisterConfig, RegisterConfigAdmin)
 admin.site.register(Node, NodeAdmin)
+admin.site.register(Follower)
+admin.site.register(Follow)
