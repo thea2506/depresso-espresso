@@ -306,10 +306,7 @@ def api_add_follower(request, authorid, foreignid):
         follow_object = Follow.objects.filter(
             object=Author.objects.get(id=authorid))
         for follow in follow_object:
-            id_url = follow.actor["id"]
-            id_segment = id_url.split("/")
-            id = id_segment[len(id_segment) - 1]
-            if str(id) == foreignid:
+            if str(follow.actor["id"]) == foreignid:
                 follow.delete()
                 break
         return JsonResponse({"success": True, "decision": decision}, status=201)
@@ -318,13 +315,11 @@ def api_add_follower(request, authorid, foreignid):
         followers = Follower.objects.filter(author=author_object)
         for follower in followers:
             follower_object = follower.follower_author
-            id_url = follower_object["id"]
-            id_segment = id_url.split("/")
-            if id_segment[len(id_segment) - 1] == foreignid:
+            if str(follower_object["id"]) == foreignid:
                 return JsonResponse({
                     "type": "Follow",
-                    "summary": follower.follower_author["displayName"] + f" is following {author_object.displayName}",
-                    "actor": follower.follower_author,
+                    "summary": follower_object["displayName"] + f" is following {author_object.displayName}",
+                    "actor": follower_object,
                     "object": AuthorSerializer(instance=author_object, context={
                         "request": request}).data}, status=200)
         if Follow.objects.filter(object=author_object).exists():
@@ -339,10 +334,7 @@ def api_add_follower(request, authorid, foreignid):
         author_object = Author.objects.get(id=authorid)
         followers = Follower.objects.filter(author=author_object)
         for follower in followers:
-            follower_object = follower.follower_author
-            id_url = follower_object["id"]
-            id_segment = id_url.split("/")
-            if id_segment[len(id_segment) - 1] == foreignid:
+            if str(follower_object["id"]) == foreignid:
                 follower.delete()
                 return JsonResponse({"message": "Follower removed successfully", "success": True}, status=200)
         return JsonResponse({"message": "Follower does not exist", "success": False}, status=404)

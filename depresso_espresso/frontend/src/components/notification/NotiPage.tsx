@@ -72,39 +72,32 @@ const NotiPage = () => {
           />
         </div>
       ))} */}
-      {notifications
-        ?.sort((b, a) => a.created_at.localeCompare(b.created_at))
-        .map((notification: any, index: number) => {
-          const type = notification.type.toLowerCase();
-          if (type === "follow")
-            return (
-              <div key={index}>
-                <Notification
-                  curUser={curUser}
-                  refresh={refresh}
-                  setRefresh={setRefresh}
-                  author={notification.actor}
-                  authorid={notification.actor.id}
-                  type="follow"
-                />
-              </div>
-            );
+      {notifications?.map((notification: any, index: number) => {
+        const type = notification.type.toLowerCase();
+        if (type === "follow")
           return (
             <div key={index}>
               <Notification
                 curUser={curUser}
                 refresh={refresh}
                 setRefresh={setRefresh}
-                author={notification.author}
-                authorid={notification.author.id}
-                authorpostid={notification.post.authorid}
-                type={notification.type}
-                createdAt={notification.created_at}
-                postid={notification.post.id}
+                notificationObject={notification}
+                type="follow"
               />
             </div>
           );
-        })}
+        return (
+          <div key={index}>
+            <Notification
+              curUser={curUser}
+              refresh={refresh}
+              setRefresh={setRefresh}
+              notificationObject={notification}
+              type={type}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

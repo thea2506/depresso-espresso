@@ -237,6 +237,10 @@ def api_inbox(request, authorid):
             return create_like_notification(request, author_object, data)
         elif type == "follow":
             return create_follow_notification(request, author_object, data)
+        elif type == "post":
+            return create_post_notification(request, author_object, data)
+        elif type == "comment":
+            return create_comment_notification(request, author_object, data)
 
     elif request.method == "GET":
         author_object = Author.objects.get(id=authorid)
