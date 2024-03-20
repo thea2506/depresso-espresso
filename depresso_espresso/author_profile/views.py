@@ -535,6 +535,7 @@ def get_image(request, image_file):
 def api_get_authors(request):
     ''' GET [local, remote]: retrieve all profiles on the server (paginated)
     '''
+    my_host = request.META['HTTP_HOST']
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
@@ -544,7 +545,7 @@ def api_get_authors(request):
     data = {"type": "authors"}
 
     if request.method == "GET":
-        authors = Author.objects.all()
+        authors = Author.objects.filter(host__contains=my_host)
         if page and size:
             page = int(page)
             size = int(size)
