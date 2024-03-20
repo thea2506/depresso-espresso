@@ -555,7 +555,8 @@ def api_get_feed(request):
                 session = requests.Session()
                 session.auth = (user.username, user.password)
                 response = session.get(friend.follower_author["id"]+"/posts/")
-                posts_json = response.json()["items"]
+                posts_json = response.json()
+                print(posts_json)
                 pass
             else:
                 friend_object = Author.objects.get(
