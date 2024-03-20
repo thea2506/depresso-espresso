@@ -554,7 +554,7 @@ def api_get_feed(request):
             if not Author.objects.filter(id=raw_id).exists():
                 # Not local author
                 session = requests.Session()
-                session.auth = (user.username, user.password)
+                session.auth = (MY_NODE_USERNAME, MY_NODE_PASSWORD)
                 response = session.get(friend.follower_author["id"]+"/posts/")
                 posts_json = response.json()
                 # print("POSTS", posts_json)
