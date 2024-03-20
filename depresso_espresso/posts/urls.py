@@ -7,8 +7,7 @@ urlpatterns = [
     # Getting stuff
     path("authors/<str:authorid>/posts",
          views.get_author_posts, name="get_author_posts"),
-    path("authors/<str:authorid>/liked",
-         views.get_author_liked, name="get_author_liked"),
+
     path("authors/<str:authorid>/posts/<str:postid>",
          views.frontend_explorer, name="post_frontend"),
 

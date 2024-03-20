@@ -86,7 +86,7 @@ const Profile = ({
     };
 
     getCurrentUser();
-  }, [id]);
+  }, [id, loading]);
 
   useEffect(() => {
     const getOtherUser = async () => {
@@ -106,27 +106,35 @@ const Profile = ({
         );
         if (actor_object.status === 200) {
           const my_id = actor_object.data.id.toString();
-          const response = await axios.get(
-            `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
-          );
-          if (response.status === 200) {
-            // further check if they are friends
-
-            // sent a request to "my_id" to check for followers of "id"
-
-            const response2 = await axios.get(
-              `${my_id}/followers/${encodeURIComponent(
-                encodeURIComponent(id!)
-              )}`
+          try {
+            const response = await axios.get(
+              `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
             );
 
-            if (response2.status === 200) {
-              setStatus("friends");
+            if (response.status === 200) {
+              // further check if they are friends
+              // sent a request to "my_id" to check for followers of "id
+              try {
+                const response2 = await axios.get(
+                  `${my_id}/followers/${encodeURIComponent(
+                    encodeURIComponent(id!)
+                  )}`
+                );
+                if (response2.status === 200) {
+                  setStatus("friends");
+                } else {
+                  setStatus("followed");
+                }
+              } catch (error) {
+                console.log("not friend");
+              }
             } else {
-              setStatus("followed");
+              setStatus("stranger");
             }
-          } else {
-            setStatus("stranger");
+          } catch (error: any) {
+            if (error.response.data.status === "pending") {
+              setStatus("pending");
+            } else setStatus("stranger");
           }
         }
       } catch (error: any) {
@@ -193,26 +201,30 @@ const Profile = ({
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
+      .then(async () => {
+        // toast.success("Profile updated successfully", myToast);
+        // closeModal();
+        const formField = new FormData();
+        if (newDisplayName !== "")
+          formField.append("displayName", newDisplayName);
+        formField.append("github", newGithub);
+        formField.append("profileImage", newImageURL);
+
+        const data = {
+          displayName: newDisplayName,
+          github: newGithub,
+          profileImage: newImageURL,
+        };
+        await axios.put(`${id}`, data);
+      })
       .then(() => {
-        toast.success("Profile updated successfully", myToast);
+        // toast.success("Profile updated successfully", myToast);
         closeModal();
+        setLoading(!loading);
       })
       .catch((error) => {
         toast.error(error.message, myToast);
       });
-
-    const formField = new FormData();
-    if (newDisplayName !== "") formField.append("displayName", newDisplayName);
-    formField.append("github", newGithub);
-    formField.append("profileImage", newImageURL);
-
-    const data = {
-      displayName: newDisplayName,
-      github: newGithub,
-      profileImage: newImageURL,
-    };
-    await axios.put(`/espresso-api/authors/${id}`, data);
-    setLoading(!loading);
   };
 
   /**

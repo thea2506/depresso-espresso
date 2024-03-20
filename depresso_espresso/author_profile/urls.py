@@ -43,7 +43,6 @@ urlpatterns = [
     path('espresso-api/authors/<str:authorid>/followers',
          views.api_get_followers, name='api_get_followers'),
 
-
     # 4 PUT //service/authors/<str:authorid>/followers/<str:foreignid>
     path('espresso-api/authors/<str:authorid>/followers/<str:foreignid>',
          views.api_add_follower, name='api_add_follower'),

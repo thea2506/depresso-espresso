@@ -56,27 +56,17 @@ const PostView = ({
 
   //#region functions
   useEffect(() => {
-    const checkSharable = async () => {
-      try {
-        if (
-          post.visibility.toLowerCase() != "public" ||
-          post.author.id.split("/").pop() == curUser.id
-        ) {
-          setSharable(false);
-        } else if (post.origin) {
-          const origin_response = await axios.get(post.origin);
-          const origin_authorid = origin_response.data.author.id;
-          if (origin_authorid === post.id) {
-            setSharable(false);
-          }
-        }
-      } catch (error) {
-        console.error("An error occurred", error);
+    const checkSharable = () => {
+      if (
+        post.visibility.toLowerCase() != "public" ||
+        post.author.id.split("/").pop() === curUser.id
+      ) {
+        setSharable(false);
       }
     };
 
     checkSharable();
-  }, [curUser.id, post.author.id, post.origin, post.visibility]);
+  }, [curUser.id, post.author.id, post.id, post.origin, post.visibility]);
 
   const handleCommentClick = () => {
     setShowComments(!showComments);

@@ -55,28 +55,29 @@ const ProfilePage = () => {
       }
     };
     if (authorId) getData();
-  }, [authorId]);
+  }, [authorId, loading]);
 
   useEffect(() => {
     const fetchFollowers = async () => {
-      try {
-        const response = await axios.get(`${thisProfileUser!.id}/followers`);
-        const data = response.data;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const followerModels = data?.items?.map((rawauthor: any) => ({
-          type: rawauthor.type,
-          id: rawauthor.id,
-          url: rawauthor.url,
-          host: rawauthor.host,
-          displayName: rawauthor.displayName,
-          username: rawauthor.username,
-          github: rawauthor.github,
-          profileImage: rawauthor.profileImage,
-        }));
-        if (followerModels) setFollowers(followerModels);
-      } catch (error) {
-        console.error(error);
-      }
+      if (thisProfileUser && thisProfileUser.id)
+        try {
+          const response = await axios.get(`${thisProfileUser!.id}/followers`);
+          const data = response.data;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const followerModels = data?.items?.map((rawauthor: any) => ({
+            type: rawauthor.type,
+            id: rawauthor.id,
+            url: rawauthor.url,
+            host: rawauthor.host,
+            displayName: rawauthor.displayName,
+            username: rawauthor.username,
+            github: rawauthor.github,
+            profileImage: rawauthor.profileImage,
+          }));
+          if (followerModels) setFollowers(followerModels);
+        } catch (error) {
+          /* empty */
+        }
     };
     fetchFollowers();
 
@@ -104,7 +105,7 @@ const ProfilePage = () => {
         });
         setPosts(postModels);
       } catch (error) {
-        console.error(error);
+        // empty
       }
     };
     if (thisProfileUser && thisProfileUser.id) retrievePosts();
