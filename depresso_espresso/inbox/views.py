@@ -291,7 +291,7 @@ def create_like_notification(request, author_object, data):
     object_segments = object_url.path.split("/")
 
     # like comment
-    if "comments" in object_url:
+    if "comments" in object_segments:
         post_id = object_segments[len(object_segments) - 3]
         comment_id = object_segments[len(object_segments) - 1]
         comment = Comment.objects.get(id=comment_id)

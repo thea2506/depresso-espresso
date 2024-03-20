@@ -18,8 +18,6 @@ urlpatterns = [
 
     path("authors/<str:authorid>/posts/<str:postid>",
          views.handle_author_post, name="author_post"),
-    path("authors/<str:authorid>/posts/<str:postid>/likes",
-         views.get_post_likes, name="get_post_likes"),
     path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>",
          views.get_post_comment, name="get_post_comment"),
 

@@ -14,6 +14,7 @@ from urllib.parse import unquote
 from django.db.models import Q
 from authentication.serializer import *
 from inbox.models import Notification, NotificationItem
+from posts.serializers import *
 
 
 @api_view(["GET", "PUT"])
@@ -585,26 +586,12 @@ def api_get_likes(request, authorid, postid):
         return HttpResponse(status=404)
     if not Post.objects.filter(id=postid).exists():
         return HttpResponse(status=404)
-    post = Post.objects.get(id=postid, author=Author.objects.get(id=authorid))
-    likes = LikePost.objects.filter(Q(post=post), ~Q(
-        author=Author.objects.get(id=authorid)))
-    data = []
-    for like in likes:
-        item = {
-            "summary": f"{like.author.displayName} liked your post",
-            "type": "Like",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": like.post.source
-        }
-        data.append(item)
+    author = Author.objects.get(id=authorid)
+    post = Post.objects.get(id=postid, author=author)
+    likes = Like.objects.filter(post=post)
+    data = {"types": "Like", "items": []}
+    data["items"] = LikeSerializer(instance=likes, many=True, context={
+                                   "request": request}).data
     return JsonResponse(data, safe=False, status=200)
 
 
@@ -617,27 +604,15 @@ def api_get_likes_comment(request, authorid, postid, commentid):
         return HttpResponse(status=404)
     if not Comment.objects.filter(id=commentid).exists():
         return HttpResponse(status=404)
+
+    author = Author.objects.get(id=authorid)
     comment = Comment.objects.get(id=commentid, postid=Post.objects.get(
-        id=postid, author=Author.objects.get(id=authorid)))
-    likes = LikeComment.objects.filter(
-        Q(comment=comment), ~Q(author=Author.objects.get(id=authorid)))
-    data = []
-    for like in likes:
-        item = {
-            "summary": f"{like.author.displayName} liked your comment",
-            "type": "Like",
-            "author": {
-                "type": "author",
-                "id": like.author.url,
-                "host": like.author.host,
-                "displayName": like.author.displayName,
-                "url": like.author.url,
-                "github": like.author.github,
-                "profileImage": like.author.profileImage
-            },
-            "object": comment.comment
-        }
-        data.append(item)
+        id=postid, author=author))
+
+    data = {"types": "Like", "items": []}
+    data["items"] = CommentSerializer(instance=comment, many=True, context={
+        "request": request}).data
+
     return JsonResponse(data, safe=False, status=200)
 
 

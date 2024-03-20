@@ -82,7 +82,7 @@ const CommentList = ({
                 contenttype: rawcomment.contenttype,
                 published: rawcomment.published,
                 id: rawcomment.id,
-                likecount: rawcomment.likecount,
+                likecount: rawcomment.like_count,
               };
             }
           );
@@ -145,26 +145,21 @@ const CommentList = ({
   const handleLikeComment = async (comment: CommentModel) => {
     const real_authorid = post.author.id.split("/").pop();
     try {
-      const response = await axios.post(
-        `/espresso-api/authors/${real_authorid}/inbox/`,
-        {
-          summary: `${curUser!.displayName} liked your comment`,
-          type: "Like",
-          object: comment.id,
-          author: {
-            type: "author",
-            id: curUser!.id,
-            host: curUser!.host,
-            displayName: curUser!.displayName,
-            url: curUser!.url,
-            github: curUser!.github,
-            profileImage: curUser!.profileImage,
-          },
-        }
-      );
-      if (response.status == 201) {
-        setRefresh(!refresh);
-      }
+      await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
+        summary: `${curUser!.displayName} liked your comment`,
+        type: "Like",
+        object: comment.id,
+        author: {
+          type: "author",
+          id: curUser!.id,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          url: curUser!.url,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
+        },
+      });
+      setRefresh(!refresh);
     } catch (error) {
       console.error("An error occurred", error);
     }

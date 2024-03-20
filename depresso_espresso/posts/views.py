@@ -347,34 +347,6 @@ def frontend_explorer(request, **kwargs):
     return render(request, "index.html")
 
 
-def get_post_likes(request, authorid, postid):
-    '''Get all likes for a post'''
-
-    likes = LikePost.objects.filter(pk=postid)
-
-    merged_data = []
-    for like in likes:
-        author = Author.objects.get(pk=like.author.id)
-        author_data = {
-            "type": "author",
-            "id": str(author.id),
-            "url": author.url,
-            "host": author.host,
-            "displayName": author.displayName,
-            "github": author.github,
-            "profileImage": author.profileImage
-        }
-        like_data = {
-            "post": like.post.id,
-            "author": author_data,
-        }
-        merged_data.append(like_data)
-
-    data = json.dumps(merged_data, indent=4)
-
-    return HttpResponse(data, content_type='application/json')
-
-
 def get_author_liked(request, authorid):
     '''Get all likes from an author'''
 
