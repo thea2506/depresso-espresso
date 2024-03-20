@@ -123,6 +123,7 @@ def get_authors(request):
                 password = node.theirPassword
                 baseUrl = node.baseUrl
 
+                # Code taken from https://stackoverflow.com/a/7000784
                 host = str(baseUrl).replace("https://", "")
                 host = host[:-1]
                 client = HTTPSConnection(host)
@@ -130,11 +131,10 @@ def get_authors(request):
                 headers = {"Authorization": "Basic {}".format(b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
                 client.request('GET', '/authors', headers=headers)
                 res = client.getresponse()
-                data = res.read()
+                authorsBytes = res.read()
 
-                authors = requests.get(str(baseUrl + 'authors'), auth=(str.encode(username), str.encode(password)))
-                author_data = authors.json()
-                print(data, author_data)
+                author_data = authorsBytes.json()
+                print(author_data)
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
