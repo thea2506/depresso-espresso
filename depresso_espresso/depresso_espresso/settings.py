@@ -84,8 +84,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'https://espresso-depresso-3e4b6938ea78.herokuapp.com',
     'https://espresso-a3b726fa7f99.herokuapp.com',
-    'https://espresso-depresso-3e4b6938ea78.herokuapp.com/',
-    'https://espresso-a3b726fa7f99.herokuapp.com/',
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
@@ -202,7 +200,9 @@ MEDIA_URL = ""
 # reference: https://swesadiqul.medium.com/basic-authentication-in-django-rest-framework-bd9900bdb413 Md Sadiqul Islam 3/11/24
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.BasicAuthentication',
+        #'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

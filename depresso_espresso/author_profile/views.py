@@ -5,7 +5,7 @@ from posts.models import Comment, LikeComment, LikePost, Post
 from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic
-from django.core import serializers
+from django.core import serializers as serial
 import requests
 from requests.auth import HTTPBasicAuth
 from django.contrib.sessions.models import Session
@@ -15,6 +15,8 @@ from urllib.parse import unquote
 from django.db.models import Q
 from authentication.serializer import *
 from inbox.models import Notification, NotificationItem
+
+
 
 
 @api_view(["GET", "PUT"])
@@ -80,9 +82,9 @@ def get_authors(request):
             # This part of the function is meant to be used by remote servers only
             # handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
             print("NOOOOOOOOOOOOOOOOOOOOOOOOOODDDEEEEEEEEE")
-            # node = checkBasic(request)
-            # if not node:
-            #     return JsonResponse({"message:" "External Auth Failed"}, status=401)
+            node = checkBasic(request)
+            if not node:
+                    return JsonResponse({"message:" "External Auth Failed"}, status=401)
 
             # Only send the external server our locally created authors
             authors = Author.objects.filter(isExternalAuthor=False)
@@ -115,21 +117,25 @@ def get_authors(request):
             nodes = Node.objects.all()
             for node in nodes:
                 username = node.theirUsername
+                
                 password = node.theirPassword
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
-                authors = requests.get(str(baseUrl + 'authors'))
+                
+                authors = requests.get(str(baseUrl + 'authors'), auth=(str.encode(username), str.encode(password)))
                 author_data = authors.json()
-                for author in author_data["items"]:
-                    # Check if the author already exists in our db
-                    if not Author.objects.filter(url=author["url"]).exists():
-                        # if author does not exist, create a new one
-                        host=author["host"]
-                        displayName=author["displayName"]
-                        url=author["url"]
-                        username=author["username"]
+                print(author_data, "AUTHOR DATA")
+                if author_data:
+                    for author in author_data["items"]:
+                        # Check if the author already exists in our db
+                        if not Author.objects.filter(url=author["url"]).exists():
+                            # if author does not exist, create a new one
+                            host=author["host"]
+                            displayName=author["displayName"]
+                            url=author["url"]
+                            username=author["url"]
 
-                        Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
+                            Author.objects.create(host=host, displayName=displayName, url=url, username=username, isExternalAuthor=True)
 
             search_terms = request.GET.get('search')
 
@@ -146,7 +152,7 @@ def get_authors(request):
             for author in authors:
                 items.append(author)
 
-        res = serializers.serialize("json", items, fields=[
+        res = serial.serialize("json", items, fields=[
                                     "profileImage", "username", "github", "displayName", "url"])
         return HttpResponse(res, content_type="application/json")
 
