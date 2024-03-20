@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //#region imports
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
@@ -84,6 +85,23 @@ const PostForm = ({
   const [content, setContent] = useState(oldContent || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [base64Image, setBase64Image] = useState("");
+  const [followers, setFollowers] = useState([]);
+
+  useEffect(() => {
+    const getFollowers = async () => {
+      const real_id = author?.id?.split("/").pop();
+      if (real_id)
+        try {
+          const response = await axios.get(
+            `/espresso-api/authors/${real_id}/followers`
+          );
+          setFollowers(response.data.items);
+        } catch (error) {
+          console.error("An error occurred", error);
+        }
+    };
+    getFollowers();
+  }, [author.id]);
 
   //#region functions
   const openPost = (newForm: string) => {
@@ -134,12 +152,12 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
+      const real_postid = postId?.split("/").pop();
+      const real_authorid = author.id.split("/").pop();
       const formData = new FormData();
       formData.append("inbox", "No");
       formData.append("title", title);
       formData.append("description", description);
-
-      // TODO: source and origin and comments not covered
 
       formData.append("contentType", contentType);
       formData.append("visibility", visibility);
@@ -149,20 +167,28 @@ const PostForm = ({
         formData.append("content", base64Image);
       } else formData.append("content", content);
 
-      if (edit && postId) formData.append("postid", postId);
+      if (edit && postId) formData.append("postid", real_postid!);
 
       setForm("");
 
-      const url = edit ? "/edit_post" : "/new_post/";
-      const response = await axios.post(url, formData);
+      const url = edit
+        ? `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
+        : `/espresso-api/authors/${real_authorid}/posts/`;
 
-      // create notification
-      if (url == "/new_post/" && visibility.toLowerCase() != "private")
-        await axios.post("/create_notification", {
-          type: "post",
-          sender_id: author.id,
-          post_id: response.data.id,
+      let response;
+      if (edit) {
+        response = await axios.put(url, formData);
+      } else {
+        response = await axios.post(url, formData);
+        const post_object = response.data.object;
+        followers.forEach(async (follower: any) => {
+          const follower_id = follower.id.split("/").pop();
+          await axios.post(
+            `/espresso-api/authors/${follower_id}/inbox`,
+            post_object
+          );
         });
+      }
 
       openPost("refresh");
       closePopup && closePopup();
@@ -286,8 +312,8 @@ const PostForm = ({
                   }
 
                   file?.name.includes("png")
-                    ? setContentType("image/png")
-                    : setContentType("image/jpeg");
+                    ? setContentType("image/png;base64")
+                    : setContentType("image/jpeg;base64");
                 }}
               />
               Upload Image

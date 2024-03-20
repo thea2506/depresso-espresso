@@ -9,6 +9,7 @@ import { CommentModel } from "../data/CommentModel";
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
 import { AuthorModel } from "../data/AuthorModel";
+import { GoHeart } from "react-icons/go";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -64,30 +65,28 @@ const CommentList = ({
 
     const fetchComments = async () => {
       try {
-        const response = await axios.post(
-          `/authors/${post.author.pk}/posts/${post.id}/comments`
+        const real_postid = post.id.split("/").pop();
+        const real_authorid = post.author.id.split("/").pop();
+        const response = await axios.get(
+          `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`
         );
-        if (response.status === 200 && response.data.length > 0) {
-          if (response.data.length > 0) {
-            const commentModels = response.data.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (rawcomment: any) => {
-                return {
-                  type: "comment",
-                  author: rawcomment.author,
-                  comment: rawcomment.comment,
-                  contenttype: rawcomment.contenttype,
-                  published: rawcomment.published,
-                  likecount: rawcomment.likecount,
-                  id: rawcomment.id,
-                };
-              }
-            );
-            setComments(commentModels);
-          } else {
-            console.log("No comments found");
-            setComments([]);
-          }
+        if (response.status === 200) {
+          const comment_list = response.data.comments;
+          const commentModels = comment_list.map(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (rawcomment: any) => {
+              return {
+                type: rawcomment.type,
+                author: rawcomment.author,
+                comment: rawcomment.comment,
+                contenttype: rawcomment.contenttype,
+                published: rawcomment.published,
+                id: rawcomment.id,
+                likecount: rawcomment.likecount,
+              };
+            }
+          );
+          setComments(commentModels);
         } else {
           console.error("Failed to fetch comments");
         }
@@ -98,25 +97,42 @@ const CommentList = ({
 
     fetchProfile();
     fetchComments();
-  }, [post.author.pk, post.id, refresh]);
+  }, [post.author.id, post.id, refresh]);
 
   const handleCommentSubmit = async () => {
     try {
       const formField = new FormData();
       formField.append("comment", comment);
       formField.append("postid", post.id);
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
 
-      const response = await axios.post("/make_comment", formField);
-
-      await axios.post("/create_notification", {
-        type: "comment",
-        sender_id: curUser!.id,
-        receiver_id: post.author.pk,
-        post_id: post.id,
-      });
+      const response = await axios.post(
+        `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`,
+        {
+          type: "comment",
+          author: {
+            type: "author",
+            id: curUser!.id,
+            url: curUser!.url,
+            host: curUser!.host,
+            displayName: curUser!.displayName,
+            github: curUser!.github,
+            profileImage: curUser!.profileImage,
+          },
+          comment: comment,
+          contenttype: "text/plain",
+        }
+      );
 
       if (response.data.success) {
-        console.log("Comment creation successful");
+        console.log("I RUN BITCH");
+        const comment_object = response.data.comment;
+        await axios.post(
+          `/espresso-api/authors/${real_authorid}/inbox`,
+          comment_object
+        );
+
         setRefresh(!refresh);
         setComment("");
       } else {
@@ -124,6 +140,33 @@ const CommentList = ({
       }
     } catch (error) {
       toast.error("An error occurred", myToast);
+    }
+  };
+
+  const handleLikeComment = async (comment: CommentModel) => {
+    const real_postid = post.id.split("/").pop();
+    const real_authorid = post.author.id.split("/").pop();
+    const real_commentid = comment.id.split("/").pop();
+    const like_response = await axios.post(
+      `/authors/${real_authorid}/posts/${real_postid}/comments/${real_commentid}/like_comment`
+    );
+    const real_commentauthorid = comment.author.id.split("/").pop();
+    if (!like_response.data.already_liked) {
+      setRefresh(!refresh);
+      await axios.post(`/espresso-api/authors/${real_commentauthorid}/inbox/`, {
+        summary: `${curUser!.displayName} liked your comment`,
+        type: "like_comment",
+        object: comment.id,
+        author: {
+          type: "author",
+          id: curUser!.id,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          url: curUser!.url,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
+        },
+      });
     }
   };
 
@@ -161,9 +204,16 @@ const CommentList = ({
                 {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
-            <p className="p-4 bg-white text-start rounded-xl">
-              {comment.comment}
-            </p>
+            <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+              <p>{comment.comment}</p>
+              <div className="flex items-center justify-center gap-x-2">
+                <GoHeart
+                  className="w-5 h-5 cursor-pointer text-primary"
+                  onClick={() => handleLikeComment(comment)}
+                />
+                <p>{comment.likecount}</p>
+              </div>
+            </div>
           </div>
         ))}
       </div>

@@ -6,7 +6,7 @@ import { AuthorModel } from "../data/AuthorModel";
 
 const NotiPage = () => {
   const [curUser, setCurUser] = useState<AuthorModel>();
-  const [followRequests, setFollowRequests] = useState<[]>();
+  // const [followRequests, setFollowRequests] = useState<[]>();
   const [refresh, setRefresh] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
 
@@ -24,32 +24,34 @@ const NotiPage = () => {
     };
 
     // get follow requests
-    const getFollowRequests = async () => {
-      try {
-        const response = await axios.get("/get_follow_requests", {
-          params: { id: curUser?.id },
-        });
-        if (response.data.message != "No new requests")
-          setFollowRequests(response.data);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
+    // const getFollowRequests = async () => {
+    //   try {
+    //     const response = await axios.get("/get_follow_requests", {
+    //       params: { id: curUser?.id },
+    //     });
+    //     if (response.data.message != "No new requests")
+    //       setFollowRequests(response.data);
+    //   } catch (error) {
+    //     console.error("An error occurred", error);
+    //   }
+    // };
 
     // get the notifications
     const getNotifications = async () => {
+      if (!curUser?.id) return;
       try {
-        const response = await axios.get(`/get_notifications/${curUser?.id}`);
-        if (response.data.length > 0) {
-          setNotifications(response.data);
-        }
+        const response = await axios.get(
+          `/espresso-api/authors/${curUser?.id}/inbox`
+        );
+        console.log(response.data);
+        if (response.status === 200) setNotifications(response.data.items);
       } catch (error) {
         console.error("An error occurred", error);
       }
     };
 
     getCurUser();
-    getFollowRequests();
+    //getFollowRequests();
     getNotifications();
   }, [curUser?.id, refresh]);
 
@@ -59,7 +61,7 @@ const NotiPage = () => {
         <p>Your inbox</p>
         <p className="cursor-pointer hover:text-primary">Clear Activity</p>
       </div>
-      {followRequests?.map((request: any, index: number) => (
+      {/* {followRequests?.map((request: any, index: number) => (
         <div key={index}>
           <Notification
             refresh={refresh}
@@ -69,23 +71,33 @@ const NotiPage = () => {
             type="follow"
           />
         </div>
-      ))}
-      {notifications
-        ?.sort((b, a) => a.created_at.localeCompare(b.created_at))
-        .map((notification: any, index: number) => (
+      ))} */}
+      {notifications?.map((notification: any, index: number) => {
+        const type = notification.type.toLowerCase();
+        if (type === "follow")
+          return (
+            <div key={index}>
+              <Notification
+                curUser={curUser}
+                refresh={refresh}
+                setRefresh={setRefresh}
+                notificationObject={notification}
+                type="follow"
+              />
+            </div>
+          );
+        return (
           <div key={index}>
             <Notification
+              curUser={curUser}
               refresh={refresh}
               setRefresh={setRefresh}
-              author={notification.author}
-              authorid={notification.author.id}
-              authorpostid={notification.post.authorid}
-              type={notification.type}
-              createdAt={notification.created_at}
-              postid={notification.post.id}
+              notificationObject={notification}
+              type={type}
             />
           </div>
-        ))}
+        );
+      })}
     </div>
   );
 };

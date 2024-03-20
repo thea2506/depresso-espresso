@@ -59,22 +59,30 @@ const PostView = ({
 
   const handleShareClick = async () => {
     try {
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
       const response = await axios.post(
-        `/authors/${post.author.pk}/posts/${post.id}/share_post`
+        `/authors/${real_authorid}/posts/${real_postid}/share_post`
       );
       if (response.data.success) {
         console.log("Post shared");
         setRefresh(!refresh);
-      }
-      else if (response.data.success === false && response.data.message === "Already shared") {
+      } else if (
+        response.data.success === false &&
+        response.data.message === "Already shared"
+      ) {
         console.log("Post already shared");
         setRefresh(!refresh);
-      }
-      else if (response.data.success === false && response.data.message === "Sharing own post") {
+      } else if (
+        response.data.success === false &&
+        response.data.message === "Sharing own post"
+      ) {
         console.log("You are trying to share your own post");
         setRefresh(!refresh);
-      }
-      else if (response.data.success === false && response.data.message === "Post not shareable") {
+      } else if (
+        response.data.success === false &&
+        response.data.message === "Post not shareable"
+      ) {
         console.log("Post not shareable");
         setRefresh(!refresh);
       }
@@ -84,15 +92,38 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    await axios.post(`authors/${post.author.pk}/posts/${post.id}/like_post`);
+    const real_postid = post.id.split("/").pop();
+    const real_authorid = post.author.id.split("/").pop();
+    const like_response = await axios.post(
+      `/authors/${real_authorid}/posts/${real_postid}/like_post`
+    );
+
+    if (!like_response.data.already_liked) {
+      await axios.post(`/espresso-api/authors/${real_authorid}/inbox/`, {
+        summary: `${curUser.displayName} liked your post`,
+        type: "like_post",
+        object: post.origin,
+        author: {
+          type: "author",
+          id: curUser.id,
+          host: curUser.host,
+          displayName: curUser.displayName,
+          url: curUser.url,
+          github: curUser.github,
+          profileImage: curUser.profileImage,
+        },
+      });
+    }
     setRefresh(!refresh);
   };
 
   const handleDelete = async () => {
     try {
-      const response = await axios.post("/delete_post", {
-        postid: post.id,
-      });
+      const real_postid = post.id.split("/").pop();
+      const real_authorid = post.author.id.split("/").pop();
+      const response = await axios.delete(
+        `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
+      );
       if (response.data.success) {
         setRefresh(!refresh);
       }
@@ -160,7 +191,7 @@ const PostView = ({
             />
           </div>
           <PostForm
-            author={post.author.fields}
+            author={post.author}
             oldTitle={post.title}
             oldDescription={post.description}
             oldContent={post.content}
@@ -183,9 +214,9 @@ const PostView = ({
       >
         <div className="flex items-center justify-between">
           <UserDisplay
-            displayName={post.author.fields.displayName}
-            user_img_url={post.author.fields.profileImage}
-            link={`/authors/${post.author.pk}`}
+            displayName={post.author.displayName}
+            user_img_url={post.author.profileImage}
+            link={`/authors/${post.author.id.split("/").pop()}`}
           />
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
@@ -246,14 +277,14 @@ const PostView = ({
             </div>
           ))}
 
-          {curUser.id === post.author.pk && (
+          {curUser.id === post.author.id && (
             <GoPencil
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={() => setOpen(true)}
             />
           )}
 
-          {curUser.id === post.author.pk && (
+          {curUser.id === post.author.id && (
             <GoTrash
               className="text-xl cursor-pointer hover:text-secondary-light text-primary"
               onClick={handleDelete}
