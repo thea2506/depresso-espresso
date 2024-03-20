@@ -124,7 +124,7 @@ def get_authors(request):
                 baseUrl = node.baseUrl
                 # send get request to node to retrieve external author info
                 #This sets up the https connection
-                c = HTTPSConnection("www.google.com")
+                c = HTTPSConnection(str(baseUrl + 'authors'))
                 #then connect
                 headers = { 'Authorization' : basic_auth(username, password) }
                 c.request('GET', '/', headers=headers)
