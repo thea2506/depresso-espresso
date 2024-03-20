@@ -10,7 +10,7 @@ import { useNavigate } from "react-router";
 //#region interface
 interface NotificationProps {
   curUser: any;
-  type: "follow" | "share" | "post" | "like_post" | "like_comment" | "comment";
+  type: "follow" | "share" | "post" | "like" | "comment";
   notificationObject: any;
   refresh?: boolean;
   setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
@@ -42,8 +42,7 @@ const Notification = ({
     follow: "wants to follow you",
     share: "shared a post with you",
     post: "made a post",
-    like_post: "liked your post",
-    like_comment: "liked your comment",
+    like: "liked your idea",
     comment: "commented on your post",
   };
   const navigate = useNavigate();
@@ -98,32 +97,46 @@ const Notification = ({
   };
 
   const handleSeeMore = async () => {
-    const real_post_id = notificationObject.id.split("/");
-    const real_author_id = notificationObject.author.id.split("/").pop();
-
     switch (type) {
-      case "post":
-        navigate(
-          `/authors/${real_author_id}/posts/${
-            real_post_id[real_post_id.length - 1]
-          }`
-        );
+      case "post": {
+        const real_post_id = notificationObject.id.split("/").pop();
+        const real_author_id = notificationObject.author.id.split("/").pop();
+        navigate(`/authors/${real_author_id}/posts/${real_post_id}`);
         break;
+      }
 
-      case "comment":
+      case "comment": {
+        const real_post_id = notificationObject.id.split("/");
         navigate(
           `/authors/${curUser.id}/posts/${
             real_post_id[real_post_id.length - 3]
           }`
         );
         break;
+      }
+
+      case "like": {
+        const real_post_id = notificationObject.object.split("/");
+        if (notificationObject.object.includes("comments"))
+          navigate(
+            `/authors/${curUser.id}/posts/${
+              real_post_id[real_post_id.length - 3]
+            }`
+          );
+        else
+          navigate(
+            `/authors/${curUser.id}/posts/${
+              real_post_id[real_post_id.length - 1]
+            }`
+          );
+        break;
+      }
 
       default:
         break;
     }
   };
   //#endregion
-
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}

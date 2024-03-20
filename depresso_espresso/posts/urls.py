@@ -7,10 +7,6 @@ urlpatterns = [
     # Creating stuff
     path("authors/<str:authorid>/posts/<str:postid>/share_post",
          views.share_post, name="share_post"),
-    path("authors/<str:authorid>/posts/<str:postid>/like_post",
-         views.like_post, name="like_post"),
-    path("authors/<str:authorid>/posts/<str:postid>/comments/<str:commentid>/like_comment",
-         views.like_comment, name="like_comment"),
 
     # Getting stuff
     path("authors/<str:authorid>/posts",

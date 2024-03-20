@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from authentication.serializer import AuthorSerializer
-from posts.models import Comment, LikeComment, LikePost, Post
+from posts.models import Comment, Post, Like
 from authentication.models import Author, Following, FollowRequest, Node, Follow, Follower
 from rest_framework.decorators import api_view
 from authentication.checkbasic import checkBasic

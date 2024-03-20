@@ -63,6 +63,7 @@ class CommentSerializer(serializers.ModelSerializer):
 class LikeSerializer(serializers.ModelSerializer):
     object = SerializerMethodField("get_object_url")
     summary = SerializerMethodField("get_summary")
+    type = SerializerMethodField("get_type")
 
     class Meta:
         model = Like
@@ -82,3 +83,6 @@ class LikeSerializer(serializers.ModelSerializer):
             return f"{obj.author['displayName']} likes your comment"
         elif obj.post:
             return f"{obj.author['displayName']} likes your post"
+
+    def get_type(self, _):
+        return "Like"

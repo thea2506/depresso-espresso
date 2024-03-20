@@ -233,7 +233,9 @@ def api_inbox(request, authorid):
         if "type" not in data:
             return JsonResponse({"message": "Type not specified", "success": False}, status=400)
         type = data["type"].lower()
+        print(type)
         if type == "like":
+            print("like")
             return create_like_notification(request, author_object, data)
         elif type == "follow":
             return create_follow_notification(request, author_object, data)
@@ -280,22 +282,23 @@ def create_like_notification(request, author_object, data):
         post = Post.objects.get(id=post_id)
         comment = None
 
-    if Like.objects.filter(author_object=data["author"], post_object=post, comment_object=comment).exists():
+    author_json = AuthorSerializer(instance=author_object, context={
+                                   "request": request}).data
+    if Like.objects.filter(author=author_json, post=post, comment=comment).exists():
         like_object = Like.objects.get(
-            author_object=data["author"], post_object=post, comment_object=comment)
+            author=author_json, post=post, comment=comment)
         like_object.delete()
         return JsonResponse({"message": "Like notification deleted", "success": True}, status=200)
 
     like_object = Like.objects.create(
-        author_object=data["author"], post_object=post, comment_object=comment)
+        author=author_json, post=post, comment=comment)
 
     # create notification
-    notification_object = Notification.objects.get_or_create(author=Author.objects.get(
-        id=author_object), type="like", post=post, comment=comment)[0]
+    notification_object = Notification.objects.get_or_create(
+        author=author_object)[0]
 
-    notification_object.items.add(like_object)
-
-    return JsonResponse({"message": "Like notification created", "success": True}, status=201)
+    create_notification_item(notification_object, like_object)
+    return send_notification_serializer_response(notification_object, request)
 
 
 def create_comment_notification(request, author_object, data):

@@ -96,7 +96,7 @@ const ProfilePage = () => {
             count: rawpost.count,
             published: rawpost.published,
             visibility: rawpost.visibility,
-            likecount: rawpost.likecount,
+            likecount: rawpost.like_count,
             sharecount: rawpost.sharecount,
             origin: rawpost.origin,
             source: rawpost.source,

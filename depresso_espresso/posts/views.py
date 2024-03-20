@@ -1,7 +1,7 @@
 # Referece: https://stackoverflow.com/questions/22739701/django-save-modelform answer from Bibhas Debnath 2024-02-23
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseNotFound
-from .models import Post, Comment, LikePost, LikeComment, Share
+from .models import Post, Comment, Share
 from authentication.models import Author, Node, Following
 from django.http import JsonResponse
 from django import forms
@@ -71,29 +71,7 @@ def handle_author_post(request, authorid, postid):
         # LOCAL POST
         if Post.objects.filter(id=postid, author=author).exists():
             post = Post.objects.get(id=postid)
-            post = {
-                "type": "post",
-                "title": post.title,
-                "id": f"{post.origin}/authors/{user.id}/posts/{post.id}",
-                "source": post.source,
-                "origin": post.origin,
-                "description": post.description,
-                "contentType": post.contentType,
-                "content": post.content,
-                "author": {
-                    "type": "author",
-                    "id": author.url,
-                    "host": author.host,
-                    "displayName": author.displayName,
-                    "url": author.url,
-                    "github": author.github,
-                    "profileImage": author.profileImage
-                },
-                "count": post.count,
-                "comments": f"{post.origin}/authors/{user.id}/posts/{post.id}/comments",
-                "published": post.published,
-                "visibility": post.visibility,
-            }
+            post = PostSerializer(post, context={"request": request}).data
 
         # REMOTE POST
         else:
@@ -279,47 +257,6 @@ def get_post_comment(request, authorid, postid, commentid):
     data = json.dumps(merged_data, indent=4)
 
     return HttpResponse(data, content_type='application/json')
-
-
-def like_post(request, authorid, postid):
-    '''Like or unlike a post'''
-    post = Post.objects.get(pk=postid)
-    data = {}
-
-    if not LikePost.objects.filter(author=request.user, post=post).exists():
-        LikePost.objects.create(author=request.user, post=post)
-        post.likecount = F('likecount') + 1
-        data["already_liked"] = False
-    else:
-        LikePost.objects.get(author=request.user, post=post).delete()
-        post.likecount = F('likecount') - 1
-        data["already_liked"] = True
-    post.save()
-    return JsonResponse(data=data, status=200)
-
-
-def like_comment(request, authorid, postid, commentid):
-    '''Like or unlike a post'''
-    if not Author.objects.filter(id=authorid).exists():
-        return JsonResponse({"message": "Author not found", "success": False}, status=404)
-    if not Post.objects.filter(id=postid).exists():
-        return JsonResponse({"message": "Post not found", "success": False}, status=404)
-    if not Comment.objects.filter(id=commentid).exists():
-        return JsonResponse({"message": "Comment not found", "success": False}, status=404)
-
-    comment = Comment.objects.get(pk=commentid)
-    data = {}
-    if not LikeComment.objects.filter(author=request.user, comment=comment).exists():
-        LikeComment.objects.create(author=request.user, comment=comment)
-        comment.likecount = F('likecount') + 1
-        data["already_liked"] = False
-    else:
-        LikeComment.objects.get(author=request.user, comment=comment).delete()
-        comment.likecount = F('likecount') - 1
-        data["already_liked"] = False
-
-    comment.save()
-    return JsonResponse(data, safe=False, status=200)
 
 
 def make_comment(request):

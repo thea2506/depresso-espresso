@@ -80,7 +80,7 @@ const Home = () => {
             source: rawpost.source,
             published: rawpost.published,
             visibility: rawpost.visibility,
-            likecount: rawpost.likecount,
+            likecount: rawpost.like_count,
             sharecount: rawpost.sharecount,
           };
         });

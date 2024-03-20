@@ -44,6 +44,7 @@ const SinglePostView = () => {
           count: post.count,
           published: post.published,
           visibility: post.visibility,
+          likecount: post.like_count,
         };
 
         setPost(postModel);

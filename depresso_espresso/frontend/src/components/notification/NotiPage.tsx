@@ -23,19 +23,6 @@ const NotiPage = () => {
       }
     };
 
-    // get follow requests
-    // const getFollowRequests = async () => {
-    //   try {
-    //     const response = await axios.get("/get_follow_requests", {
-    //       params: { id: curUser?.id },
-    //     });
-    //     if (response.data.message != "No new requests")
-    //       setFollowRequests(response.data);
-    //   } catch (error) {
-    //     console.error("An error occurred", error);
-    //   }
-    // };
-
     // get the notifications
     const getNotifications = async () => {
       if (!curUser?.id) return;
@@ -61,18 +48,7 @@ const NotiPage = () => {
         <p>Your inbox</p>
         <p className="cursor-pointer hover:text-primary">Clear Activity</p>
       </div>
-      {/* {followRequests?.map((request: any, index: number) => (
-        <div key={index}>
-          <Notification
-            refresh={refresh}
-            setRefresh={setRefresh}
-            author={request.fields}
-            authorid={request.pk}
-            type="follow"
-          />
-        </div>
-      ))} */}
-      {notifications?.map((notification: any, index: number) => {
+      {notifications?.reverse().map((notification: any, index: number) => {
         if (!notification) return;
         const type = notification.type.toLowerCase();
         if (type === "follow")
