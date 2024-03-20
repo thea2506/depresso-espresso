@@ -42,11 +42,21 @@ const NotiPage = () => {
     getNotifications();
   }, [curUser?.id, refresh]);
 
+  const handleClearInbox = async () => {
+    await axios.delete(`/espresso-api/authors/${curUser?.id}/inbox`);
+    setRefresh(!refresh);
+  };
+
   return (
     <div className="flex flex-col justify-center mx-8 sm:mx-12 lg:mx-[20%] gap-y-6 md:item-center">
       <div className="flex items-center justify-between text-secondary-dark">
         <p>Your inbox</p>
-        <p className="cursor-pointer hover:text-primary">Clear Activity</p>
+        <p
+          className="cursor-pointer hover:text-primary"
+          onClick={handleClearInbox}
+        >
+          Clear Activity
+        </p>
       </div>
       {notifications?.reverse().map((notification: any, index: number) => {
         if (!notification) return;

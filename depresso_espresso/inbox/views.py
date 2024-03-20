@@ -228,6 +228,7 @@ def api_inbox(request, authorid):
     if not Author.objects.filter(id=authorid).exists():
         return JsonResponse({"message": "Author does not exist", "success": False}, status=404)
     author_object = Author.objects.get(id=authorid)
+
     if request.method == "POST":
         data = json.loads(request.body)
         if "type" not in data:
@@ -245,9 +246,13 @@ def api_inbox(request, authorid):
             return create_comment_notification(request, author_object, data)
 
     elif request.method == "GET":
+        if not Notification.objects.filter(author=author_object).exists():
+            return JsonResponse({"message": "No notifications", "success": True}, status=200)
+
         author_object = Author.objects.get(id=authorid)
-        notifications_object = Notification.objects.get_or_create(
-            author=author_object)[0]
+
+        notifications_object = Notification.objects.get(
+            author=author_object)
         notification_items = NotificationItem.objects.filter(
             notification=notifications_object)
 
@@ -261,7 +266,22 @@ def api_inbox(request, authorid):
         }, safe=False, status=200)
 
     elif request.method == "DELETE":
-        pass
+        if not Notification.objects.filter(author=author_object).exists():
+            return JsonResponse({"message": "No notifications to delete", "success": True}, status=200)
+
+        author_object = Author.objects.get(id=authorid)
+
+        notifications_object = Notification.objects.get(
+            author=author_object)
+        notification_items = NotificationItem.objects.filter(
+            notification=notifications_object)
+
+        for notification_item in notification_items:
+            notification_item.delete()
+
+        notifications_object.delete()
+
+        return JsonResponse({"message": "Notifications deleted", "success": True}, status=200)
     else:
         return JsonResponse({"message": "Method not allowed", "success": False}, status=405)
 
@@ -311,8 +331,8 @@ def create_comment_notification(request, author_object, data):
     )
 
     if serializer.is_valid():
-        notification_object = Notification.objects.get_or_create(
-            Notification, author=author_object)[0]
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
         create_notification_item(notification_object, comment_object)
         return send_notification_serializer_response(notification_object, request)
     else:
