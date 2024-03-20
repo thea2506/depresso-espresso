@@ -100,7 +100,7 @@ def handle_inbox(request, authorid):
     if request.method == "GET":  # Get all posts from authorid's inbox
 
         user = Author.objects.get(id=authorid)
-        all_visible_posts = utility_get_posts(authorid)  # Get all public posts
+        all_visible_posts = utility_get_posts(authorid, 'public')  # Get all public posts
 
         # JUST POSTS FOR NOW
         data = {
