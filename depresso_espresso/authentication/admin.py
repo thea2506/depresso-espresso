@@ -73,7 +73,7 @@ class UserChangeForm(forms.ModelForm):
 
 class AuthorAdmin(admin.ModelAdmin):
     fields = ("id", "username", "displayName", "url", "type", "host",
-              "github", "profileImage", "is_active", "password", "allowRegister")
+              "github", "profileImage", "is_active", "password", "allowRegister", "isExternalAuthor")
 
 
 class RegisterConfigAdmin(admin.ModelAdmin):

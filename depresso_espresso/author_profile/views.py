@@ -15,6 +15,9 @@ from inbox.models import Notification, NotificationItem
 from http.client import HTTPSConnection
 from base64 import b64encode
 from posts.serializers import *
+from depresso_espresso.constants import *
+from django.db.models import Q
+import requests
 
 
 @api_view(["GET", "PUT"])
@@ -675,3 +678,23 @@ def api_get_author_liked(request, authorid):
                                    "request": request}).data
 
     return JsonResponse(data, safe=False, status=200)
+
+
+@api_view(['GET'])
+def api_all_authors(request):
+    my_host = request.META['HTTP_HOST']
+    print("MY HOST", my_host)
+    # Local authors
+    local_authors = Author.objects.filter(Q(host__contains=my_host))
+    # for local_author in local_authors:
+    #     print(local_author.displayName)
+
+    nodes = Node.objects.all()
+    session = requests.Session()
+    session.auth = (MY_NODE_USERNAME, MY_NODE_PASSWORD)
+    for node in nodes:
+        if node.host.startswith("http://") or node.host.startswith("https://"):
+            auth = session.get(node.host+"/authors/")
+            print(auth.json())
+
+    return JsonResponse({"message": "All authors retrieved successfully"}, status=200)

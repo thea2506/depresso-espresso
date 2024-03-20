@@ -7,15 +7,13 @@ from .models import Author, Node
 
 def checkBasic(request):
     ''' This function checks if a request is from a node that is allowed to connect with our node (it has the correct username and password)'''
-
+    print(request.META.get('HTTP_HOST'))
     auth_header = request.META.get('HTTP_AUTHORIZATION')
     if not auth_header or not auth_header.startswith("Basic "):
         return None
-
     encoded_credentials = auth_header.split(' ')[1]
     decoded_credentials = base64.b64decode(
         encoded_credentials).decode("utf-8").split(':')
-
     username = decoded_credentials[0]
     password = decoded_credentials[1]
 

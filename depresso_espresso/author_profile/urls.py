@@ -6,6 +6,7 @@ urlpatterns = [
     # authors
     path('authors', views.get_authors, name='get_authors'),
     path('authors/<str:authorid>', views.front_end, name='frontend'),
+    path('authors/<path:authorid>', views.front_end, name='frontend'),
     path('user/<str:username>/', views.user_posts, name='user_posts'),
     path('authors/images/<str:image_file>',
          views.get_image, name='image_file'),
@@ -30,6 +31,9 @@ urlpatterns = [
          name='check_follow_request'),
     path('get_follow_list', views.get_follow_list, name='get_follow_list'),
 
+    # Necessary for node-to-node communication from frontend interface
+    path('espresso-api/all-authors/',
+         views.api_all_authors, name='api_all_authors'),
 
     # REQUIRED API ENDPOINTS (Authors, Single Author, Followers, Friend/Follow Request Covered)
     # 1. GET //service/authors/ - Parameters: page, size
@@ -44,7 +48,7 @@ urlpatterns = [
          views.api_get_followers, name='api_get_followers'),
 
     # 4 GET/PUT/DELETE //service/authors/<str:authorid>/followers/<str:foreignid>
-    path('espresso-api/authors/<str:authorid>/followers/<str:foreignid>',
+    path('espresso-api/authors/<str:authorid>/followers/<path:foreignid>',
          views.api_add_follower, name='api_add_follower'),
 
     # 5. GET //service/authors/{AUTHOR_ID}/posts/{POST_ID}/likes
