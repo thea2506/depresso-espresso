@@ -132,9 +132,9 @@ def get_authors(request):
                 res = client.getresponse()
                 data = res.read()
 
-                authors = requests.get(str(baseUrl + 'authors'), auth=(str(username), str(password)))
-                print(data, authors)
+                authors = requests.get(str(baseUrl + 'authors'), auth=(str.encode(username), str.encode(password)))
                 author_data = authors.json()
+                print(data, author_data)
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
