@@ -123,15 +123,15 @@ def get_authors(request):
                 for author in author_data["items"]:
                     print("AAAAAAAAAAAAAAAAAAAAAAAAAAUTHOR", author)
                     # Check if the author already exists in our db
-                    if not Author.objects.filter(url=author.url).exists():
+                    if not Author.objects.filter(url=author["url"]).exists():
                         # if author does not exist, create a new one
                         new_author = Author.objects.create()
                         if not new_author:
                             return JsonResponse({"message": "Error creating new author"})
-                        new_author.host = author.host
-                        new_author.displayName = author.displayName
-                        new_author.url = author.url
-                        new_author.username = author.username
+                        new_author.host = author["host"]
+                        new_author.displayName = author["displayName"]
+                        new_author.url = author["url"]
+                        new_author.username = author["username"]
                         new_author.isExternalAuthor = True
 
             search_terms = request.GET.get('search')
