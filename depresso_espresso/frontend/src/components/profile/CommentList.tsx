@@ -3,13 +3,17 @@ import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
+import { GoHeart } from "react-icons/go";
 import { useEffect } from "react";
 import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
 import { AuthorModel } from "../data/AuthorModel";
+
 import { GoHeart } from "react-icons/go";
+import { act } from "react-dom/test-utils";
+
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -98,6 +102,28 @@ const CommentList = ({
     fetchProfile();
     fetchComments();
   }, [post.author.id, post.id, refresh]);
+
+  const handleLikeToggle = async (commentId: string) => {
+    try{  
+      const respone = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
+      const {likecount, action} = respone.data;
+      const updatedComments = comments.map((comment) => {
+        if (comment.id === commentId) {
+          return { ...comment, likecount};
+        }
+        return comment;
+      });
+      console.log("Like count updated", action, likecount);
+  
+      // Set the updated comments array to trigger re-render
+      setComments(updatedComments);
+    } catch (error) {
+      console.error("An error occurred while liking a comment", error);
+    }
+  };
+        
+
+
 
   const handleCommentSubmit = async () => {
     try {
@@ -199,16 +225,19 @@ const CommentList = ({
                 {formatDateString(comment.published.substring(0, 16))}
               </p>
             </div>
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl">
-              <p>{comment.comment}</p>
-              <div className="flex items-center justify-center gap-x-2">
-                <GoHeart
-                  className="w-5 h-5 cursor-pointer text-primary"
-                  onClick={() => handleLikeComment(comment)}
-                />
-                <p>{comment.likecount}</p>
-              </div>
-            </div>
+
+            <p className="p-4 bg-white text-start rounded-xl">
+              {comment.comment}
+            </p>
+          <button
+            onClick={() => handleLikeToggle(comment.id)}
+            className={`flex items-center justify-center gap-x-1 text-primary`}
+          >
+            <GoHeart/>
+            <p>{comment.likecount}</p>
+
+          </button>
+          
           </div>
         ))}
       </div>
