@@ -78,13 +78,11 @@ def get_authors(request):
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
-    print("UUUSSSEEEEEEEERRRRRRRR", user, request.method)
     if request.method == "GET":
 
         if user == None:
             # This part of the function is meant to be used by remote servers only
             # handles retreiving authors for an external server (only retreive our LOCALLY CREATED authors)
-            print("NOOOOOOOOOOOOOOOOOOOOOOOOOODDDEEEEEEEEE")
             node = checkBasic(request)
             if not node:
                 return JsonResponse({"message:" "External Auth Failed"}, status=401)
@@ -130,11 +128,10 @@ def get_authors(request):
 
                 headers = {"Authorization": "Basic {}".format(b64encode(bytes(f"{username}:{password}", "utf-8")).decode("ascii"))}
                 client.request('GET', '/authors', headers=headers)
-                res = client.getresponse()
-                authorsBytes = res.read()
-
+                response = client.getresponse()
+                authorsBytes = response.read()
                 author_data = json.loads(authorsBytes)
-                print(author_data)
+                
                 for author in author_data["items"]:
                     # Check if the author already exists in our db
                     if not Author.objects.filter(url=author["url"]).exists():
