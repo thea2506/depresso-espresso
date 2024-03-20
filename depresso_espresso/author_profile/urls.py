@@ -35,7 +35,7 @@ urlpatterns = [
     # 1. GET //service/authors/ - Parameters: page, size
     path('espresso-api/authors/', views.api_get_authors, name='api_get_authors'),
 
-    # 2. GET //service/authors/{AUTHOR_ID}/
+    # 2. GET/PUT //service/authors/{AUTHOR_ID}/
     path('espresso-api/authors/<str:authorid>',
          views.api_author, name='api_author'),
 
@@ -43,8 +43,7 @@ urlpatterns = [
     path('espresso-api/authors/<str:authorid>/followers',
          views.api_get_followers, name='api_get_followers'),
 
-
-    # 4 PUT //service/authors/<str:authorid>/followers/<str:foreignid>
+    # 4 GET/PUT/DELETE //service/authors/<str:authorid>/followers/<str:foreignid>
     path('espresso-api/authors/<str:authorid>/followers/<str:foreignid>',
          views.api_add_follower, name='api_add_follower'),
 

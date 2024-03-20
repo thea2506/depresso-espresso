@@ -6,8 +6,6 @@ from django.contrib.auth.models import AbstractUser
 
 
 class Author(AbstractUser):
-
-    # Identifiers, can't be modified by the user
     id = models.UUIDField(db_column='authorID',
                           primary_key=True, default=uuid.uuid4)
     username = models.CharField(
@@ -15,8 +13,6 @@ class Author(AbstractUser):
     url = models.URLField(null=True, blank=True)
     host = models.URLField(null=True, blank=True)
     type = models.CharField(max_length=50, default="author")
-
-    # These can be modified by the user
     displayName = models.CharField(null=False, blank=False, max_length=50)
     github = models.URLField(null=True, blank=True)
     profileImage = models.URLField(null=True, blank=True)
@@ -29,26 +25,18 @@ class Author(AbstractUser):
     isExternalAuthor = models.BooleanField(
         null=False, blank=False, default=False)
 
-# For US.08.02. When admin changes requireRegisterPerms, users need an OK to login after registering
-
 
 class RegisterConfig(models.Model):
     requireRegisterPerms = models.BooleanField(null=False, blank=False)
 
 
 class Node(models.Model):
-    # username for their node to authenticate with ours
-    ourUsername = models.CharField(max_length=50)
-    # password for their node to authenticate with ours
-    ourPassword = models.CharField(max_length=50)
-    # username for our node to authenticate with theirs
-    theirUsername = models.CharField(max_length=50)
-    # password for our node to authenticate with theirs
-    theirPassword = models.CharField(max_length=50)
-    baseUrl = models.URLField()
+    host = models.CharField(max_length=200, null=True)
+    username = models.CharField(max_length=200)
+    password = models.CharField(max_length=200)
 
-    def __str__(self):  # Reference: https://stackoverflow.com/questions/9336463/django-xxxxxx-object-display-customization-in-admin-action-sidebar
-        return self.baseUrl
+    is_active = models.BooleanField(default=True)
+    is_authenticated = models.BooleanField(default=True)
 
 
 class Following(models.Model):
