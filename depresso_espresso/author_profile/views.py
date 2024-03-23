@@ -9,6 +9,8 @@ from authentication.checkbasic import checkBasic, my_authenticate
 from django.core import serializers as serial
 from django.contrib.sessions.models import Session
 import json
+import requests
+
 import urllib.request
 from urllib.parse import unquote
 from authentication.serializer import *
@@ -19,6 +21,8 @@ from posts.serializers import *
 from depresso_espresso.constants import *
 from django.db.models import Q
 import requests
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 @api_view(["GET", "PUT"])
@@ -83,7 +87,54 @@ def get_authors(request):
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
 
+
     if request.method == "GET":
+      # Poll all external nodes for their authors
+      nodes = Node.objects.all()
+      for node in nodes:
+        username = node["theirUsername"]
+        password = node["theirPassword"]
+        baseUrl = node["baseUrl"]
+        authors = requests.get(baseUrl + '/authors/', auth=(username, password)) # send get request to node to retrieve external author info
+
+        for author in authors["items"]:
+           
+          if not Author.objects.filter(url=author["url"]).exists(): # Check if the author already exists in our db
+              # if author does not exist, create a new one
+              new_author = Author.objects.create()
+              if not new_author:
+                  return JsonResponse({"message": "Error creating new author"})
+              new_author.host = author["host"]
+              new_author.displayName = author["displayName"]
+              new_author.url = author["url"]
+              new_author.username = author["username"]
+              new_author.isExternalAuthor = True
+
+      search_terms = request.GET.get('search')
+      page = request.GET.get('page',1)
+      size = request.GET.get('size',10)
+      
+
+      # Get authors on our db
+      if search_terms:
+        authors = Author.objects.filter(displayName__icontains=search_terms)
+        print(authors)
+
+      else:
+        authors = Author.objects.all()
+      paginator = Paginator(authors, int(size))
+
+      try:
+         authors_page = paginator.page(page)
+      except PageNotAnInteger:
+          authors_page = paginator.page(1)
+      except EmptyPage:
+          authors_page = paginator.page(paginator.num_pages)
+      
+      items = []
+
+      for author in authors_page:
+        items.append(author)
 
         if user == None:
             # This part of the function is meant to be used by remote servers only
@@ -169,8 +220,53 @@ def get_authors(request):
             "profileImage", "username", "github", "displayName", "url"])
         return HttpResponse(res, content_type="application/json")
 
+@api_view(['GET'])
+def get_followers(request, authorid):
+  ''' LOCAL and REMOTE   
+      GET ://service/authors/{AUTHOR_ID}/followers: Get all followers of an author'''
+  
+  user = Author.objects.get(id=authorid)
+  
+  if request.method == "GET":
 
-@api_view(['GET', 'DELETE', 'PUT'])
+    if user.is_authenticated == False:
+          node = checkBasic(request)
+          if not node:
+             return JsonResponse({"message:" "External Auth Failed"}, status=401)
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)      
+    followers = Following.objects.filter(followingid=authorid)
+    paginator = Paginator(followers, int(size))
+    try:
+       followers_page = paginator.page(page)
+    except PageNotAnInteger:
+        followers_page = paginator.page(1)
+    except EmptyPage:
+        followers_page = paginator.page(paginator.num_pages)
+    items = []
+    data = {}
+
+    for follower in followers_page:
+      user = Author.objects.get(id=follower.authorid)
+      items.append({
+        "type": user.type,
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage
+      })
+
+      data = {"type": "followers", "items": items}
+
+    return JsonResponse(data, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@api_view(['GET', 'DELETE', 'PUT'])  
 def handle_follow(request, authorid, foreignid):
     ''' LOCAL AND REMOTE GET ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: check if FOREIGN_AUTHOR_ID is a follower of AUTHOR_ID
         LOCAL PUT ://service/authors/{AUTHOR_ID}/followers/{FOREIGN_AUTHOR_ID}: Add FOREIGN_AUTHOR_ID as a follower of AUTHOR_ID (must be authenticated)
@@ -415,54 +511,71 @@ def respond_to_follow_request(request, foreignid):
 
 @api_view(['GET'])
 def get_friends(request, authorid):
-    ''' LOCAL
-        Get all friends of an author'''
+  ''' LOCAL
+      Get all friends of an author'''
+  
+  if request.method == "GET":
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)
+    friends = Following.objects.filter(authorid=authorid, areFriends=True)
+    paginator = Paginator(friends, int(size))
+    try:
+        friends_page = paginator.page(page)
+    except PageNotAnInteger:
+        friends_page = paginator.page(1)
+    except EmptyPage:
+        friends_page = paginator.page(paginator.num_pages)
 
-    if request.method == "GET":
-        friends = Following.objects.filter(authorid=authorid, areFriends=True)
-        data = []
-        for friend in friends:
-            user = Author.objects.get(id=friend.authorid)
-            data.append({
-                "type": user.type,
-                "id": user.id,
-                "url": user.url,
-                "host": user.host,
-                "displayName": user.displayName,
-                "username": user.username,
-                "github": user.github,
-                "profileImage": user.profileImage
-            })
-        return JsonResponse(data, safe=False)
-    else:
-        return JsonResponse({"message": "Method not allowed"}, status=405)
-
-
+    data = []
+    for friend in friends_page:
+      user = Author.objects.get(id=friend.authorid)
+      data.append({
+        "type": user.type,
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage
+      })
+    return JsonResponse(data, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+  
 def get_follow_list(request):
-    ''' LOCAL
-        Get all authors that an author is following'''
-
-    if request.method == "GET":
-        following = Following.objects.filter(authorid=request.user.id)
-        data = []
-        for follow in following:
-            user = Author.objects.get(id=follow.followingid)
-            data.append({
-                "type": "author",
-                "id": user.id,
-                "url": user.url,
-                "host": user.host,
-                "displayName": user.displayName,
-                "username": user.username,
-                "github": user.github,
-                "profileImage": user.profileImage,
-                "friend": follow.areFriends,
-                "followedFrom": follow.created_at,
-            })
-        return JsonResponse({"data": data, "success": True}, safe=False)
-    else:
-        return JsonResponse({"message": "Method not allowed"}, status=405)
-
+  ''' LOCAL
+      Get all authors that an author is following'''
+  
+  if request.method == "GET":
+    page = request.GET.get('page',1)
+    size = request.GET.get('size',10)
+    following = Following.objects.filter(authorid=request.user.id)
+    paginator = Paginator(following, int(size))
+    try:
+        following_page = paginator.page(page)
+    except PageNotAnInteger:
+        following_page = paginator.page(1)
+    except EmptyPage:
+        following_page = paginator.page(paginator.num_pages)
+    data = []
+    for follow in following_page:
+      user = Author.objects.get(id=follow.followingid)
+      data.append({
+        "type": "author",
+        "id": user.id,
+        "url": user.url,
+        "host": user.host,
+        "displayName": user.displayName,
+        "username": user.username,
+        "github": user.github,
+        "profileImage": user.profileImage,
+        "friend" : follow.areFriends,
+        "followedFrom": follow.created_at,
+      })
+    return JsonResponse({"data" : data, "success": True }, safe=False)
+  else:
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 def check_follow_status(request):
     '''Check the follow status between two authors'''

@@ -13,6 +13,8 @@ import json
 from django.shortcuts import get_object_or_404
 from django.contrib.sessions.models import Session
 from authentication.getuser import getUser
+import requests
+
 from itertools import chain
 from operator import attrgetter
 import urllib.request
@@ -25,6 +27,8 @@ from authentication.serializer import *
 from authentication.checkbasic import my_authenticate
 import requests
 from operator import itemgetter
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class PostView(forms.ModelForm):
@@ -135,8 +139,7 @@ def utility_get_posts(author_id, mode):
 
     sorted_items = sorted(items, key=attrgetter('published'), reverse=True)
     return sorted_items
-
-
+    
 @api_view(['GET'])
 def get_all_posts(request):
     "This function retrieves all posts to display on the user's stream. Includes all public posts and any friends only posts or posts from followed users"
@@ -231,7 +234,6 @@ def api_get_comments(request, authorid, postid):
         else:
             return JsonResponse({"message": "Unauthorized", "success": False}, status=401)
 
-
 def get_post_comment(request, authorid, postid, commentid):
     '''Get a single comment on a post'''
     comment = Comment.objects.get(id=commentid)
@@ -261,7 +263,6 @@ def get_post_comment(request, authorid, postid, commentid):
     data = json.dumps(merged_data, indent=4)
 
     return HttpResponse(data, content_type='application/json')
-
 
 def make_comment(request):
     data = {}
@@ -490,7 +491,6 @@ def get_author_posts(request, authorid):
         return JsonResponse(result, status=200, safe=False)
     return HttpResponse(status=404)
 
-
 def api_get_image(request, authorid, postid):
     user = my_authenticate(request)
     if user is None:
@@ -514,7 +514,6 @@ def api_get_image(request, authorid, postid):
             return HttpResponseNotFound()
     else:
         return HttpResponseNotAllowed()
-
 
 def api_get_feed(request):
     if request.method == 'GET':
