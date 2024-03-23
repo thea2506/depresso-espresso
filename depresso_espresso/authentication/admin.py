@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, RegisterConfig, Following, FollowRequest, Node, Follower, Follow
+from .models import Author, RegisterConfig, Following, FollowRequest, Node
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -15,8 +15,8 @@ class NodeConfigForm(forms.ModelForm):
     """A form for configuring optional node to node connections"""
     class Meta:
         model = Node
-        fields = ('username', 'password',
-                  'host', 'is_active', 'is_authenticated')
+        fields = ('ourUsername', 'ourPassword',
+                  'theirUsername', 'theirPassword', 'baseUrl')
 
 
 class RegisterConfigForm(forms.ModelForm):
@@ -98,5 +98,3 @@ class FollowRequestAdmin(admin.ModelAdmin):
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(RegisterConfig, RegisterConfigAdmin)
 admin.site.register(Node, NodeAdmin)
-admin.site.register(Follower)
-admin.site.register(Follow)

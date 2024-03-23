@@ -22,7 +22,7 @@ class Post(models.Model):
     type = models.CharField(max_length=50, default="post")
     title = models.TextField(null=True)
     description = models.TextField(null=True)
-    contentType = models.TextField(db_column='contentType', null=True)
+    contenttype = models.TextField(db_column='contentType', null=True)
     content = models.TextField(db_column='content', null=True)
 
     # Interactions tracking
@@ -43,14 +43,14 @@ class Comment(models.Model):
 
     # Identifiers
 
-    # postid is still a post object and not a string/uuid
+    # post is still a post object and not a string/uuid
     # current name is just to account for django's oppressive naming convention
-    postid = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     id = models.UUIDField(db_column='commentID',
                           primary_key=True, default=uuid.uuid4)
-    publishdate = models.DateTimeField(db_column='publishDate')
+    published = models.DateTimeField(db_column='publishDate')
 
     # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
     visibility = models.TextField(null=True)

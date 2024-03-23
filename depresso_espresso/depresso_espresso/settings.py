@@ -52,8 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
-    'home',
-    'author_profile',
+    'authors',
     'posts',
     "inbox",
 ]

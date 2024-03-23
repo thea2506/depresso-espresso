@@ -1,4 +1,4 @@
-from .models import Post, Comment, Share, Like
+from .models import Post, Comment, Share
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -37,7 +37,8 @@ class CommentCreationForm(forms.ModelForm):
     """A form for creating new comments."""
     class Meta:
         model = Comment
-        fields = ('post', 'author', 'comment')
+        fields = ('post', 'author', 'comment',
+                  'contenttype', 'published', 'visibility')
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -71,4 +72,3 @@ class ShareAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostsAdmin)
 admin.site.register(Comment, CommentsAdmin)
-admin.site.register(Like)
