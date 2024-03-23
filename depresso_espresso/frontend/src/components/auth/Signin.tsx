@@ -14,6 +14,8 @@ import { animated, useSpring } from "@react-spring/web";
 import { Button } from "../Button";
 //#endregion
 
+const backendURL = import.meta.env.VITE_BACKEND_URL;
+
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 1000,
@@ -29,7 +31,7 @@ const myToast: ToastOptions = {
  * Renders a signup page.
  * @returns The rendered signup page.
  */
-const Signin = () => {
+const SignIn = () => {
   const inputs: string[] = ["Username", "Password"];
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -66,11 +68,14 @@ const Signin = () => {
       formField.append("username", username);
       formField.append("password", password);
 
-      const response = await axios.post("/signin", formField);
+      const response = await axios.post(
+        `${backendURL}/api/auth/signin`,
+        formField
+      );
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
-        nav("/");
+        nav("/site");
       } else {
         toast.error("Login failed", myToast);
       }
@@ -178,4 +183,4 @@ const Signin = () => {
   );
 };
 
-export default Signin;
+export default SignIn;

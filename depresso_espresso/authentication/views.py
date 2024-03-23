@@ -11,32 +11,35 @@ from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.contrib.sessions.models import Session
 from authentication.models import Author
+from authentication.serializer import AuthorSerializer
+
 
 def register(request):
     ''' LOCAL ONLY
         Handles a form submission POST request to register
-        returns: JSON data including success status + errors if applicable'''  
-    if request.method == 'POST':  
-        data ={}
+        returns: JSON data including success status + errors if applicable'''
+    if request.method == 'POST':
+        data = {}
         form = Register(request.POST)
-        
+
         if form.is_valid():
             form.save(request.get_host())
-            data['success'] = True  
-            return JsonResponse(data)  
+            data['success'] = True
+            return JsonResponse(data)
         else:
             errors = []
-            for error in list(form.errors.values()):              
-                errors.append(error)  
+            for error in list(form.errors.values()):
+                errors.append(error)
 
-            data['errors'] = errors   
+            data['errors'] = errors
             data['success'] = False
-            return JsonResponse(data)  
+            return JsonResponse(data)
     else:
         form = Register()
 
     return render(request, "index.html")
-    
+
+
 def loginUser(request):
     ''' LOCAL ONLY
         Handles a form submission POST request to login
@@ -47,16 +50,17 @@ def loginUser(request):
             login(request, user)
             print("user id:", user.id)
             return JsonResponse({'success': True, 'id': user.id})
-        
+
         else:
             return JsonResponse({'success': False})
     return render(request, "index.html")
+
 
 def logoutUser(request):
     ''' LOCAL ONLY
         Handles a form submission POST request to login
         returns: JSON data including success status '''
-    
+
     data = {}
     logout(request)
     if request.user.is_authenticated:
@@ -65,27 +69,18 @@ def logoutUser(request):
         data['success'] = True
     return JsonResponse(data)
 
+
 def curUser(request):
     '''LOCAL ONLY '''
-    data = {} 
+    data = {}
     if request.method == 'GET' and request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
             user = Author.objects.get(id=uid)
-
-            data["type"] = user.type
-            data["id"] = user.id
-            data["username"] = user.username
-            data["displayName"] = user.displayName
-            data["host"] = user.host
-            data["url"] = user.url
-            data["github"] = user.github
-            data["profileImage"] = user.profileImage
+            data = AuthorSerializer(instance=user, context={
+                                    "request": request}).data
             data["success"] = True
         return JsonResponse(data)
     return JsonResponse({'success': False})
-
-
-

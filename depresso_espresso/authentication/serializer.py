@@ -21,35 +21,3 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_id_url(self, obj):
         return build_default_author_uri(obj=obj, request=self.context["request"], source="author")
-
-
-class FollowSerializer(serializers.ModelSerializer):
-    actor = serializers.JSONField()
-    object = SerializerMethodField("get_object")
-    summary = SerializerMethodField("get_summary")
-    type = SerializerMethodField("get_type")
-
-    class Meta:
-        model = Follow
-        fields = ("type", "summary", "actor", "object")
-
-    def get_object(self, obj):
-        return AuthorSerializer(obj.object, context=self.context).data
-
-    def get_summary(self, obj):
-        actor_display_name = obj.actor["displayName"]
-        return f"{actor_display_name} wants to follow {obj.object.displayName}"
-
-    def get_type(self, _):
-        return "Follow"
-
-
-class FollowerSerializer(serializers.ModelSerializer):
-    author = serializers.JSONField()
-
-    class Meta:
-        model = Follower
-        fields = ("type", "actor", "object")
-
-    def get_object(self, obj):
-        return AuthorSerializer(obj.author, context=self.context).data

@@ -14,6 +14,8 @@ import { animated, useSpring } from "@react-spring/web";
 import { Button } from "../Button";
 //#endregion
 
+const backendURL = import.meta.env.VITE_BACKEND_URL;
+
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 1000,
@@ -29,8 +31,13 @@ const myToast: ToastOptions = {
  * Renders a signup page.
  * @returns The rendered signup page.
  */
-const Signup = () => {
-  const inputs: string[] = ["Username", "Display Name", "Password", "Retype Password"];
+const SignUp = () => {
+  const inputs: string[] = [
+    "Username",
+    "Display Name",
+    "Password",
+    "Retype Password",
+  ];
   const [username, setUsername] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -50,10 +57,9 @@ const Signup = () => {
    */
   const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name == "Username"){
+    if (name == "Username") {
       setUsername(value);
-    }
-    else if (name === "Display Name") {
+    } else if (name === "Display Name") {
       setDisplayName(value);
     } else if (name === "Password") {
       setPassword(value);
@@ -73,7 +79,10 @@ const Signup = () => {
       formField.append("displayName", displayName);
       formField.append("password1", password);
       formField.append("password2", retypePassword);
-      const response = await axios.post("/signup", formField);
+      const response = await axios.post(
+        `${backendURL}/api/auth/signup`,
+        formField
+      );
 
       if (response.data.success) {
         toast.success("User Created Successfully", myToast);
@@ -200,4 +209,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default SignUp;
