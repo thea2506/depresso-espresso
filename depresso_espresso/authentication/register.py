@@ -17,10 +17,9 @@ class Register(UserCreationForm):
         model = get_user_model()
         fields = ("username", "displayName", "password1", "password2")
 
-    def save(self, host, commit=True):
+    def save(self, uri, commit=True):
         user = super(Register, self).save(commit=False)
         register_config = (RegisterConfig.objects.all())[:1]
-
         if len(register_config) == 0:
             # create new register config object that has its require_register_perms set to false by default (admin can change this setting)
             register_config = RegisterConfig.objects.create(
@@ -34,9 +33,9 @@ class Register(UserCreationForm):
 
         user.username = self.cleaned_data["username"]
         user.displayName = self.cleaned_data["displayName"]
-        user.host = f"http://{host}/"
+        user.host = f"{uri}"
         user.set_password(self.cleaned_data["password1"])
-        user.url = f"http://{host}/{SERVICE}authors/{user.id}"
+        user.url = f"{uri}{SERVICE}authors/{user.id}"
 
         if commit:
             user.save()

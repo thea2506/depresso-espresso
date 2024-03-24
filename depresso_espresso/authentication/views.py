@@ -23,7 +23,7 @@ def register(request):
         form = Register(request.POST)
 
         if form.is_valid():
-            form.save(request.get_host())
+            form.save(request.build_absolute_uri("/"))
             data['success'] = True
             return JsonResponse(data)
         else:

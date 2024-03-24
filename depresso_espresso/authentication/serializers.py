@@ -5,6 +5,10 @@ from rest_framework.serializers import *
 from utils import *
 from .models import *
 
+from requests.auth import HTTPBasicAuth
+import requests
+from depresso_espresso.constants import *
+
 
 class AuthorSerializer(serializers.ModelSerializer):
     host = SerializerMethodField("get_host_url")
@@ -31,3 +35,41 @@ class AuthorSerializer(serializers.ModelSerializer):
             'profileImage', instance.profileImage)
         instance.save()
         return instance
+
+
+class FollowRequestSerializer(serializers.ModelSerializer):
+    actor = SerializerMethodField("get_actor")
+    object = SerializerMethodField("get_object")
+    type = SerializerMethodField("get_type")
+    summary = SerializerMethodField("get_summary")
+
+    class Meta:
+        model = FollowRequest
+        fields = ("type", "actor", "object", "summary")
+
+    def get_actor(self, obj):
+        actor_obj = Author.objects.get(id=obj.requester.id)
+        if actor_obj.isExternalAuthor:
+            node_obj = Node.objects.get(host=actor_obj.host)
+            auth = HTTPBasicAuth(node_obj.ourUsername,
+                                 node_obj.ourPassword)
+            response = requests.get(actor_obj.url, auth=auth)
+            serializer = AuthorSerializer(
+                data=response.json(), context=self.context)
+            if serializer.is_valid():
+                return serializer.data
+            else:
+                raise serializers.ValidationError(serializer.errors)
+        else:
+            serializer = AuthorSerializer(
+                instance=actor_obj, context=self.context)
+            return serializer.data
+
+    def get_object(self, obj):
+        return AuthorSerializer(obj.receiver, context=self.context).data
+
+    def get_type(self, _):
+        return "Follow"
+
+    def get_summary(self, obj):
+        return f"{obj.requester.displayName} wants to follow {obj.receiver.displayName}"
