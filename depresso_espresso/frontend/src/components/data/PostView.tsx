@@ -1,6 +1,6 @@
 //#region imports
 // import { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
@@ -73,16 +73,16 @@ const PostView = ({
   };
 
   const handleShareClick = async () => {
-    try {
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
-      await axios.post(
-        `/espresso-api/authors/${real_authorid}/posts/${real_postid}/share_post`
-      );
-      setRefresh(!refresh);
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
+    // try {
+    //   const real_postid = post.id.split("/").pop();
+    //   const real_authorid = post.author.id.split("/").pop();
+    //   await axios.post(
+    //     `/espresso-api/authors/${real_authorid}/posts/${real_postid}/share_post`
+    //   );
+    //   setRefresh(!refresh);
+    // } catch (error) {
+    //   console.error("An error occurred", error);
+    // }
   };
 
   const handleLikeToggle = async () => {
@@ -198,7 +198,7 @@ const PostView = ({
             <UserDisplay
               displayName={post.author.displayName}
               user_img_url={post.author.profileImage}
-              link={`/authors/${post.author.id.split("/").pop()}`}
+              link={`authors/${post.author.url}`}
             />
             {post.id.toString() !== post.origin?.toString() && (
               <p className="text-sm font-semibold text-secondary-dark opacity-70">

@@ -11,7 +11,7 @@ from django.contrib.auth import login, logout
 from django.http import JsonResponse
 from django.contrib.sessions.models import Session
 from authentication.models import Author
-from authentication.serializer import AuthorSerializer
+from authentication.serializers import AuthorSerializer
 
 
 def register(request):

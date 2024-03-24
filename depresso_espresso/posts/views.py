@@ -3,15 +3,20 @@ from django.http import JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *
 from posts.serializers import *
+from authentication.models import Author
 
 
 @api_view(['GET', 'POST'])
 def api_posts(request, author_id):
-    user = my_authenticate(request)
+    my_authenticate(request)
     if request.method == 'GET':
-        posts = Post.objects.get(user.id)
-        serializer = PostSerializer(posts, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        if not Author.objects.filter(id=author_id).exists():
+            return JsonResponse({"error": "Author not found", "success": False}, status=404)
+        author = Author.objects.get(id=author_id)
+        posts = Post.objects.filter(author=author).order_by("-published")
+        serializer = PostSerializer(
+            posts, context={"request": request}, many=True)
+        return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
     elif request.method == 'POST':
         data = request.data
         serializer = PostSerializer(

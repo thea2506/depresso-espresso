@@ -22,7 +22,6 @@ const Home = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/feed`
       );
       if (res.status !== 200) return;
-      console.log(res.data.items);
       setPosts(res.data.items);
     };
 

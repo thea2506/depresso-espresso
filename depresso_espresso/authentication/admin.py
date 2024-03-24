@@ -87,7 +87,7 @@ class NodeAdmin(admin.ModelAdmin):
 
 @admin.register(Following)
 class FollowingAdmin(admin.ModelAdmin):
-    list_display = ('authorid', 'followingid', 'areFriends', 'created_at')
+    list_display = ('author', 'following_author', 'areFriends', 'created_at')
 
 
 @admin.register(FollowRequest)

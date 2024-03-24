@@ -15,6 +15,7 @@ import AuthContext from "./contexts/AuthContext";
 import { useState } from "react";
 import { AuthorModel } from "./components/data/AuthorModel";
 import { Outlet } from "react-router-dom";
+import ProfilePage from "./components/profile/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -31,32 +32,12 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "authors/:authorId",
-        element: <Outlet />,
-        children: [
-          {
-            path: "",
-            element: <div>Author</div>,
-          },
-          {
-            path: "posts",
-            element: <div>Posts</div>,
-            children: [
-              {
-                path: ":postId",
-                element: <div>Post Id</div>,
-              },
-            ],
-          },
-          {
-            path: "inbox",
-            element: <div>Inbox</div>,
-          },
-          {
-            path: "followers",
-            element: <div>Followers</div>,
-          },
-        ],
+        path: "authors/*",
+        element: <ProfilePage />,
+      },
+      {
+        path: "authors/:authorId/inbox",
+        element: <div>Inbox</div>,
       },
     ],
   },

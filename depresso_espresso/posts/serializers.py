@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import *
 
-from authentication.serializer import AuthorSerializer
+from authentication.serializers import AuthorSerializer
 from utils import *
 from posts.models import *
 

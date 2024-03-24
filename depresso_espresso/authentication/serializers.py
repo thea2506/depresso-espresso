@@ -21,3 +21,13 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     def get_id_url(self, obj):
         return build_default_author_uri(obj=obj, request=self.context["request"], source="author")
+
+    def update(self, instance, validated_data):
+        instance.displayName = validated_data.get(
+            'displayName', instance.displayName)
+        instance.github = validated_data.get(
+            'github', instance.github)
+        instance.profileImage = validated_data.get(
+            'profileImage', instance.profileImage)
+        instance.save()
+        return instance

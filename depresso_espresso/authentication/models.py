@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
-import datetime
 # Create your models here.
 
 
@@ -48,16 +47,16 @@ class Node(models.Model):
 
 
 class Following(models.Model):
-    authorid = models.ForeignKey(
+    author = models.ForeignKey(
         Author, on_delete=models.CASCADE, related_name="following")
-    followingid = models.ForeignKey(
+    following_author = models.ForeignKey(
         Author, on_delete=models.CASCADE, related_name="followers")
     areFriends = models.BooleanField(null=False, blank=False, default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = True
-        unique_together = ('authorid', 'followingid')
+        unique_together = ('author', 'following_author')
 
 
 class FollowRequest(models.Model):

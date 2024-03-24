@@ -1,4 +1,5 @@
 import defaultProfileImage from "../assets/images/default_profile.jpg";
+import { Link } from "react-router-dom";
 
 interface UserDisplayProps {
   displayName: string;
@@ -14,9 +15,9 @@ const UserDisplay = ({
   className,
 }: UserDisplayProps) => {
   return (
-    <a
+    <Link
       className={`flex items-center justify-center gap-x-4 ${className}`}
-      href={link}
+      to={link}
     >
       <img
         className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
@@ -28,7 +29,7 @@ const UserDisplay = ({
         alt="Profile picture"
       />
       <p className="text-primary">{displayName}</p>
-    </a>
+    </Link>
   );
 };
 
