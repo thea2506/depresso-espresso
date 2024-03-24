@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
-import depresso_espresso.views as views
 import posts.views as posts_views
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static

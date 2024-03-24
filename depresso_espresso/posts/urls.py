@@ -5,7 +5,6 @@ from django.conf import settings
 
 urlpatterns = [
     path('posts', views.api_posts, name='api_posts'),
-
 ]
 
 

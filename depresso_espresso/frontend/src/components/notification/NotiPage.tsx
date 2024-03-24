@@ -15,15 +15,12 @@ const NotiPage = () => {
     const getNotifications = async () => {
       if (!curUser?.id) return;
       try {
-        const response = await axios.get(
-          `/espresso-api/authors/${curUser?.id}/inbox`,
-          {
-            auth: {
-              username: import.meta.env.VITE_USERNAME,
-              password: import.meta.env.VITE_PASSWORD,
-            },
-          }
-        );
+        const response = await axios.get(`${curUser?.url}/inbox`, {
+          auth: {
+            username: import.meta.env.VITE_USERNAME,
+            password: import.meta.env.VITE_PASSWORD,
+          },
+        });
         console.log(response.data);
         if (response.status === 200) setNotifications(response.data.items);
       } catch (error) {
@@ -32,10 +29,10 @@ const NotiPage = () => {
     };
     //getFollowRequests();
     getNotifications();
-  }, [curUser?.id, refresh]);
+  }, [curUser, refresh]);
 
   const handleClearInbox = async () => {
-    await axios.delete(`/espresso-api/authors/${curUser?.id}/inbox`);
+    await axios.delete(`${curUser?.url}/inbox`);
     setRefresh(!refresh);
   };
 

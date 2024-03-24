@@ -16,6 +16,7 @@ import { useState } from "react";
 import { AuthorModel } from "./components/data/AuthorModel";
 import { Outlet } from "react-router-dom";
 import ProfilePage from "./components/profile/ProfilePage";
+import NotiPage from "./components/notification/NotiPage";
 
 const router = createBrowserRouter([
   {
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
       },
       {
         path: "authors/:authorId/inbox",
-        element: <div>Inbox</div>,
+        element: <NotiPage />,
       },
     ],
   },
