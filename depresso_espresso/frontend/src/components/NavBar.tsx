@@ -41,7 +41,7 @@ const NavBar = () => {
   if (!Object.entries(curUser).length) return <></>;
 
   const userId = curUser.id.substring(curUser.id.indexOf("api/") + 4);
-  const siteAuthorPath = `authors/${curUser.url}`;
+  const siteAuthorPath = `${userId}`;
   const siteInboxPath = `${userId}/inbox`;
 
   // console.log("User ID ", userId);

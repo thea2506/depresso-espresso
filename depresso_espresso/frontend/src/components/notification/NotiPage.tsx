@@ -15,12 +15,7 @@ const NotiPage = () => {
     const getNotifications = async () => {
       if (!curUser?.id) return;
       try {
-        const response = await axios.get(`${curUser?.url}/inbox`, {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        });
+        const response = await axios.get(`${curUser?.url}/inbox`);
         console.log(response.data);
         if (response.status === 200) setNotifications(response.data.items);
       } catch (error) {

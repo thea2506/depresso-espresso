@@ -81,7 +81,6 @@ const Profile = ({
     const getOtherUser = async () => {
       const response = await axios.get(`${user.url}`);
       const data = response.data;
-      console.log("data", data);
       setOtherUser(data);
     };
 
@@ -195,16 +194,16 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`${user.url}/inbox`, {
-        type: "Follow",
+      const response = await axios.post(`${otherUser?.url}/inbox`, {
+        type: "follow",
         summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
         actor: curUser,
         object: otherUser,
       });
-      if (response.status === 200) {
+      if (response.status === 201) {
         setStatus("pending");
+        setRefresh(!refresh);
       }
-      setRefresh(!refresh);
     } catch (error) {
       toast.error("Failed to send follow request", myToast);
     }

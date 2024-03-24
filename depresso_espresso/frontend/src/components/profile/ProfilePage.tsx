@@ -99,8 +99,6 @@ const ProfilePage = () => {
 
   //#endregion
 
-  console.log("splat", splat);
-
   return (
     <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
       {thisProfileUser && (
