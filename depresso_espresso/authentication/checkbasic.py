@@ -5,7 +5,7 @@ from .models import Author, Node
 # Reference: https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware from meshy accessed 3/11/2024
 
 
-def checkBasic(request):
+def check_basic(request):
     ''' This function checks if a request is from a node that is allowed to connect with our node (it has the correct username and password)'''
 
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -41,13 +41,13 @@ def my_authenticate(request):
             uid = session_data.get('_auth_user_id')
 
             if not Author.objects.filter(id=uid).exists():
-                user = checkBasic(request)
+                user = check_basic(request)
                 if not user:
                     return None
             else:
                 user = Author.objects.get(id=uid)
     else:
-        user = checkBasic(request)
+        user = check_basic(request)
         if not user:
             return None
 

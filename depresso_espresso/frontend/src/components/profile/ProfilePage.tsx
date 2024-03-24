@@ -44,12 +44,9 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/espresso-api/authors/${authorId}`, {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        });
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/authors/${authorId}`
+        );
         const data = response.data;
         setDisplayName(data.displayName);
         setGithubLink(data.github);

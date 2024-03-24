@@ -38,10 +38,6 @@ const SignUp = () => {
     "Password",
     "Retype Password",
   ];
-  const [username, setUsername] = useState<string>("");
-  const [displayName, setDisplayName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [retypePassword, setRetypePassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
   const nav = useNavigate();
   const springs = useSpring({
@@ -51,28 +47,22 @@ const SignUp = () => {
   });
 
   //#region functions
-  /**
-   * Handles and saves the inputs from the user.
-   * @param e The event object to extract the value input by users
-   */
-  const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name == "Username") {
-      setUsername(value);
-    } else if (name === "Display Name") {
-      setDisplayName(value);
-    } else if (name === "Password") {
-      setPassword(value);
-    } else if (name === "Retype Password") {
-      setRetypePassword(value);
-    }
-  };
 
   /**
    * Posts the inputs to the backend.
    */
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    const username = (document.getElementById("username") as HTMLInputElement)
+      .value;
+    const password = (document.getElementById("password") as HTMLInputElement)
+      .value;
+    const displayName = (
+      document.getElementById("display name") as HTMLInputElement
+    ).value;
+    const retypePassword = (
+      document.getElementById("retype password") as HTMLInputElement
+    ).value;
     try {
       const formField = new FormData();
       formField.append("username", username);
@@ -89,7 +79,7 @@ const SignUp = () => {
         console.log("User creation successful");
 
         // navigate to user's profile page on success
-        nav("/signin");
+        nav("/site/signin");
       } else {
         console.log("Register Failed");
 
@@ -104,7 +94,6 @@ const SignUp = () => {
     }
   };
   //#endregion
-
   return (
     <animated.div
       className="relative flex flex-col items-center justify-center h-screen px-4 gap-y-12 lg:justify-start lg:flex-row lg:gap-x-20 sm:px-12 md:px-20"
@@ -120,7 +109,7 @@ const SignUp = () => {
           Already have an account for{" "}
           <b className=" text-secondary-dark">Espresso</b>?{" "}
           <a
-            href="/signin"
+            href="/site/signin"
             className="font-bold text-secondary-light"
           >
             Sign In
@@ -149,19 +138,19 @@ const SignUp = () => {
               input.toLowerCase() !== "retype password" ? (
                 <input
                   type="text"
-                  id={input}
-                  name={input}
+                  id={input.toLowerCase()}
+                  name={input.toLowerCase()}
                   className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
-                  onChange={handleInputs}
+                  autoComplete={input === "username" ? "username" : ""}
                 />
               ) : (
                 <div className="relative w-full">
                   <input
                     type="password"
-                    id={input}
-                    name={input}
+                    id={input.toLowerCase()}
+                    name={input.toLowerCase()}
                     className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
-                    onChange={handleInputs}
+                    autoComplete="new-password"
                   />
                   <Button
                     buttonType="icon"
@@ -171,9 +160,9 @@ const SignUp = () => {
                     onClick={() => {
                       setVisible(!visible);
                       const element1 =
-                        document.getElementsByName("Password")[0];
+                        document.getElementsByName("password")[0];
                       const element2 =
-                        document.getElementsByName("Retype Password")[0];
+                        document.getElementsByName("retype password")[0];
                       visible
                         ? element1.setAttribute("type", "password")
                         : element1.setAttribute("type", "text");

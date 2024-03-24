@@ -6,15 +6,29 @@ from utils import *
 from posts.models import *
 
 
+class AuthorField(serializers.RelatedField):
+    def get_queryset(self):
+        return Author.objects.all()
+
+    def to_internal_value(self, data):
+        url_id = data.get("id").split("/")[-1]
+        data["id"] = url_id
+        return self.get_queryset().get(**data)
+
+    def to_representation(self, value):
+        return AuthorSerializer(value, context=self.context).data
+
+
 class PostSerializer(serializers.ModelSerializer):
     id = SerializerMethodField("get_id_url")
-    author = AuthorSerializer(many=False, read_only=True)
+    author = AuthorField()
     origin = SerializerMethodField("get_origin_url")
     source = SerializerMethodField("get_source_url")
     type = SerializerMethodField("get_type")
     comments = SerializerMethodField("get_comments")
     count = SerializerMethodField("get_count")
     like_count = SerializerMethodField("get_like_count")
+    contentType = serializers.CharField(source="contenttype")
 
     class Meta:
         model = Post
@@ -40,49 +54,27 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.source if obj.source else build_default_post_uri(obj=obj, request=self.context["request"])
 
     def get_like_count(self, obj):
-        return Like.objects.filter(post=obj).count()
+        return LikePost.objects.filter(post=obj).count()
+
+    def create(self, validated_data):
+        return Post.objects.create(**validated_data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
     id = SerializerMethodField("get_id_url")
     author = AuthorSerializer(many=False, read_only=True)
-    like_count = SerializerMethodField("get_like_count")
+    contentType = SerializerMethodField("get_content_type")
 
     class Meta:
         model = Comment
         fields = ("type", "id", "author", "comment",
-                  "contentType", "published", "like_count")
+                  "contentType", "published", "likecount")
 
     def get_id_url(self, obj):
         return build_default_comment_uri(obj=obj, request=self.context["request"])
 
     def get_like_count(self, obj):
-        return Like.objects.filter(comment=obj).count()
+        return LikeComment.objects.filter(comment=obj).count()
 
-
-class LikeSerializer(serializers.ModelSerializer):
-    object = SerializerMethodField("get_object_url")
-    summary = SerializerMethodField("get_summary")
-    type = SerializerMethodField("get_type")
-
-    class Meta:
-        model = Like
-        fields = ("summary", "type", "author", "object")
-
-    def to_representation(self, instance):
-        return customize_like_representation(self, instance)
-
-    def get_object_url(self, obj):
-        if obj.comment:
-            return build_default_comment_uri(obj=obj.comment, request=self.context["request"])
-        elif obj.post:
-            return build_default_post_uri(obj=obj.post, request=self.context["request"])
-
-    def get_summary(self, obj):
-        if obj.comment:
-            return f"{obj.author['displayName']} likes your comment"
-        elif obj.post:
-            return f"{obj.author['displayName']} likes your post"
-
-    def get_type(self, _):
-        return "Like"
+    def get_content_type(self, obj):
+        return obj.contenttype

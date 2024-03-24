@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 // import PostList from "../profile/PostList";
 
 // import AuthorSearch from "../data/AuthorSearch";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { AuthorModel } from "../data/AuthorModel";
 import { Button } from "../Button";
@@ -22,6 +22,7 @@ import {
 } from "react-icons/go";
 
 import { ToastContainer, toast, ToastOptions } from "react-toastify";
+import AuthContext from "../../contexts/AuthContext";
 
 const myToast: ToastOptions<unknown> = {
   position: "top-center",
@@ -38,7 +39,7 @@ const MY_USERPASSWORD = import.meta.env.VITE_PASSWORD;
 
 const Discover = () => {
   const [allAuthors, setAllAuthors] = useState<AuthorModel[]>([]);
-  const [user, setUser] = useState<AuthorModel | null>(null);
+  const { curUser } = useContext(AuthContext);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const [refresh, setRefresh] = useState(false);
   const [followStatuses, setFollowStatuses] = useState<string[]>(
@@ -53,37 +54,26 @@ const Discover = () => {
       }
     }
     fetchAuthors();
-
-    async function fetchUser() {
-      const response = await axios.get("/curUser");
-      if (response.status === 200) {
-        setUser(response.data);
-      }
-    }
-
-    fetchUser();
   }, [refresh]);
 
   useEffect(() => {
     async function fetchFollowers() {
-      if (!user) return;
-      const response = await axios.get(
-        `/espresso-api/authors/${user.id}/followers`
-      );
+      if (!curUser) return;
+      const response = await axios.get(`${curUser.id}/followers`);
       if (response.status === 200) {
         setFollowers(response.data.items);
       }
     }
     fetchFollowers();
-  }, [user, refresh]);
+  }, [curUser, refresh]);
 
   useEffect(() => {
     async function fetchFollowStatus(author: AuthorModel) {
-      if (!user) return "";
+      if (!curUser) return "";
       try {
         await axios.get(
           `${author.url}/followers/${encodeURIComponent(
-            encodeURIComponent(user.url)
+            encodeURIComponent(curUser.url)
           )}`,
           { auth: { username: MY_USERNAME, password: MY_USERPASSWORD } }
         );
@@ -107,16 +97,18 @@ const Discover = () => {
       setFollowStatuses(await Promise.all(s));
     }
     fetchFollowStatuses();
-  }, [user, allAuthors, followers, refresh]);
+  }, [curUser, allAuthors, followers, refresh]);
 
   const handleFollowRequest = async (author: AuthorModel) => {
     try {
-      const actor_object = await axios.get(`/espresso-api/authors/${user?.id}`);
+      const actor_object = await axios.get(
+        `/espresso-api/authors/${curUser?.id}`
+      );
       const response = await axios.post(
         `${author.url}/inbox`,
         {
           type: "Follow",
-          summary: `${user?.displayName} wants to follow ${author.displayName}`,
+          summary: `${curUser?.displayName} wants to follow ${author.displayName}`,
           actor: actor_object.data,
           object: author,
         },
@@ -143,7 +135,7 @@ const Discover = () => {
     try {
       const response = await axios.delete(
         `${author.url}/followers/${encodeURIComponent(
-          encodeURIComponent(user!.url)
+          encodeURIComponent(curUser!.url)
         )}`
       );
       if (response.data.success === true) {
@@ -156,6 +148,9 @@ const Discover = () => {
   };
 
   //#endregion
+
+  if (!Object.entries(curUser).length) return <></>;
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* <AuthorSearch></AuthorSearch> */}
@@ -163,7 +158,7 @@ const Discover = () => {
       <h1 className="mb-8 text-4xl font-bold">Discover</h1>
       <div className="flex flex-col w-4/5 gap-4">
         {allAuthors.map((author, key: number) => {
-          if (author.url === user?.url) return null;
+          if (author.url === curUser?.url) return null;
           return (
             <div
               key={key}

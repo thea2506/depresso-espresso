@@ -6,15 +6,28 @@ import "react-toastify/dist/ReactToastify.css";
 import { PostForm } from "../data/PostForm";
 import { PostModel } from "../data/PostModel";
 import PostList from "../profile/PostList";
-import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
 //#endregion
 
 const Home = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [refresh, setRefresh] = useState<boolean>(false);
-  const { curUser, setCurUser } = useContext(AuthContext);
+  const { curUser } = useContext(AuthContext);
+  const [posts, setPosts] = useState<PostModel[]>([]);
   //#endregion
+
+  useEffect(() => {
+    const getFeed = async () => {
+      const res = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/api/feed`
+      );
+      if (res.status !== 200) return;
+      console.log(res.data.items);
+      setPosts(res.data.items);
+    };
+
+    getFeed();
+  }, [refresh]);
 
   if (!Object.entries(curUser).length) return <></>;
 
@@ -28,12 +41,12 @@ const Home = () => {
         setRefresh={setRefresh}
       />
 
-      {/* <PostList
+      <PostList
         posts={posts}
         className="w-full mt-8 lg:w-1/2"
         refresh={refresh}
         setRefresh={setRefresh}
-      /> */}
+      />
     </div>
   );
 };

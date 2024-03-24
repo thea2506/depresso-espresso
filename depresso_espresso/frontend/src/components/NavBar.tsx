@@ -76,7 +76,7 @@ const NavBar = () => {
       if (response.data.success) {
         toast.success("You have been logged out", myToast);
         localStorage.clear();
-        nav("/signin");
+        nav("/site/signin");
       } else {
         toast.error("Logout failed", myToast);
       }

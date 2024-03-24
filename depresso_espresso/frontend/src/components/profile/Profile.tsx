@@ -4,7 +4,7 @@ import { Button } from "../Button";
 import Popup from "reactjs-popup";
 import { ToastContainer, toast, ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import editIcon from "../../assets/icons/edit.svg";
 import {
@@ -15,6 +15,7 @@ import {
 } from "react-icons/go";
 import defaultPic from "../../assets/images/default_profile.jpg";
 import { AuthorModel } from "../data/AuthorModel";
+import AuthContext from "../../contexts/AuthContext";
 //#endregion
 
 //#region interfaces
@@ -67,7 +68,7 @@ const Profile = ({
   const [newDisplayName, setDisplayName] = useState<string>(display_name);
   const [newGithub, setGithub] = useState<string>(github || "");
   const [newImageURL, setImageURL] = useState<string>(imageURL || "");
-  const [curUser, setCurUser] = useState<AuthorModel>();
+  const { curUser } = useContext(AuthContext);
   const [otherUser, setOtherUser] = useState<AuthorModel>();
 
   // Follow
@@ -78,15 +79,6 @@ const Profile = ({
 
   //#endregion
   //#region Functions
-
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const response = await axios.get(`/curUser`);
-      if (response.data) setCurUser(response.data);
-    };
-
-    getCurrentUser();
-  }, [id, loading]);
 
   useEffect(() => {
     const getOtherUser = async () => {

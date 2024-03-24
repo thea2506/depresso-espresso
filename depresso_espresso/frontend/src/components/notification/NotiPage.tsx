@@ -1,28 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Notification } from "./Notification";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { AuthorModel } from "../data/AuthorModel";
+import AuthContext from "../../contexts/AuthContext";
 
 const NotiPage = () => {
-  const [curUser, setCurUser] = useState<AuthorModel>();
+  const { curUser } = useContext(AuthContext);
   // const [followRequests, setFollowRequests] = useState<[]>();
   const [refresh, setRefresh] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-    // Get the current user's ID
-    const getCurUser = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success) {
-          setCurUser(response.data);
-        }
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-
     // get the notifications
     const getNotifications = async () => {
       if (!curUser?.id) return;
@@ -42,8 +30,6 @@ const NotiPage = () => {
         console.error("An error occurred", error);
       }
     };
-
-    getCurUser();
     //getFollowRequests();
     getNotifications();
   }, [curUser?.id, refresh]);

@@ -1,4 +1,4 @@
-import { Dispatch, useState, SetStateAction } from "react";
+import { Dispatch, useState, SetStateAction, useContext } from "react";
 import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
@@ -9,10 +9,8 @@ import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
-import { AuthorModel } from "../data/AuthorModel";
 
-import { act } from "react-dom/test-utils";
-
+import AuthContext from "../../contexts/AuthContext";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -36,7 +34,7 @@ const CommentList = ({
 }) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
-  const [curUser, setCurUser] = useState<AuthorModel>();
+  const { curUser } = useContext(AuthContext);
 
   //#region functions
   const formatDateString = (inputDateString: string) => {
@@ -53,19 +51,6 @@ const CommentList = ({
   //#endregion
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        const data = response.data;
-
-        if (data.success) {
-          setCurUser(data);
-        }
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-
     const fetchComments = async () => {
       try {
         const real_postid = post.id.split("/").pop();
@@ -98,31 +83,29 @@ const CommentList = ({
       }
     };
 
-    fetchProfile();
     fetchComments();
   }, [post.author.id, post.id, refresh]);
 
   const handleLikeToggle = async (commentId: string) => {
-    try{  
-      const respone = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
-      const {likecount, action} = respone.data;
+    try {
+      const respone = await axios.post(
+        `/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`
+      );
+      const { likecount, action } = respone.data;
       const updatedComments = comments.map((comment) => {
         if (comment.id === commentId) {
-          return { ...comment, likecount};
+          return { ...comment, likecount };
         }
         return comment;
       });
       console.log("Like count updated", action, likecount);
-  
+
       // Set the updated comments array to trigger re-render
       setComments(updatedComments);
     } catch (error) {
       console.error("An error occurred while liking a comment", error);
     }
   };
-        
-
-
 
   const handleCommentSubmit = async () => {
     try {
@@ -179,37 +162,37 @@ const CommentList = ({
     }
   };
 
-  const handleLikeComment = async (comment: CommentModel) => {
-    const real_authorid = post.author.id.split("/").pop();
-    try {
-      await axios.post(
-        `/espresso-api/authors/${real_authorid}/inbox`,
-        {
-          summary: `${curUser!.displayName} liked your comment`,
-          type: "Like",
-          object: comment.id,
-          author: {
-            type: "author",
-            id: curUser!.id,
-            host: curUser!.host,
-            displayName: curUser!.displayName,
-            url: curUser!.url,
-            github: curUser!.github,
-            profileImage: curUser!.profileImage,
-          },
-        },
-        {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        }
-      );
-      setRefresh(!refresh);
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
-  };
+  // const handleLikeComment = async (comment: CommentModel) => {
+  //   const real_authorid = post.author.id.split("/").pop();
+  //   try {
+  //     await axios.post(
+  //       `/espresso-api/authors/${real_authorid}/inbox`,
+  //       {
+  //         summary: `${curUser!.displayName} liked your comment`,
+  //         type: "Like",
+  //         object: comment.id,
+  //         author: {
+  //           type: "author",
+  //           id: curUser!.id,
+  //           host: curUser!.host,
+  //           displayName: curUser!.displayName,
+  //           url: curUser!.url,
+  //           github: curUser!.github,
+  //           profileImage: curUser!.profileImage,
+  //         },
+  //       },
+  //       {
+  //         auth: {
+  //           username: import.meta.env.VITE_USERNAME,
+  //           password: import.meta.env.VITE_PASSWORD,
+  //         },
+  //       }
+  //     );
+  //     setRefresh(!refresh);
+  //   } catch (error) {
+  //     console.error("An error occurred", error);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col gap-y-4 w-full rounded-[1.4rem] bg-accent-3 px-4 md:px-8">
@@ -249,15 +232,13 @@ const CommentList = ({
             <p className="p-4 bg-white text-start rounded-xl">
               {comment.comment}
             </p>
-          <button
-            onClick={() => handleLikeToggle(comment.id)}
-            className={`flex items-center justify-center gap-x-1 text-primary`}
-          >
-            <GoHeart/>
-            <p>{comment.likecount}</p>
-
-          </button>
-          
+            <button
+              onClick={() => handleLikeToggle(comment.id)}
+              className={`flex items-center justify-center gap-x-1 text-primary`}
+            >
+              <GoHeart />
+              <p>{comment.likecount}</p>
+            </button>
           </div>
         ))}
       </div>

@@ -10,7 +10,8 @@ class PostCreationForm(forms.ModelForm):
     """A form for creating new posts."""
     class Meta:
         model = Post
-        fields = ('content', 'published', 'author')
+        fields = ('content', 'author', 'contenttype', 'description',
+                  'title', 'source', 'origin', 'visibility', 'count', )
 
     def save(self, commit=True):
         # Save the provided password in hashed format
@@ -26,11 +27,13 @@ class PostChangeForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ('content', 'published', 'author')
+        fields = ('content', 'author', 'contenttype', 'description',
+                  'title', 'source', 'origin', 'visibility', 'count', )
 
 
 class PostsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'published', 'author',)
+    list_display = ('id', 'author', 'published', 'content', 'contenttype',
+                    'visibility', 'count', 'likecount', 'sharecount', )
 
 
 class CommentCreationForm(forms.ModelForm):
@@ -38,7 +41,7 @@ class CommentCreationForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ('post', 'author', 'comment',
-                  'contenttype', 'published', 'visibility')
+                  'contenttype',)
 
     def save(self, commit=True):
         # Save the provided password in hashed format

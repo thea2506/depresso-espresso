@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //#region imports
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import defaultProfileImage from "../../assets/images/default_profile.jpg";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,28 +10,24 @@ import { animated, useSpring } from "@react-spring/web";
 
 // components
 import { Button } from "../Button";
+import AuthContext from "../../contexts/AuthContext";
+import { PostModel } from "./PostModel";
 import { AuthorModel } from "./AuthorModel";
 //#endregion
 
 //#region interfaces
 interface CreatePostProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  author: AuthorModel;
   edit: boolean;
+
+  author: AuthorModel;
 
   // trigger home refresh everytime the post is changed/created
   refresh: boolean;
   setRefresh: (refresh: boolean) => void;
 
   // edits
-  oldTitle?: string;
-  oldDescription?: string;
-  oldContentType?: string;
-  oldContent?: string;
-  oldVisibility?: string;
-  oldImageFile?: string;
-  oldIsMarkdownEnabled?: string;
-  postId?: string;
+  oldPost?: PostModel;
 
   // close popup
   closePopup?: () => void;
@@ -55,17 +51,10 @@ const myToast: ToastOptions = {
  * @returns
  */
 const PostForm = ({
-  author,
   edit = false,
   refresh,
   setRefresh,
-  oldTitle,
-  oldDescription,
-  oldContentType,
-  oldContent,
-  oldVisibility,
-  oldImageFile,
-  postId,
+  oldPost,
   closePopup,
 }: CreatePostProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,37 +63,24 @@ const PostForm = ({
   }));
 
   const [contentType, setContentType] = useState(
-    oldContentType || "text/plain"
+    oldPost?.contentType || "text/plain"
   );
-  const [title, setTitle] = useState(oldTitle || "");
-  const [description, setDescription] = useState(oldDescription || "");
-  const [visibility, setVisibility] = useState(oldVisibility || "PUBLIC");
+  const [title, setTitle] = useState(oldPost?.title || "");
+  const [description, setDescription] = useState(oldPost?.description || "");
+  const [visibility, setVisibility] = useState(oldPost?.visibility || "PUBLIC");
   const [form, setForm] = useState("");
   const [imgDisabled, setImgDisabled] = useState(false);
   const [textDisabled, setTextDisabled] = useState(false);
-  const [content, setContent] = useState(oldContent || "");
+  const [content, setContent] = useState(oldPost?.content || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [base64Image, setBase64Image] = useState("");
-  const [followers, setFollowers] = useState([]);
-
-  useEffect(() => {
-    const getFollowers = async () => {
-      try {
-        const response = await axios.get(`${author.id}/followers`, {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        });
-        setFollowers(response.data.items);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-    if (author.id) getFollowers();
-  }, [author.id]);
+  const { curUser } = useContext(AuthContext);
 
   //#region functions
+
+  // check if authenticated
+  if (!Object.entries(curUser).length) return <></>;
+
   const openPost = (newForm: string) => {
     if (
       newForm === "refresh" ||
@@ -155,84 +131,47 @@ const PostForm = ({
     try {
       // const real_postid = postId?.split("/").pop();
       // const real_authorid = author.id.split("/").pop();
-      const formData = new FormData();
-      formData.append("inbox", "No");
-      formData.append("title", title);
-      formData.append("description", description);
+      // const formData = new FormData();
+      // formData.append("title", title);
+      // formData.append("description", description);
 
-      formData.append("contentType", contentType);
-      formData.append("visibility", visibility);
-      formData.append("authorId", author.id);
+      // formData.append("contentType", contentType);
+      // formData.append("visibility", visibility);
+      // formData.append("author", JSON.stringify(curUser));
 
-      if (contentType.includes("image") && imageFile) {
-        formData.append("content", base64Image);
-      } else formData.append("content", content);
+      // if (contentType.includes("image") && imageFile) {
+      //   formData.append("content", base64Image);
+      // } else formData.append("content", content);
 
-      if (edit && postId) formData.append("postid", postId);
+      // if (edit && oldPost?.id) formData.append("postid", oldPost.id);
 
-      setForm("");
+      const url = edit ? `${oldPost?.id}` : `${curUser.id}/posts`;
 
-      const url = edit ? `${postId}` : `${author.id}/posts/`;
+      const new_post = {
+        title: title,
+        description: description,
+        contentType: contentType,
+        visibility: visibility,
+        author: { ...curUser },
+        content: contentType.includes("image") ? base64Image : content,
+      };
 
       let response;
       if (edit) {
-        response = await axios.put(url, formData, {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        });
+        response = await axios.put(url, new_post);
       } else {
-        response = await axios.post(url, formData, {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        });
+        response = await axios.post(url, new_post);
         const post_object = response.data.object;
-        if (visibility.toUpperCase() === "PUBLIC") {
-          followers.forEach(async (follower: any) => {
-            // const follower_id = follower.id.split("/").pop();
-            await axios.post(`${follower.id}/inbox`, post_object, {
-              auth: {
-                username: import.meta.env.VITE_USERNAME,
-                password: import.meta.env.VITE_PASSWORD,
-              },
-            });
-          });
-        } else if (visibility.toUpperCase() === "FRIENDS") {
-          followers.forEach(async (follower: any) => {
-            try {
-              await axios.get(
-                `${follower.id}/followers/${encodeURIComponent(
-                  encodeURIComponent(author.id)
-                )}`,
-                {
-                  auth: {
-                    username: import.meta.env.VITE_USERNAME,
-                    password: import.meta.env.VITE_PASSWORD,
-                  },
-                }
-              );
-              await axios.post(`${follower.id}/inbox`, post_object, {
-                auth: {
-                  username: import.meta.env.VITE_USERNAME,
-                  password: import.meta.env.VITE_PASSWORD,
-                },
-              });
-            } catch (error) {
-              console.log("Not friends");
-            }
-          });
-        }
+        console.log(post_object);
       }
-
-      openPost("refresh");
-      closePopup && closePopup();
-      setRefresh(!refresh);
 
       if (!response.data.success) {
         toast.error("Failed to create/modify post", myToast);
+        return;
+      } else {
+        openPost("refresh");
+        closePopup && closePopup();
+        setRefresh(!refresh);
       }
     } catch (error) {
       toast.error("An error occurred while posting", myToast);
@@ -285,11 +224,13 @@ const PostForm = ({
             <img
               className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"
               src={
-                author.profileImage ? author.profileImage : defaultProfileImage
+                curUser.profileImage
+                  ? curUser.profileImage
+                  : defaultProfileImage
               }
               alt="Profile picture"
             />
-            <p className="text-primary">{author.displayName}</p>
+            <p className="text-primary">{curUser.displayName}</p>
           </div>
           <Button
             buttonType="text"
@@ -302,7 +243,7 @@ const PostForm = ({
         <input
           type="text"
           placeholder="Title"
-          defaultValue={oldTitle || ""}
+          defaultValue={oldPost?.title || ""}
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           maxLength={100}
           onChange={(e) => setTitle(e.target.value)}
@@ -310,14 +251,14 @@ const PostForm = ({
         <input
           type="text"
           placeholder="Description"
-          defaultValue={oldDescription || ""}
+          defaultValue={oldPost?.description || ""}
           className="w-full p-4 bg-white rounded-2xl focus:outline-none"
           maxLength={100}
           onChange={(e) => setDescription(e.target.value)}
         />
         {/* Text */}
         {form === "Text/Markdown" ||
-        (oldContentType?.includes("text") && edit) ? (
+        (oldPost?.contentType?.includes("text") && edit) ? (
           <textarea
             name="post-content"
             id="post-content"
@@ -325,11 +266,11 @@ const PostForm = ({
             rows={10}
             maxLength={850}
             placeholder={"Say something..."}
-            defaultValue={oldContent || ""}
+            defaultValue={oldPost?.content || ""}
             className="resize-none focus:outline-none w-full p-4 bg-white rounded-[1.4rem] overflow-none"
             onChange={(e) => setContent(e.target.value)}
           />
-        ) : (
+        ) : form === "Image" ? (
           <form onSubmit={(e) => console.log(e)}>
             <label className="flex items-center justify-center py-4 text-white cursor-pointer bg-primary rounded-2xl">
               <input
@@ -356,6 +297,8 @@ const PostForm = ({
               Upload Image
             </label>
           </form>
+        ) : (
+          <></>
         )}
 
         {/* Options */}
@@ -380,7 +323,7 @@ const PostForm = ({
             </div>
           ) : null}
           {form == "Text/Markdown" ||
-          (oldContentType?.includes("text") && edit) ? (
+          (oldPost?.contentType?.includes("text") && edit) ? (
             <div className="flex items-center align-baseline gap-x-4 text-primary">
               <p className="text-sm leading-8 md:text-base">Markdown</p>
               <input
@@ -399,12 +342,12 @@ const PostForm = ({
               />
             </div>
           ) : null}
-          {form == "Image" || oldContentType?.includes("image") ? (
+          {form == "Image" || oldPost?.contentType?.includes("image") ? (
             <div className="flex text-sm gap-x-2 text-primary md:text-base">
               <p>
-                {oldImageFile &&
+                {oldPost?.imageFile &&
                   imageFile == null &&
-                  oldImageFile.split("/")[1]}
+                  oldPost?.imageFile.split("/")[1]}
               </p>
               <p>{imageFile && imageFile?.name}</p>
             </div>

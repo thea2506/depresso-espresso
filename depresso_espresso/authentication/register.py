@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from .models import RegisterConfig
+from depresso_espresso.constants import *
 
 # https://www.youtube.com/watch?v=lHYzmlx2Vso&list=PLbMO9c_jUD44i7AkA4gj1VSKvCFIf59fb&index=7 Django Tutorial - User Registration & Sign Up Page #7 by Python Lessons
 # https://www.youtube.com/watch?v=_tHabkMKh98 Django Tutorial - Creating Custom User model in Django website #4 by Python Lessons
@@ -35,7 +36,7 @@ class Register(UserCreationForm):
         user.displayName = self.cleaned_data["displayName"]
         user.host = f"http://{host}/"
         user.set_password(self.cleaned_data["password1"])
-        user.url = f"http://{host}/espresso-api/authors/{user.id}"
+        user.url = f"http://{host}/{SERVICE}authors/{user.id}"
 
         if commit:
             user.save()

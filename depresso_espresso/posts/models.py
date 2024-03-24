@@ -13,7 +13,7 @@ class Post(models.Model):
     source = models.TextField(blank=True, null=True)
     origin = models.TextField(blank=True, null=True)
     published = models.DateTimeField(
-        db_column='published', null=True, blank=True)
+        db_column='published', auto_now_add=True)
 
     # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
     visibility = models.TextField(null=True)
@@ -32,8 +32,6 @@ class Post(models.Model):
         db_column='likeCount', blank=True, null=True, default=0)
     sharecount = models.IntegerField(
         db_column='sharecount', blank=True, null=True, default=0)
-    # URL to first page of comments
-    comments = models.URLField(blank=True, null=True)
 
     class Meta:
         managed = True
@@ -50,10 +48,8 @@ class Comment(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
     id = models.UUIDField(db_column='commentID',
                           primary_key=True, default=uuid.uuid4)
-    published = models.DateTimeField(db_column='publishDate')
-
-    # Visibility is one of ["PUBLIC", "FRIENDS", "UNLISTED"]
-    visibility = models.TextField(null=True)
+    published = models.DateTimeField(
+        db_column='publishDate', auto_now_add=True)
 
     # Content/interactions
     contenttype = models.TextField(

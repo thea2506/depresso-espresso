@@ -9,15 +9,13 @@ const backendURL = import.meta.env.VITE_BACKEND_URL;
 const AuthCheck: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { curUser, setCurUser } = useContext(AuthContext);
-  console.log("backendURL", backendURL);
 
   useEffect(() => {
-    console.log("AuthCheck");
     const getCurUser = async () => {
       const res = await axios.get(`${backendURL}/api/auth/curUser`);
-      if (!res.data.success) navigate("/signin");
-
-      setCurUser(res.data);
+      const { success, ...data } = res.data;
+      if (!success) navigate("/site/signin");
+      setCurUser(data);
     };
     getCurUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps

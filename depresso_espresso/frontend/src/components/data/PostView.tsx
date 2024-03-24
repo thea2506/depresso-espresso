@@ -86,43 +86,42 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    const real_authorid = post.author.id.split("/").pop();
-    console.log(real_authorid);
-
-    try {
-      await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
-        summary: `${curUser.displayName} liked your post`,
-        type: "Like",
-        object: post.id,
-        author: {
-          type: "author",
-          id: curUser.id,
-          host: curUser.host,
-          displayName: curUser.displayName,
-          url: curUser.url,
-          github: curUser.github,
-          profileImage: curUser.profileImage,
-        },
-      });
-      setRefresh(!refresh);
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
+    // const real_authorid = post.author.id.split("/").pop();
+    // console.log(real_authorid);
+    // try {
+    //   await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
+    //     summary: `${curUser.displayName} liked your post`,
+    //     type: "Like",
+    //     object: post.id,
+    //     author: {
+    //       type: "author",
+    //       id: curUser.id,
+    //       host: curUser.host,
+    //       displayName: curUser.displayName,
+    //       url: curUser.url,
+    //       github: curUser.github,
+    //       profileImage: curUser.profileImage,
+    //     },
+    //   });
+    //   setRefresh(!refresh);
+    // } catch (error) {
+    //   console.error("An error occurred", error);
+    // }
   };
 
   const handleDelete = async () => {
-    try {
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
-      const response = await axios.delete(
-        `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
-      );
-      if (response.data.success) {
-        setRefresh(!refresh);
-      }
-    } catch (error) {
-      console.error("An error occurred", error);
-    }
+    // try {
+    //   const real_postid = post.id.split("/").pop();
+    //   const real_authorid = post.author.id.split("/").pop();
+    //   const response = await axios.delete(
+    //     `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
+    //   );
+    //   if (response.data.success) {
+    //     setRefresh(!refresh);
+    //   }
+    // } catch (error) {
+    //   console.error("An error occurred", error);
+    // }
   };
 
   const formatDateString = (inputDateString: string) => {
@@ -180,13 +179,7 @@ const PostView = ({
           </div>
           <PostForm
             author={post.author}
-            oldTitle={post.title}
-            oldDescription={post.description}
-            oldContent={post.content}
-            oldImageFile={post.content}
-            oldVisibility={post.visibility}
-            oldContentType={post.contentType}
-            postId={post.id}
+            oldPost={post}
             edit={true}
             refresh={refresh}
             setRefresh={setRefresh}
@@ -267,15 +260,33 @@ const PostView = ({
             //     onClick={item.onClick}
             //   >
             <div
-                key={index}
-                className={`flex items-center justify-center text-xl gap-x-4 ${
-                item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted") ? 'text-gray-400 cursor-not-allowed' : 'text-primary'
-            }`}
+              key={index}
+              className={`flex items-center justify-center text-xl gap-x-4 ${
+                item.icon.type.displayName === "GoShare" &&
+                (post.visibility === "friends" ||
+                  post.visibility === "unlisted")
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-primary"
+              }`}
             >
-            <p
-              className={`cursor-pointer ${item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted") ? '' : 'hover:text-secondary-light'}`}
-              onClick={!(item.icon.type.displayName === "GoShare" && (post.visibility === "friends" || post.visibility === "unlisted")) ? item.onClick : undefined}
-            >
+              <p
+                className={`cursor-pointer ${
+                  item.icon.type.displayName === "GoShare" &&
+                  (post.visibility === "friends" ||
+                    post.visibility === "unlisted")
+                    ? ""
+                    : "hover:text-secondary-light"
+                }`}
+                onClick={
+                  !(
+                    item.icon.type.displayName === "GoShare" &&
+                    (post.visibility === "friends" ||
+                      post.visibility === "unlisted")
+                  )
+                    ? item.onClick
+                    : undefined
+                }
+              >
                 {item.icon}
               </p>
               <p>{item.count}</p>
@@ -292,7 +303,7 @@ const PostView = ({
             <p>{post.sharecount}</p>
           </div>
 
-          {curUser.id === post.author.id.split("/").pop() && (
+          {curUser.id === post.author.id && (
             <>
               <GoPencil
                 className="text-xl cursor-pointer hover:text-secondary-light text-primary"
