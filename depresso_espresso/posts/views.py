@@ -44,7 +44,52 @@ def api_posts(request, author_id):
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
+
         data = request.data
+
+        if data.get("id") is not None:
+            old_id = data.get("id")
+            # Share
+            shared_post = data
+            shared_post.pop("id", None)
+            shared_post["type"] = "share"
+
+            shared_post["author"] = AuthorSerializer(
+                instance=user, context={"request": request}).data
+
+            shared_post["source"] = old_id
+
+            serializer = PostSerializer(data=shared_post, context={
+                                        "request": request})
+
+            if serializer.is_valid():
+                print(shared_post)
+                new_shared_post = serializer.save()
+
+                returned_data = PostSerializer(instance=new_shared_post, context={
+                                               "request": request}).data
+
+                following_objects = Following.objects.filter(
+                    author=user)
+
+                for following_object in following_objects:
+                    following_author = following_object.following_author
+                    author_url = following_author.url
+                    author_host = following_author.host
+                    node = Node.objects.get(baseUrl=author_host)
+                    auth = HTTPBasicAuth(
+                        node.ourUsername, node.ourPassword)
+                    requests.post(f"{author_url}/inbox",
+                                  json=returned_data, auth=auth)
+
+                return JsonResponse(
+                    returned_data, status=201)
+
+            else:
+                print(serializer.errors)
+
+            return JsonResponse({"error": "Invalid request"}, status=405)
+
         serializer = PostSerializer(
             data=data, context={"request": request})
 
@@ -60,7 +105,6 @@ def api_posts(request, author_id):
             if new_post.visibility == "PUBLIC":
                 for following_object in following_objects:
                     following_author = following_object.following_author
-                    print(following_author.displayName)
                     author_url = following_author.url
                     author_host = following_author.host
                     node = Node.objects.get(baseUrl=author_host)

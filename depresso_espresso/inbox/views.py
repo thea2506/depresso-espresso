@@ -95,9 +95,6 @@ def handle_like(request, author_id):
 
     liking_author_object = get_author_object(data.get('author')['url'])
 
-    # liking_author_object = Author.objects.get(
-    #     url=data.get('author')['url'])
-
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]
 
@@ -196,7 +193,27 @@ def handle_post(request, author_id):
 
 
 def handle_share(request, author_id):
-    pass
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    author_object = Author.objects.get(id=author_id)
+
+    data = request.data
+
+    serializer = PostSerializer(
+        data=data, context={"request": request}
+    )
+    print(data)
+    if serializer.is_valid():
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
+
+        create_notification_item(
+            notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
+
+        return send_notification_item(request, notification_object)
+    else:
+        return JsonResponse(serializer.errors, status=400)
 
 
 def create_notification_item(notification_object, object_instance=None, object_url=None, content_type=None):

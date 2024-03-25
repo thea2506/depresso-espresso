@@ -42,7 +42,8 @@ const Notification = ({
     post: "made a post",
     like:
       "liked your " +
-      (notificationObject.type.toLowerCase() === "like" &&
+      (notificationObject.type &&
+      notificationObject.type.toLowerCase() === "like" &&
       notificationObject.object.includes("comments")
         ? "comment"
         : "post"),
@@ -98,6 +99,9 @@ const Notification = ({
     }
   };
   //#endregion
+
+  if (!notificationObject.type) return <></>;
+
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}

@@ -23,7 +23,6 @@ class PostSerializer(serializers.ModelSerializer):
     author = AuthorField()
     origin = SerializerMethodField("get_origin_url")
     source = SerializerMethodField("get_source_url")
-    type = SerializerMethodField("get_type")
     comments = SerializerMethodField("get_comments")
     count = SerializerMethodField("get_count")
     likecount = SerializerMethodField("get_like_count")
@@ -45,9 +44,6 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_origin_url(self, obj):
         return obj.origin if obj.origin else build_default_post_uri(obj=obj, request=self.context["request"])
-
-    def get_type(self, _):
-        return "post"
 
     def get_source_url(self, obj):
         return obj.source if obj.source else build_default_post_uri(obj=obj, request=self.context["request"])

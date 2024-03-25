@@ -19,7 +19,7 @@ class Post(models.Model):
     visibility = models.TextField(null=True)
 
     # Content
-    type = models.CharField(max_length=50, default="post")
+    type = models.CharField(max_length=50)
     title = models.TextField(null=True)
     description = models.TextField(null=True)
     contenttype = models.TextField(db_column='contentType', null=True)

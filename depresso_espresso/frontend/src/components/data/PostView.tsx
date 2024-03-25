@@ -11,7 +11,6 @@ import { MdOutlinePublic } from "react-icons/md";
 import { animated, useSpring } from "@react-spring/web";
 import Popup from "reactjs-popup";
 import Markdown from "react-markdown";
-import { useEffect } from "react";
 
 // components
 import { UserDisplay } from "../UserDisplay";
@@ -43,7 +42,7 @@ const PostView = ({
   setRefresh,
 }: CreatePostViewProps) => {
   const [open, setOpen] = useState(false);
-  const [sharable, setSharable] = useState(true);
+  const [sharable] = useState(post.visibility.toLowerCase() === "public");
   const [showComments, setShowComments] = useState(false);
   const springs = useSpring({
     from: { opacity: 0 },
@@ -56,34 +55,18 @@ const PostView = ({
   `;
 
   //#region functions
-  useEffect(() => {
-    const checkSharable = () => {
-      if (
-        post.visibility.toLowerCase() != "public" ||
-        post.author.id.split("/").pop() === curUser.id
-      ) {
-        setSharable(false);
-      }
-    };
-
-    checkSharable();
-  }, [curUser.id, post.author.id, post.id, post.origin, post.visibility]);
 
   const handleCommentClick = () => {
     setShowComments(!showComments);
   };
 
   const handleShareClick = async () => {
-    // try {
-    //   const real_postid = post.id.split("/").pop();
-    //   const real_authorid = post.author.id.split("/").pop();
-    //   await axios.post(
-    //     `/espresso-api/authors/${real_authorid}/posts/${real_postid}/share_post`
-    //   );
-    //   setRefresh(!refresh);
-    // } catch (error) {
-    //   console.error("An error occurred", error);
-    // }
+    try {
+      await axios.post(`${curUser.url}/posts`, post);
+      setRefresh(!refresh);
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
 
   const handleLikeToggle = async () => {
@@ -246,14 +229,6 @@ const PostView = ({
         {/* Like, Comment, Share Section */}
         <div className="flex items-center justify-between w-full mt-2">
           {interactSection.map((item, index) => (
-            // <div
-            //   key={index}
-            //   className="flex items-center justify-center text-xl gap-x-4 text-primary"
-            // >
-            //   <p
-            //     className="cursor-pointer hover:text-secondary-light"
-            //     onClick={item.onClick}
-            //   >
             <div
               key={index}
               className={`flex items-center justify-center text-xl gap-x-4 ${
