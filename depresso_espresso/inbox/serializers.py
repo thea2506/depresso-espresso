@@ -37,10 +37,9 @@ class NotificationItemSerializer(serializers.ModelSerializer):
 
                     auth = HTTPBasicAuth(
                         node.ourUsername, node.ourPassword)
-                    print("broooo")
-                    print(instance.object_url)
-                    response = requests.get(instance.object_url, auth=auth)
-                    print("BOOEOOEOE", response)
+                    response = requests.get(instance.object_url, auth=auth, headers={
+                                            "origin": self.context["request"].META["HTTP_HOST"]})
+
                     return response.json()
 
             return None

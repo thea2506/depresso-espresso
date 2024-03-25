@@ -4,6 +4,7 @@ from authentication.checkbasic import my_authenticate
 from posts.models import *
 from posts.serializers import *
 from authentication.models import Author, Following, Node
+from inbox.models import NotificationItem
 from django.db.models import Q
 from itertools import chain
 from requests.auth import HTTPBasicAuth
@@ -33,8 +34,6 @@ def get_posts(current_user, author_object):
 def api_posts(request, author_id):
 
     user = my_authenticate(request)
-    print("REQUEST", request.GET)
-    print(user)
 
     if request.method == 'GET':
         if not Author.objects.filter(id=author_id).exists():
@@ -87,6 +86,9 @@ def api_posts(request, author_id):
                     returned_data, status=201)
 
             return JsonResponse(serializer.errors, status=405)
+
+        else:
+            data["type"] = "post"
 
         serializer = PostSerializer(
             data=data, context={"request": request})
@@ -225,7 +227,12 @@ def api_post(request, author_id, post_id):
         post = Post.objects.get(id=post_id)
         if post.author != author:
             return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
+
+        notification_objects = NotificationItem.objects.filter(
+            object_url=post.id)
+        notification_objects.delete()
         post.delete()
+
         return JsonResponse({"success": True}, status=200)
 
     else:

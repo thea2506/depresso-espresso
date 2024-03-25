@@ -17,7 +17,13 @@ const NotiPage = () => {
       try {
         const response = await axios.get(`${curUser?.url}/inbox`);
         console.log(response.data);
-        if (response.status === 200) setNotifications(response.data.items);
+        if (response.status === 200) {
+          const items = response.data.items.map((item: any) => {
+            if (item.type) return item;
+          });
+
+          setNotifications(items);
+        }
       } catch (error) {
         console.error("An error occurred", error);
       }

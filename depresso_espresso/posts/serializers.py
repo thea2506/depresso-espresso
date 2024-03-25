@@ -12,7 +12,7 @@ class AuthorField(serializers.RelatedField):
 
     def to_internal_value(self, data):
         url_id = data.get("id").split("/")[-1]
-        return self.get_queryset().get(id=url_id)
+        return self.get_queryset().get(url=data.get("url"))
 
     def to_representation(self, value):
         return AuthorSerializer(value, context=self.context).data
