@@ -1,12 +1,10 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
-
 # Create your models here.
 
 
 class Author(AbstractUser):
-
     # Identifiers, can't be modified by the user
     id = models.UUIDField(db_column='authorID',
                           primary_key=True, default=uuid.uuid4)
@@ -20,16 +18,13 @@ class Author(AbstractUser):
     displayName = models.CharField(null=False, blank=False, max_length=50)
     github = models.URLField(null=True, blank=True)
     profileImage = models.URLField(null=True, blank=True)
-
     # For US.08.02. When admin changes requireRegisterPerms, this field
     # will be changed so that users need an OK to login after registering
     allowRegister = models.BooleanField(null=False, blank=False, default=False)
-
     # Identifier to separate local and external authors
     isExternalAuthor = models.BooleanField(
         null=False, blank=False, default=False)
-
-# For US.08.02. When admin changes requireRegisterPerms, users need an OK to login after registering
+    # For US.08.02. When admin changes requireRegisterPerms, users need an OK to login after registering
 
 
 class RegisterConfig(models.Model):
@@ -52,39 +47,24 @@ class Node(models.Model):
 
 
 class Following(models.Model):
-
-    authorid = models.CharField(max_length=200)
-    followingid = models.CharField(max_length=200)
+    author = models.ForeignKey(
+        Author, on_delete=models.CASCADE, related_name="following")
+    following_author = models.ForeignKey(
+        Author, on_delete=models.CASCADE, related_name="followers")
     areFriends = models.BooleanField(null=False, blank=False, default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = True
-        unique_together = ('authorid', 'followingid')
+        unique_together = ('author', 'following_author')
 
 
 class FollowRequest(models.Model):
     # Assuming receivers will only ever be stored on our server but requesters can come from external authors
-    requester = models.CharField(max_length=200)
-    receiver = models.CharField(max_length=200)
+    requester = models.ForeignKey(
+        Author, on_delete=models.CASCADE, related_name="follow_requests_sent")
+    receiver = models.ForeignKey(
+        Author, on_delete=models.CASCADE, related_name="follow_requests_received")
 
     class Meta:
         managed = True
-
-
-class Follow(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    object = models.ForeignKey("Author", on_delete=models.CASCADE)
-    actor = models.JSONField()
-
-
-class Follower(models.Model):
-    class Meta:
-        constraints = [
-            # follower_author can only follow author once
-            models.UniqueConstraint(
-                fields=["author", "follower_author"], name="unique_follower"),
-        ]
-
-    author = models.ForeignKey("Author", on_delete=models.CASCADE)
-    follower_author = models.JSONField()

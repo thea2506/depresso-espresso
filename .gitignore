@@ -328,4 +328,5 @@ node_modules
 
 staticfiles
 dist
-#migrations/
+migrations/
+*.env

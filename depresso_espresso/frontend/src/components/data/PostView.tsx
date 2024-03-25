@@ -1,7 +1,8 @@
 //#region imports
 // import { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { AiOutlineClose } from "react-icons/ai";
@@ -41,6 +42,7 @@ const PostView = ({
   setRefresh,
 }: CreatePostViewProps) => {
   const [open, setOpen] = useState(false);
+  const [sharable] = useState(post.visibility.toLowerCase() === "public");
   const [showComments, setShowComments] = useState(false);
   const springs = useSpring({
     from: { opacity: 0 },
@@ -53,56 +55,26 @@ const PostView = ({
   `;
 
   //#region functions
+
   const handleCommentClick = () => {
     setShowComments(!showComments);
   };
 
   const handleShareClick = async () => {
     try {
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
-      const response = await axios.post(
-        `/authors/${real_authorid}/posts/${real_postid}/share_post`
-      );
-      if (response.data.success) {
-        console.log("Post shared");
-        setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Already shared"
-      ) {
-        console.log("Post already shared");
-        setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Sharing own post"
-      ) {
-        console.log("You are trying to share your own post");
-        setRefresh(!refresh);
-      } else if (
-        response.data.success === false &&
-        response.data.message === "Post not shareable"
-      ) {
-        console.log("Post not shareable");
-        setRefresh(!refresh);
-      }
+      await axios.post(`${curUser.url}/posts`, post);
+      setRefresh(!refresh);
     } catch (error) {
       console.error("An error occurred", error);
     }
   };
 
   const handleLikeToggle = async () => {
-    const real_postid = post.id.split("/").pop();
-    const real_authorid = post.author.id.split("/").pop();
-    const like_response = await axios.post(
-      `/authors/${real_authorid}/posts/${real_postid}/like_post`
-    );
-
-    if (!like_response.data.already_liked) {
-      await axios.post(`/espresso-api/authors/${real_authorid}/inbox/`, {
+    try {
+      await axios.post(`${post.author.url}/inbox`, {
         summary: `${curUser.displayName} liked your post`,
-        type: "like_post",
-        object: post.origin,
+        type: "Like",
+        object: post.id,
         author: {
           type: "author",
           id: curUser.id,
@@ -113,17 +85,15 @@ const PostView = ({
           profileImage: curUser.profileImage,
         },
       });
+      setRefresh(!refresh);
+    } catch (error) {
+      // console.error("An error occurred", error);
     }
-    setRefresh(!refresh);
   };
 
   const handleDelete = async () => {
     try {
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
-      const response = await axios.delete(
-        `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
-      );
+      const response = await axios.delete(`${post.id}`);
       if (response.data.success) {
         setRefresh(!refresh);
       }
@@ -157,11 +127,6 @@ const PostView = ({
       count: post.count,
       onClick: handleCommentClick,
     },
-    {
-      icon: <GoShare />,
-      count: post.sharecount,
-      onClick: handleShareClick,
-    },
   ];
 
   return (
@@ -192,13 +157,7 @@ const PostView = ({
           </div>
           <PostForm
             author={post.author}
-            oldTitle={post.title}
-            oldDescription={post.description}
-            oldContent={post.content}
-            oldImageFile={post.content}
-            oldVisibility={post.visibility}
-            oldContentType={post.contenttype}
-            postId={post.id}
+            oldPost={post}
             edit={true}
             refresh={refresh}
             setRefresh={setRefresh}
@@ -213,11 +172,18 @@ const PostView = ({
         }
       >
         <div className="flex items-center justify-between">
-          <UserDisplay
-            displayName={post.author.displayName}
-            user_img_url={post.author.profileImage}
-            link={`/authors/${post.author.id.split("/").pop()}`}
-          />
+          <div className="flex items-center gap-x-2">
+            <UserDisplay
+              displayName={post.author.displayName}
+              user_img_url={post.author.profileImage}
+              link={`authors/${post.author.url}`}
+            />
+            {post.id.toString() !== post.origin?.toString() && (
+              <p className="text-sm font-semibold text-secondary-dark opacity-70">
+                (Shared)
+              </p>
+            )}
+          </div>
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
             <MdOutlinePublic className="w-4 h-4" />
@@ -243,15 +209,15 @@ const PostView = ({
 
         <div className="flex flex-col gap-y-2 text-start">
           <p className="font-semibold text-primary">Content</p>
-          {post.contenttype === "text/markdown" && (
-            <Markdown className="p-4 bg-white text-start rounded-xl">
+          {post.contentType === "text/markdown" && (
+            <Markdown className="p-4 prose bg-white text-start rounded-xl">
               {mdContent}
             </Markdown>
           )}
-          {post.contenttype === "text/plain" && (
+          {post.contentType === "text/plain" && (
             <p className="p-4 bg-white text-start rounded-xl">{post.content}</p>
           )}
-          {post.contenttype?.includes("image") && (
+          {post.contentType?.includes("image") && (
             <img
               src={post.content}
               alt="post"
@@ -265,11 +231,31 @@ const PostView = ({
           {interactSection.map((item, index) => (
             <div
               key={index}
-              className="flex items-center justify-center text-xl gap-x-4 text-primary"
+              className={`flex items-center justify-center text-xl gap-x-4 ${
+                item.icon.type.displayName === "GoShare" &&
+                (post.visibility === "friends" ||
+                  post.visibility === "unlisted")
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-primary"
+              }`}
             >
               <p
-                className="cursor-pointer hover:text-secondary-light"
-                onClick={item.onClick}
+                className={`cursor-pointer ${
+                  item.icon.type.displayName === "GoShare" &&
+                  (post.visibility === "friends" ||
+                    post.visibility === "unlisted")
+                    ? ""
+                    : "hover:text-secondary-light"
+                }`}
+                onClick={
+                  !(
+                    item.icon.type.displayName === "GoShare" &&
+                    (post.visibility === "friends" ||
+                      post.visibility === "unlisted")
+                  )
+                    ? item.onClick
+                    : undefined
+                }
               >
                 {item.icon}
               </p>
@@ -277,18 +263,27 @@ const PostView = ({
             </div>
           ))}
 
-          {curUser.id === post.author.id && (
-            <GoPencil
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={() => setOpen(true)}
+          <div className="flex items-center justify-center text-xl gap-x-4 text-primary">
+            <GoShare
+              className={`text-xl cursor-pointer hover:text-secondary-light text-primary ${
+                !sharable ? "opacity-50 pointer-events-none" : ""
+              }`}
+              onClick={handleShareClick}
             />
-          )}
+            <p>{post.sharecount}</p>
+          </div>
 
           {curUser.id === post.author.id && (
-            <GoTrash
-              className="text-xl cursor-pointer hover:text-secondary-light text-primary"
-              onClick={handleDelete}
-            />
+            <>
+              <GoPencil
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={() => setOpen(true)}
+              />
+              <GoTrash
+                className="text-xl cursor-pointer hover:text-secondary-light text-primary"
+                onClick={handleDelete}
+              />
+            </>
           )}
         </div>
       </div>

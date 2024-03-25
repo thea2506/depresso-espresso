@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AuthorProfileConfig(AppConfig):
+class AuthorsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'author_profile'
+    name = 'authors'

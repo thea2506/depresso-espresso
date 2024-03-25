@@ -1,20 +1,21 @@
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
-from home import views
-
+import posts.views as posts_views
+from django.views.generic.base import RedirectView
+from django.conf.urls.static import static
+from django.conf import settings
 
 
 urlpatterns = [
-
-    path('', views.StreamView.as_view(), name="home"),
     path('admin/', admin.site.urls),
-    path("", include('authentication.urls')),
-    path("", include('author_profile.urls')),
-    path("", include("home.urls")),
-    path("", include('inbox.urls')),
-    path("", include("posts.urls")),
+    path('api/', include('authentication.urls')),
+    path('api/', include('authors.urls')),
+    path('api/', include('posts.urls')),
+    path('api/', include('inbox.urls')),
+    path('api/feed', posts_views.api_feed, name='api_feed'),
+    re_path(r"site*", TemplateView.as_view(template_name='index.html')),
+    path("", RedirectView.as_view(url='/site')),
 ]
 
-urlpatterns += [re_path(r'^.*', TemplateView.as_view(template_name='index.html'))]
-
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,13 +1,72 @@
 import base64
-from .models import Node
+from django.contrib.sessions.models import Session
+from .models import Author, Node
+import uuid
+
+# Reference: https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware from meshy accessed 3/11/2024
 
 
-#Reference: https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware from meshy accessed 3/11/2024
-def checkBasic(request):
+def check_basic(request):
     ''' This function checks if a request is from a node that is allowed to connect with our node (it has the correct username and password)'''
-    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-    encoded_credentials = auth_header.split(' ')[1]
-    decoded_credentials = base64.b64decode(encoded_credentials).decode("utf-8").split(':')
-    node = Node.objects.get(ourUsername=decoded_credentials[0], ourPassword=decoded_credentials[1])
 
-    return node
+    auth_header = request.META.get('HTTP_AUTHORIZATION')
+    if not auth_header or not auth_header.startswith("Basic "):
+        return None
+
+    encoded_credentials = auth_header.split(' ')[1]
+    decoded_credentials = base64.b64decode(
+        encoded_credentials).decode("utf-8").split(':')
+    username = decoded_credentials[0]
+    password = decoded_credentials[1]
+    print(username, password)
+
+    if not username or not password:
+        return None
+
+    try:
+        uri = request.headers['Origin'] + "/"
+        node = Node.objects.filter(baseUrl=uri,
+                                   theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
+    except Node.DoesNotExist:
+        return None
+
+    data = request.query_params
+    data_mutable = data.copy()
+    print(data_mutable)
+    author_object = Author(
+        type="author",
+        id=uuid.uuid4(),
+        username=username,
+        url=data_mutable.get('url'),
+        host=data_mutable.get('host'),
+        displayName=data_mutable.get(
+            'displayName'),
+        github=data_mutable.get('github'),
+        profileImage=data_mutable.get('profileImage'),
+        isExternalAuthor=True)
+
+    return author_object
+
+
+def my_authenticate(request):
+    ''' This function checks if a request is from a node that is allowed to connect with our node (it has the correct username and password)'''
+
+    if request.session.session_key is not None:
+        session = Session.objects.get(session_key=request.session.session_key)
+        if session:
+            session_data = session.get_decoded()
+            uid = session_data.get('_auth_user_id')
+
+            if not Author.objects.filter(id=uid).exists():
+                user = check_basic(request)
+                if not user:
+                    return None
+            else:
+                user = Author.objects.get(id=uid)
+    else:
+        print("node-top-node")
+        user = check_basic(request)
+        if not user:
+            return None
+
+    return user

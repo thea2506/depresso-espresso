@@ -1,27 +1,48 @@
 from rest_framework import serializers
-
-from .models import NotificationItem, Notification
-from posts.serializers import *
-from authentication.serializer import *
+from rest_framework.serializers import *
+from inbox.models import Notification, NotificationItem
+from authentication.models import FollowRequest, Author
+from posts.models import Post, Comment, LikeComment, LikePost, Share
+from posts.serializers import PostSerializer, CommentSerializer, LikePostSerializer, LikeCommentSerializer
+from authentication.serializers import AuthorSerializer, FollowRequestSerializer
+from utils import build_default_author_uri
+from urllib.parse import urlparse
+from authentication.models import Node
+from requests.auth import HTTPBasicAuth
+import requests
 
 
 class NotificationItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationItem
-        fields = '__all__'
+        fields = ("__all__")
 
-    def to_representation(self, obj):
+    # Michael Van De Waeter, handling polymorhic types, October 23, 2023
+    # https://stackoverflow.com/questions/19976202/django-rest-framework-django-polymorphic-modelserialization
+    def to_representation(self, instance):
+        if isinstance(instance.content_object, FollowRequest):
+            return FollowRequestSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, Post):
+            return PostSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, Comment):
+            return CommentSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, LikePost):
+            return LikePostSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, LikeComment):
+            return LikeCommentSerializer(instance=instance.content_object, context=self.context).data
+        if instance.object_url:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.baseUrl in instance.object_url:
 
-        if isinstance(obj.content_object, Post):
-            return PostSerializer(instance=obj.content_object, context=self.context).data
-        elif isinstance(obj.content_object, Comment):
-            return CommentSerializer(instance=obj.content_object, context=self.context).data
-        elif isinstance(obj.content_object, Like):
-            return LikeSerializer(instance=obj.content_object, context=self.context).data
-        elif obj.json_data is not None:
-            return obj.json_data
-        elif isinstance(obj.content_object, Follow):
-            return FollowSerializer(instance=obj.content_object, context=self.context).data
+                    auth = HTTPBasicAuth(
+                        node.ourUsername, node.ourPassword)
+                    response = requests.get(instance.object_url, auth=auth, headers={
+                                            "origin": self.context["request"].META["HTTP_HOST"]})
+
+                    return response.json()
+
+            return None
 
 
 class NotificationSerializer(serializers.ModelSerializer):

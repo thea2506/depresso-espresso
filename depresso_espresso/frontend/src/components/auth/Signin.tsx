@@ -14,6 +14,8 @@ import { animated, useSpring } from "@react-spring/web";
 import { Button } from "../Button";
 //#endregion
 
+const backendURL = import.meta.env.VITE_BACKEND_URL;
+
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 1000,
@@ -29,10 +31,8 @@ const myToast: ToastOptions = {
  * Renders a signup page.
  * @returns The rendered signup page.
  */
-const Signin = () => {
+const SignIn = () => {
   const inputs: string[] = ["Username", "Password"];
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
   const [visible, setVisible] = useState<boolean>(false);
   const nav = useNavigate();
   const springs = useSpring({
@@ -42,18 +42,6 @@ const Signin = () => {
   });
 
   //#region functions
-  /**
-   * Handles and saves the inputs from the user.
-   * @param e The event object to extract the value input by users
-   */
-  const handleInputs = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === "Username") {
-      setUsername(value);
-    } else if (name === "Password") {
-      setPassword(value);
-    }
-  };
 
   /**
    * Verifies the inputs from the user and sends a request to the server.
@@ -61,16 +49,23 @@ const Signin = () => {
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    const username = (document.getElementById("username") as HTMLInputElement)
+      .value;
+    const password = (document.getElementById("password") as HTMLInputElement)
+      .value;
     try {
       const formField = new FormData();
       formField.append("username", username);
       formField.append("password", password);
 
-      const response = await axios.post("/signin", formField);
+      const response = await axios.post(
+        `${backendURL}/api/auth/signin`,
+        formField
+      );
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
-        nav("/");
+        nav("/site");
       } else {
         toast.error("Login failed", myToast);
       }
@@ -96,7 +91,7 @@ const Signin = () => {
           Not registered for <b className=" text-secondary-dark">Espresso</b>{" "}
           yet?{" "}
           <a
-            href="/signup"
+            href="/site/signup"
             className="font-bold text-secondary-light"
           >
             Sign Up
@@ -124,19 +119,19 @@ const Signin = () => {
               {input.toLowerCase() !== "password" ? (
                 <input
                   type="text"
-                  id={input}
-                  name={input}
+                  id={input.toLowerCase()}
+                  name={input.toLowerCase()}
                   className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
-                  onChange={handleInputs}
+                  autoComplete="current-username"
                 />
               ) : (
                 <div className="relative">
                   <input
                     type="password"
-                    id={input}
-                    name={input}
+                    id={input.toLowerCase()}
+                    name={input.toLowerCase()}
                     className="w-full h-12 px-4 py-2 bg-white border-2 rounded-xl border-primary"
-                    onChange={handleInputs}
+                    autoComplete="current-password"
                   />
                   <Button
                     buttonType="icon"
@@ -144,7 +139,7 @@ const Signin = () => {
                     className="absolute w-6 h-6 top-2 right-3"
                     onClick={() => {
                       setVisible(!visible);
-                      const element = document.getElementsByName("Password")[0];
+                      const element = document.getElementsByName("password")[0];
                       visible
                         ? element.setAttribute("type", "password")
                         : element.setAttribute("type", "text");
@@ -178,4 +173,4 @@ const Signin = () => {
   );
 };
 
-export default Signin;
+export default SignIn;

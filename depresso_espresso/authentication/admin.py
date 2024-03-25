@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, RegisterConfig, Following, FollowRequest, Node, Follower, Follow
+from .models import Author, RegisterConfig, Following, FollowRequest, Node
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
@@ -73,7 +73,7 @@ class UserChangeForm(forms.ModelForm):
 
 class AuthorAdmin(admin.ModelAdmin):
     fields = ("id", "username", "displayName", "url", "type", "host",
-              "github", "profileImage", "is_active", "password", "allowRegister")
+              "github", "profileImage", "is_active", "password", "allowRegister", "isExternalAuthor")
 
 
 class RegisterConfigAdmin(admin.ModelAdmin):
@@ -82,12 +82,12 @@ class RegisterConfigAdmin(admin.ModelAdmin):
 
 class NodeAdmin(admin.ModelAdmin):
     fields = ('ourUsername', 'ourPassword',
-              'theirUsername', 'theirPassword', 'baseUrl')
+              'baseUrl', 'theirUsername', 'theirPassword')
 
 
 @admin.register(Following)
 class FollowingAdmin(admin.ModelAdmin):
-    list_display = ('authorid', 'followingid', 'areFriends', 'created_at')
+    list_display = ('author', 'following_author', 'areFriends', 'created_at')
 
 
 @admin.register(FollowRequest)
@@ -98,5 +98,3 @@ class FollowRequestAdmin(admin.ModelAdmin):
 admin.site.register(Author, AuthorAdmin)
 admin.site.register(RegisterConfig, RegisterConfigAdmin)
 admin.site.register(Node, NodeAdmin)
-admin.site.register(Follower)
-admin.site.register(Follow)

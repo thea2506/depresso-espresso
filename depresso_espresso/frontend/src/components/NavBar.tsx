@@ -1,5 +1,5 @@
 //#region imports
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,7 +13,10 @@ import { Button } from "./Button";
 import { GoHome, GoPerson, GoInbox } from "react-icons/go";
 import { PiNewspaperClipping } from "react-icons/pi";
 import { LiaSignOutAltSolid } from "react-icons/lia";
+import AuthContext from "../contexts/AuthContext";
 //#endregion
+
+const backendURL = import.meta.env.VITE_BACKEND_URL;
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -31,30 +34,28 @@ const NavBar = () => {
   const [currentPage, setCurrentPage] = useState<string>(
     window.location.pathname.substring(window.location.pathname.indexOf("/"))
   );
-  const [id0, setId0] = useState<string>("");
-  const authorIDPath = `/authors/${id0}`;
-  const authorInboxPath = `/authors/${id0}/inbox`;
+  const { curUser } = useContext(AuthContext);
 
   const nav = useNavigate();
 
-  useEffect(() => {
-    const getId = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        if (response.data.success) {
-          setId0(response.data.id);
-        }
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-    getId();
-  });
+  if (!Object.entries(curUser).length) return <></>;
+
+  const userId = curUser.id.substring(curUser.id.indexOf("api/") + 4);
+  const siteAuthorPath = `${userId}`;
+  const siteInboxPath = `${userId}/inbox`;
+
+  // console.log("User ID ", userId);
+  // console.log("site Author Path ", siteAuthorPath);
+  // console.log("site Inbox Path ", siteInboxPath);
 
   const navContents = [
     { icon: <GoHome />, link: "/", name: "" },
-    { icon: <GoPerson />, link: authorIDPath, name: "authors" },
-    { icon: <GoInbox />, link: authorInboxPath, name: "inbox" },
+    {
+      icon: <GoPerson />,
+      link: siteAuthorPath,
+      name: "authors",
+    },
+    { icon: <GoInbox />, link: siteInboxPath, name: "inbox" },
     { icon: <PiNewspaperClipping />, link: "/discover", name: "discover" },
   ];
 
@@ -66,7 +67,7 @@ const NavBar = () => {
    */
   const changePage = (link: string) => {
     setCurrentPage(link);
-    nav(link);
+    nav(link, { state: { reload: true } });
   };
 
   /**
@@ -74,12 +75,12 @@ const NavBar = () => {
    */
   const handleLogout = async () => {
     try {
-      const response = await axios.post("/logoutUser");
+      const response = await axios.post(`${backendURL}/api/auth/logout`);
 
       if (response.data.success) {
         toast.success("You have been logged out", myToast);
         localStorage.clear();
-        nav("/signin");
+        nav("/site/signin");
       } else {
         toast.error("Logout failed", myToast);
       }

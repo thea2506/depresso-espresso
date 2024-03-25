@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface PostModel {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type: string;
@@ -7,9 +8,9 @@ export interface PostModel {
   source?: string;
   origin?: string;
   author: any;
-  
+
   description: string;
-  contenttype: string;
+  contentType: string;
   content: string;
 
   count: number;
@@ -20,5 +21,5 @@ export interface PostModel {
   published: string;
   visibility: string;
 
-  image_file?: string;
+  imageFile?: string;
 }
