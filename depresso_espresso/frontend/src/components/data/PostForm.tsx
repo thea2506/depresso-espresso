@@ -129,22 +129,6 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      // const real_postid = postId?.split("/").pop();
-      // const real_authorid = author.id.split("/").pop();
-      // const formData = new FormData();
-      // formData.append("title", title);
-      // formData.append("description", description);
-
-      // formData.append("contentType", contentType);
-      // formData.append("visibility", visibility);
-      // formData.append("author", JSON.stringify(curUser));
-
-      // if (contentType.includes("image") && imageFile) {
-      //   formData.append("content", base64Image);
-      // } else formData.append("content", content);
-
-      // if (edit && oldPost?.id) formData.append("postid", oldPost.id);
-
       const url = edit ? `${oldPost?.id}` : `${curUser.id}/posts`;
 
       const new_post = {
@@ -165,7 +149,7 @@ const PostForm = ({
         console.log(post_object);
       }
 
-      if (!response.data.success) {
+      if (response.status != 200 && response.status != 201) {
         toast.error("Failed to create/modify post", myToast);
         return;
       } else {

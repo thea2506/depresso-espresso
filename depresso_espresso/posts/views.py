@@ -87,3 +87,54 @@ def api_feed(request):
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
     else:
         return JsonResponse({"error": "Invalid request"}, status=405)
+
+
+@api_view(['PUT', 'DELETE'])
+def api_post(request, author_id, post_id):
+
+    user = my_authenticate(request)
+
+    if request.method == 'PUT':
+        if not Author.objects.filter(id=author_id).exists():
+            return JsonResponse({"error": "Author not found", "success": False}, status=404)
+
+        author = Author.objects.get(id=author_id)
+
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+        post = Post.objects.get(id=post_id)
+
+        if post.author != author:
+            return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
+
+        data = request.data
+
+        serializer = PostSerializer(
+            instance=post, data=data, context={"request": request})
+
+        if serializer.is_valid():
+
+            new_post = serializer.save()
+
+            returned_data = PostSerializer(instance=new_post, context={
+                                           "request": request}).data
+            return JsonResponse(
+                returned_data, status=200)
+        else:
+            return JsonResponse(serializer.errors, status=501)
+
+    elif request.method == 'DELETE':
+        if not Author.objects.filter(id=author_id).exists():
+            return JsonResponse({"error": "Author not found", "success": False}, status=404)
+        author = Author.objects.get(id=author_id)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        post = Post.objects.get(id=post_id)
+        if post.author != author:
+            return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
+        post.delete()
+        return JsonResponse({"success": True}, status=200)
+
+    else:
+        return JsonResponse({"error": "Invalid request"}, status=405)
