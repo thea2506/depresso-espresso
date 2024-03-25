@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from urllib.parse import urlparse
 from posts.models import Post, Comment, LikeComment, LikePost
 from posts.serializers import PostSerializer, CommentSerializer
+from authors.views import get_author_object
 
 
 @api_view(['GET', 'POST', "DELETE"])
@@ -92,8 +93,10 @@ def handle_like(request, author_id):
 
     data = request.data
 
-    liking_author_object = Author.objects.get(
-        url=data.get('author')['url'])
+    liking_author_object = get_author_object(data.get('author')['url'])
+
+    # liking_author_object = Author.objects.get(
+    #     url=data.get('author')['url'])
 
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]

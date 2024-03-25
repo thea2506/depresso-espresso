@@ -101,10 +101,11 @@ class LikePostSerializer(serializers.ModelSerializer):
     author = AuthorField()
     object = SerializerMethodField("get_object")
     type = SerializerMethodField("get_type")
+    summary = SerializerMethodField("get_summary")
 
     class Meta:
         model = LikePost
-        fields = ("type", "author", "object")
+        fields = ("type", "author", "object", "summary")
 
     def get_type(self, _):
         return "Like"
@@ -112,18 +113,25 @@ class LikePostSerializer(serializers.ModelSerializer):
     def get_object(self, obj):
         return build_default_post_uri(obj=obj.post, request=self.context["request"])
 
+    def get_summary(self, obj):
+        return f"{obj.author.displayName} liked your post"
+
 
 class LikeCommentSerializer(serializers.ModelSerializer):
     author = AuthorField()
     object = SerializerMethodField("get_object")
     type = SerializerMethodField("get_type")
+    summary = SerializerMethodField("get_summary")
 
     class Meta:
         model = LikePost
-        fields = ("type", "author", "object")
+        fields = ("type", "author", "object", "summary")
 
     def get_type(self, _):
         return "Like"
 
     def get_object(self, obj):
         return build_default_comments_uri(obj=obj.comment, request=self.context["request"])
+
+    def get_summary(self, obj):
+        return f"{obj.author.displayName} liked your comment"

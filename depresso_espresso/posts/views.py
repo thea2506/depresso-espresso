@@ -9,6 +9,8 @@ from itertools import chain
 from requests.auth import HTTPBasicAuth
 import requests
 
+from authors.views import get_author_object
+
 
 def get_posts(current_user, author_object):
     '''
@@ -239,4 +241,5 @@ def api_comments(request, author_id, post_id):
                 returned_data, status=201)
         else:
             return JsonResponse(serializer.errors, status=501)
+
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)

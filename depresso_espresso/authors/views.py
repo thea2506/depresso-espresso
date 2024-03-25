@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
 from authentication.serializers import AuthorSerializer
 from inbox.models import Notification, NotificationItem
+from posts.models import LikePost, LikeComment
+from posts.serializers import LikePostSerializer, LikeCommentSerializer
 from authentication.models import Node
 from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
@@ -10,6 +12,7 @@ from requests.auth import HTTPBasicAuth
 import requests
 from urllib.parse import unquote
 from urllib.parse import urlparse
+from itertools import chain
 
 
 def get_author_object(author_url):
@@ -187,3 +190,27 @@ def api_follower(request, author_id, author_url):
         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+
+@api_view(['GET'])
+def api_liked(request, author_id):
+    if request.method == 'GET':
+        if Author.objects.filter(id=author_id).exists():
+
+            author_object = Author.objects.get(id=author_id)
+
+            liked_posts = LikePost.objects.filter(author=author_object)
+            liked_comments = LikeComment.objects.filter(author=author_object)
+
+            serialized_liked = LikePostSerializer(
+                instance=liked_posts, context={'request': request}, many=True)
+
+            serialized_liked_comments = LikeCommentSerializer(
+                instance=liked_comments, context={'request': request}, many=True)
+
+            serialized_liked = list(
+                chain(serialized_liked.data, serialized_liked_comments.data))
+
+            return JsonResponse({"type": "liked", "items": serialized_liked}, safe=False)
+
+        return JsonResponse({"error": "Author not found", "success": False}, status=404)
