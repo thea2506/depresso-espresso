@@ -41,6 +41,7 @@ def api_inbox(request, author_id):
             return handle_post(request, author_id)
         if type == 'share':
             return handle_share(request, author_id)
+
     elif request.method == 'DELETE':
         pass
 

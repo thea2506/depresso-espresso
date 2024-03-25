@@ -58,22 +58,34 @@ def api_posts(request, author_id):
             if new_post.visibility == "PUBLIC":
                 for following_object in following_objects:
                     following_author = following_object.following_author
-                    if following_author.isExternalAuthor:
-                        print(following_author.displayName)
-                        author_url = following_author.url
-                        author_host = following_author.host
-                        node = Node.objects.get(baseUrl=author_host)
-                        auth = HTTPBasicAuth(
-                            node.ourUsername, node.ourPassword)
-                        response = requests.post(f"{author_url}/inbox",
-                                                 json=returned_data, auth=auth)
+                    print(following_author.displayName)
+                    author_url = following_author.url
+                    author_host = following_author.host
+                    node = Node.objects.get(baseUrl=author_host)
+                    auth = HTTPBasicAuth(
+                        node.ourUsername, node.ourPassword)
+                    requests.post(f"{author_url}/inbox",
+                                  json=returned_data, auth=auth)
 
-                        print(response)
-                    else:
-                        pass
+                    # print(response)
 
-            friends_following_objects = following_objects.filter(
-                areFriends=True)
+            elif new_post.visibility == "FRIENDS":
+
+                friends_following_objects = following_objects.filter(
+                    areFriends=True)
+
+                for following_object in friends_following_objects:
+                    following_author = following_object.following_author
+                    print(following_author.displayName)
+                    author_url = following_author.url
+                    author_host = following_author.host
+                    node = Node.objects.get(baseUrl=author_host)
+                    auth = HTTPBasicAuth(
+                        node.ourUsername, node.ourPassword)
+                    requests.post(f"{author_url}/inbox",
+                                  json=returned_data, auth=auth)
+
+                    # print(response)
 
             return JsonResponse(
                 {
