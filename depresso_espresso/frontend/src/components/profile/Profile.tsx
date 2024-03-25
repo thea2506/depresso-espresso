@@ -66,7 +66,6 @@ const Profile = ({
   const [newGithub, setGithub] = useState<string>(user.github || "");
   const [newImageURL, setImageURL] = useState<string>(user.profileImage || "");
   const { curUser, setCurUser } = useContext(AuthContext);
-  const [otherUser, setOtherUser] = useState<AuthorModel>();
 
   // Follow
   const [status, setStatus] = useState<string>();
@@ -78,17 +77,6 @@ const Profile = ({
   //#region Functions
 
   useEffect(() => {
-    const getOtherUser = async () => {
-      try {
-        const response = await axios.get(`${user.url}`);
-        const data = response.data;
-        console.log(response.data);
-        setOtherUser(data);
-      } catch (e) {
-        console.log("error", e);
-      }
-    };
-
     const getFollowStatus = async () => {
       try {
         const response = await axios.get(
@@ -127,7 +115,6 @@ const Profile = ({
         } else setStatus("stranger");
       }
     };
-    if (curUser && curUser.url !== user.url) getOtherUser();
     if (curUser && curUser.url !== user.url) getFollowStatus();
   }, [curUser, user, refresh]);
 
@@ -197,11 +184,11 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`${otherUser?.url}/inbox`, {
+      const response = await axios.post(`${user?.url}/inbox`, {
         type: "follow",
-        summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
+        summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
         actor: curUser,
-        object: otherUser,
+        object: user,
       });
       if (response.status === 201) {
         setStatus("pending");

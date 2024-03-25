@@ -54,12 +54,8 @@ class FollowRequestSerializer(serializers.ModelSerializer):
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
             response = requests.get(actor_obj.url, auth=auth)
-            serializer = AuthorSerializer(
-                data=response.json(), context=self.context)
-            if serializer.is_valid():
-                return serializer.data
-            else:
-                raise serializers.ValidationError(serializer.errors)
+            return response.json()
+
         else:
             serializer = AuthorSerializer(
                 instance=actor_obj, context=self.context)

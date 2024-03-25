@@ -33,6 +33,8 @@ def get_posts(current_user, author_object):
 def api_posts(request, author_id):
 
     user = my_authenticate(request)
+    print("REQUEST", request.GET)
+    print(user)
 
     if request.method == 'GET':
         if not Author.objects.filter(id=author_id).exists():

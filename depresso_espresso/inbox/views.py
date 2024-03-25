@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from posts.models import Post, Comment, LikeComment, LikePost
 from posts.serializers import PostSerializer, CommentSerializer
 from authors.views import get_author_object
+import uuid
 
 
 @api_view(['GET', 'POST', "DELETE"])
@@ -65,11 +66,8 @@ def handle_follow(request, author_id):
 
         actor_obj.pop('id', None)
         actor_obj["isExternalAuthor"] = True
-        actor = AuthorSerializer(data=actor_obj, context={'request': request})
-        if actor.is_valid():
-            actor.save()
-        else:
-            return JsonResponse({'error': 'Invalid actor'}, status=400)
+        actor_obj["username"] = uuid.uuid4()
+        actor = Author.objects.create(**actor_obj)
 
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)

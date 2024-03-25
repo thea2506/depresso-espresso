@@ -1,6 +1,7 @@
 import base64
 from django.contrib.sessions.models import Session
 from .models import Author, Node
+import uuid
 
 # Reference: https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware from meshy accessed 3/11/2024
 
@@ -17,18 +18,34 @@ def check_basic(request):
         encoded_credentials).decode("utf-8").split(':')
     username = decoded_credentials[0]
     password = decoded_credentials[1]
+    print(username, password)
+
     if not username or not password:
         return None
 
     try:
-        uri = request.build_absolute_uri("/")
+        uri = request.headers['Origin'] + "/"
         node = Node.objects.filter(baseUrl=uri,
                                    theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
     except Node.DoesNotExist:
         return None
 
-    request.node = node
-    return node
+    data = request.query_params
+    data_mutable = data.copy()
+    print(data_mutable)
+    author_object = Author(
+        type="author",
+        id=uuid.uuid4(),
+        username=username,
+        url=data_mutable.get('url'),
+        host=data_mutable.get('host'),
+        displayName=data_mutable.get(
+            'displayName'),
+        github=data_mutable.get('github'),
+        profileImage=data_mutable.get('profileImage'),
+        isExternalAuthor=True)
+
+    return author_object
 
 
 def my_authenticate(request):
@@ -47,6 +64,7 @@ def my_authenticate(request):
             else:
                 user = Author.objects.get(id=uid)
     else:
+        print("node-top-node")
         user = check_basic(request)
         if not user:
             return None

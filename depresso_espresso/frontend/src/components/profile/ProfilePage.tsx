@@ -56,7 +56,12 @@ const ProfilePage = () => {
 
         // followers
         try {
-          const response = await axios.get(`${authorUrl}/followers`);
+          const response = await axios.get(`${authorUrl}/followers`, {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          });
           const data = response.data;
           const followerModels = (data?.items as AuthorModel[]) || [];
           if (followerModels) setFollowers(followerModels);
@@ -66,7 +71,13 @@ const ProfilePage = () => {
 
         // posts
         try {
-          const response = await axios.get(`${authorUrl}/posts`);
+          const response = await axios.get(`${authorUrl}/posts`, {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+            params: curUser,
+          });
           const posts = response.data;
           const postModels = (posts.items as PostModel[]) || [];
           setPosts(postModels);
@@ -84,7 +95,7 @@ const ProfilePage = () => {
       console.log("fetching data");
       getData();
     }
-  }, [thisProfileUser, authorId, refresh, splat, state]);
+  }, [thisProfileUser, authorId, refresh, splat, state, curUser]);
 
   //#endregion
 
