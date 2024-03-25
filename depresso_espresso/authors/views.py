@@ -3,11 +3,13 @@ from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
 from authentication.serializers import AuthorSerializer
 from inbox.models import Notification, NotificationItem
+from authentication.models import Node
 from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
 from requests.auth import HTTPBasicAuth
 import requests
 from urllib.parse import unquote
+from urllib.parse import urlparse
 
 
 def get_author_object(author_url):
@@ -44,8 +46,12 @@ def api_author(request, author_id):
 def api_external_author(request, author_url):
     if request.method == 'GET':
         author_url = unquote(author_url)
-        basic = HTTPBasicAuth(MY_NODE_USERNAME, MY_NODE_PASSWORD)
-        response = requests.get(author_url, auth=basic)
+        parsed_uri = urlparse(author_url)
+        result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        node_obj = Node.objects.get(host=result)
+        auth = HTTPBasicAuth(node_obj.ourUsername,
+                             node_obj.ourPassword)
+        response = requests.get(author_url, auth=auth)
         return JsonResponse(response.json(), status=response.status_code)
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
