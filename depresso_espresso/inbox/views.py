@@ -154,7 +154,6 @@ def create_notification_item(notification_object, object_instance=None, object_u
         notification_item_object = NotificationItem.objects.create(
             content_type=content_type, object_id=object_instance.id, content_object=object_instance)
     else:
-        print(">>>>>>>>>>", object_url)
         notification_item_object = NotificationItem.objects.create(content_type=content_type,
                                                                    object_url=object_url)
 

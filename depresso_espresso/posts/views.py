@@ -200,7 +200,7 @@ def api_comments(request, author_id, post_id):
         if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
         post = Post.objects.get(id=post_id)
-        comments = Comment.objects.filter(post=post)
+        comments = Comment.objects.filter(post=post).order_by('-published')
         serializer = CommentSerializer(
             comments, context={"request": request}, many=True)
         return JsonResponse({"type": "comments", "items": serializer.data}, safe=False)
