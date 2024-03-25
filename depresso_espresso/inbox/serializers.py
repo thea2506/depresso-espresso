@@ -24,13 +24,17 @@ class NotificationItemSerializer(serializers.ModelSerializer):
             return FollowRequestSerializer(instance=instance.content_object, context=self.context).data
         if isinstance(instance.content_object, Post):
             return PostSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, Comment):
+            return CommentSerializer(instance=instance.content_object, context=self.context).data
         if instance.object_url:
             nodes = Node.objects.all()
             for node in nodes:
                 if node.baseUrl in instance.object_url:
-                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+
+                    auth = HTTPBasicAuth(
+                        node.ourUsername, node.ourPassword)
                     response = requests.get(instance.object_url, auth=auth)
-                    print(response)
+                    # print(response)
                     return response.json()
 
             return None

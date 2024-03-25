@@ -53,28 +53,10 @@ const CommentList = ({
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const real_postid = post.id.split("/").pop();
-        const real_authorid = post.author.id.split("/").pop();
-        const response = await axios.get(
-          `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`
-        );
+        const response = await axios.get(`${post.id}/comments`);
         if (response.status === 200) {
-          const comment_list = response.data.comments;
-          const commentModels = comment_list.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (rawcomment: any) => {
-              return {
-                type: rawcomment.type,
-                author: rawcomment.author,
-                comment: rawcomment.comment,
-                contenttype: rawcomment.contenttype,
-                published: rawcomment.published,
-                id: rawcomment.id,
-                likecount: rawcomment.like_count,
-              };
-            }
-          );
-          setComments(commentModels);
+          const comment_list = (response.data.items as CommentModel[]) || [];
+          setComments(comment_list);
         } else {
           console.error("Failed to fetch comments");
         }
@@ -109,49 +91,22 @@ const CommentList = ({
 
   const handleCommentSubmit = async () => {
     try {
-      const formField = new FormData();
-      formField.append("comment", comment);
-      formField.append("postid", post.id);
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
-
-      const response = await axios.post(
-        `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`,
-        {
-          type: "comment",
-          author: {
-            type: "author",
-            id: curUser!.id,
-            url: curUser!.url,
-            host: curUser!.host,
-            displayName: curUser!.displayName,
-            github: curUser!.github,
-            profileImage: curUser!.profileImage,
-          },
-          comment: comment,
-          contenttype: "text/plain",
+      const response = await axios.post(`${post.id}/comments`, {
+        type: "comment",
+        author: {
+          type: "author",
+          id: curUser!.id,
+          url: curUser!.url,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
         },
-        {
-          auth: {
-            username: import.meta.env.VITE_USERNAME,
-            password: import.meta.env.VITE_PASSWORD,
-          },
-        }
-      );
+        comment: comment,
+        contentType: "text/plain",
+      });
 
-      if (response.data.success) {
-        const comment_object = response.data.comment;
-        await axios.post(
-          `/espresso-api/authors/${real_authorid}/inbox`,
-          comment_object,
-          {
-            auth: {
-              username: import.meta.env.VITE_USERNAME,
-              password: import.meta.env.VITE_PASSWORD,
-            },
-          }
-        );
-
+      if (response.status === 200 || response.status === 201) {
         setRefresh(!refresh);
         setComment("");
       } else {
@@ -229,16 +184,18 @@ const CommentList = ({
               </p>
             </div>
 
-            <p className="p-4 bg-white text-start rounded-xl">
-              {comment.comment}
-            </p>
-            <button
-              onClick={() => handleLikeToggle(comment.id)}
-              className={`flex items-center justify-center gap-x-1 text-primary`}
-            >
-              <GoHeart />
-              <p>{comment.likecount}</p>
-            </button>
+            <div className="flex justify-between w-full gap-2">
+              <p className="flex-1 p-4 bg-white text-start rounded-xl">
+                {comment.comment}
+              </p>
+              <button
+                onClick={() => handleLikeToggle(comment.id)}
+                className={`flex items-center justify-center gap-x-1 text-primary`}
+              >
+                <GoHeart />
+                <p>{comment.likecount}</p>
+              </button>
+            </div>
           </div>
         ))}
       </div>

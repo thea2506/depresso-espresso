@@ -53,9 +53,6 @@ def api_inbox(request, author_id):
 
         notification_object.items.all().delete()
 
-        # for notification_item_object in notification_object.items:
-        #     notification_item_object.delete()
-
         return JsonResponse({'success': 'Inbox cleared'}, status=200)
 
 
@@ -94,7 +91,33 @@ def handle_like(request, author_id):
 
 
 def handle_comment(request, author_id):
-    pass
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    author_object = Author.objects.get(id=author_id)
+
+    data = request.data
+
+    post_id = data.get('id').split('/')[-3]
+
+    data['post'] = Post.objects.get(id=post_id).id
+
+    serializer = CommentSerializer(
+        data=data, context={"request": request}
+    )
+
+    if serializer.is_valid():
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
+
+        comment_object = Comment.objects.get(id=data.get('id').split('/')[-1])
+
+        create_notification_item(
+            notification_object, object_instance=comment_object)
+
+        return send_notification_item(request, notification_object)
+    else:
+        return JsonResponse(serializer.errors, status=400)
 
 
 def handle_post(request, author_id):

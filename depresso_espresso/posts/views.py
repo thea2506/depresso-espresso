@@ -191,3 +191,52 @@ def api_post(request, author_id, post_id):
 
     else:
         return JsonResponse({"error": "Invalid request"}, status=405)
+
+
+@api_view(['GET', 'POST'])
+def api_comments(request, author_id, post_id):
+    user = my_authenticate(request)
+    if request.method == 'GET':
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        post = Post.objects.get(id=post_id)
+        comments = Comment.objects.filter(post=post)
+        serializer = CommentSerializer(
+            comments, context={"request": request}, many=True)
+        return JsonResponse({"type": "comments", "items": serializer.data}, safe=False)
+
+    elif request.method == 'POST':
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        post = Post.objects.get(id=post_id)
+        data = request.data
+        data["post"] = post.id
+        serializer = CommentSerializer(
+            data=data, context={"request": request})
+        if serializer.is_valid():
+
+            new_comment = serializer.save()
+
+            returned_data = CommentSerializer(
+                instance=new_comment, context={"request": request}).data
+
+            returned_data.pop("post", None)
+
+            author_object = Author.objects.get(id=author_id)
+            author_url = author_object.url
+
+            author_host = author_object.host
+
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.baseUrl == author_host:
+                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                    print(returned_data)
+                    requests.post(f"{author_url}/inbox",
+                                  json=returned_data, auth=auth)
+
+            return JsonResponse(
+                returned_data, status=201)
+        else:
+            return JsonResponse(serializer.errors, status=501)
+    return JsonResponse({"error": "Invalid request", "success": False}, status=405)
