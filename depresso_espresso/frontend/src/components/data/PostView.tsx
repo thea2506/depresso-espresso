@@ -2,6 +2,7 @@
 // import { useState } from "react";
 // import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { GoComment, GoHeart, GoPencil, GoShare, GoTrash } from "react-icons/go";
 import { AiOutlineClose } from "react-icons/ai";
@@ -110,18 +111,14 @@ const PostView = ({
   };
 
   const handleDelete = async () => {
-    // try {
-    //   const real_postid = post.id.split("/").pop();
-    //   const real_authorid = post.author.id.split("/").pop();
-    //   const response = await axios.delete(
-    //     `/espresso-api/authors/${real_authorid}/posts/${real_postid}`
-    //   );
-    //   if (response.data.success) {
-    //     setRefresh(!refresh);
-    //   }
-    // } catch (error) {
-    //   console.error("An error occurred", error);
-    // }
+    try {
+      const response = await axios.delete(`${post.id}`);
+      if (response.data.success) {
+        setRefresh(!refresh);
+      }
+    } catch (error) {
+      console.error("An error occurred", error);
+    }
   };
 
   const formatDateString = (inputDateString: string) => {
