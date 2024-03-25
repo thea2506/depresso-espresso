@@ -11,9 +11,9 @@ from depresso_espresso.constants import *
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-    host = SerializerMethodField("get_host_url")
+    # host = SerializerMethodField("get_host_url")
     id = SerializerMethodField("get_id_url")
-    url = SerializerMethodField("get_id_url")
+    # url = SerializerMethodField("get_id_url")
 
     class Meta:
         model = Author

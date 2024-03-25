@@ -17,7 +17,12 @@ from itertools import chain
 
 def get_author_object(author_url):
     author_url = unquote(author_url)
-    normalized_author_url = author_url.replace("127.0.0.1", "localhost")
+    if "127.0.0.1" in author_url:
+        normalized_author_url = author_url.replace("127.0.0.1", "localhost")
+    elif "localhost" in author_url:
+        normalized_author_url = author_url.replace("localhost", "127.0.0.1")
+    else:
+        normalized_author_url = author_url
     if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
             url=normalized_author_url).exists():
         return None
