@@ -3,7 +3,7 @@ from rest_framework.serializers import *
 from inbox.models import Notification, NotificationItem
 from authentication.models import FollowRequest, Author
 from posts.models import Post, Comment, LikeComment, LikePost, Share
-from posts.serializers import PostSerializer, CommentSerializer
+from posts.serializers import PostSerializer, CommentSerializer, LikePostSerializer, LikeCommentSerializer
 from authentication.serializers import AuthorSerializer, FollowRequestSerializer
 from utils import build_default_author_uri
 from urllib.parse import urlparse
@@ -26,6 +26,10 @@ class NotificationItemSerializer(serializers.ModelSerializer):
             return PostSerializer(instance=instance.content_object, context=self.context).data
         if isinstance(instance.content_object, Comment):
             return CommentSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, LikePost):
+            return LikePostSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, LikeComment):
+            return LikeCommentSerializer(instance=instance.content_object, context=self.context).data
         if instance.object_url:
             nodes = Node.objects.all()
             for node in nodes:

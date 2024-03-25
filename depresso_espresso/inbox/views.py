@@ -23,9 +23,7 @@ def api_inbox(request, author_id):
             0]
 
         notification_items = NotificationItem.objects.filter(
-            notification=notification_object).order_by('-id')
-
-        print(notification_items)
+            notification=notification_object).order_by('id')
 
         serializer = NotificationItemSerializer(
             notification_items, many=True, context={'request': request})
@@ -87,7 +85,57 @@ def handle_follow(request, author_id):
 
 
 def handle_like(request, author_id):
-    pass
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    author_object = Author.objects.get(id=author_id)
+
+    data = request.data
+
+    liking_author_object = Author.objects.get(
+        url=data.get('author')['url'])
+
+    if "comments" in data.get('object'):
+        comment_id = data.get('object').split('/')[-1]
+
+        like_comment_object = LikeComment.objects.filter(
+            author=liking_author_object, comment=Comment.objects.get(id=comment_id))
+
+        if like_comment_object.exists():
+            return JsonResponse({'error': 'Already liked'}, status=400)
+
+        else:
+            like_comment_object = LikeComment.objects.create(
+                author=liking_author_object, comment=Comment.objects.get(id=comment_id))
+
+            notification_object = Notification.objects.get_or_create(author=author_object)[
+                0]
+
+            create_notification_item(
+                notification_object, object_instance=like_comment_object)
+
+            return send_notification_item(request, notification_object)
+
+    else:
+        post_id = data.get('object').split('/')[-1]
+
+        like_post_object = LikePost.objects.filter(
+            author=liking_author_object, post=Post.objects.get(id=post_id))
+
+        if like_post_object.exists():
+            return JsonResponse({'error': 'Already liked'}, status=400)
+
+        else:
+            like_post_object = LikePost.objects.create(
+                author=liking_author_object, post=Post.objects.get(id=post_id))
+
+            notification_object = Notification.objects.get_or_create(author=author_object)[
+                0]
+
+            create_notification_item(
+                notification_object, object_instance=like_post_object)
+
+            return send_notification_item(request, notification_object)
 
 
 def handle_comment(request, author_id):

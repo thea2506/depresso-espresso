@@ -1,4 +1,4 @@
-from .models import Post, Comment, Share
+from .models import Post, Comment, Share, LikePost, LikeComment
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -75,3 +75,5 @@ class ShareAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostsAdmin)
 admin.site.register(Comment, CommentsAdmin)
+admin.site.register(LikePost)
+admin.site.register(LikeComment)

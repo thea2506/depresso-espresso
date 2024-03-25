@@ -76,6 +76,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = AuthorField()
     contentType = serializers.CharField(source="contenttype")
     type = SerializerMethodField("get_type")
+    likecount = SerializerMethodField("get_like_count")
 
     class Meta:
         model = Comment
@@ -94,3 +95,35 @@ class CommentSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         print(validated_data)
         return Comment.objects.create(**validated_data)
+
+
+class LikePostSerializer(serializers.ModelSerializer):
+    author = AuthorField()
+    object = SerializerMethodField("get_object")
+    type = SerializerMethodField("get_type")
+
+    class Meta:
+        model = LikePost
+        fields = ("type", "author", "object")
+
+    def get_type(self, _):
+        return "Like"
+
+    def get_object(self, obj):
+        return build_default_post_uri(obj=obj.post, request=self.context["request"])
+
+
+class LikeCommentSerializer(serializers.ModelSerializer):
+    author = AuthorField()
+    object = SerializerMethodField("get_object")
+    type = SerializerMethodField("get_type")
+
+    class Meta:
+        model = LikePost
+        fields = ("type", "author", "object")
+
+    def get_type(self, _):
+        return "Like"
+
+    def get_object(self, obj):
+        return build_default_comments_uri(obj=obj.comment, request=self.context["request"])

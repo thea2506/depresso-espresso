@@ -87,27 +87,25 @@ const PostView = ({
   };
 
   const handleLikeToggle = async () => {
-    // const real_authorid = post.author.id.split("/").pop();
-    // console.log(real_authorid);
-    // try {
-    //   await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
-    //     summary: `${curUser.displayName} liked your post`,
-    //     type: "Like",
-    //     object: post.id,
-    //     author: {
-    //       type: "author",
-    //       id: curUser.id,
-    //       host: curUser.host,
-    //       displayName: curUser.displayName,
-    //       url: curUser.url,
-    //       github: curUser.github,
-    //       profileImage: curUser.profileImage,
-    //     },
-    //   });
-    //   setRefresh(!refresh);
-    // } catch (error) {
-    //   console.error("An error occurred", error);
-    // }
+    try {
+      await axios.post(`${post.author.url}/inbox`, {
+        summary: `${curUser.displayName} liked your post`,
+        type: "Like",
+        object: post.id,
+        author: {
+          type: "author",
+          id: curUser.id,
+          host: curUser.host,
+          displayName: curUser.displayName,
+          url: curUser.url,
+          github: curUser.github,
+          profileImage: curUser.profileImage,
+        },
+      });
+      setRefresh(!refresh);
+    } catch (error) {
+      // console.error("An error occurred", error);
+    }
   };
 
   const handleDelete = async () => {

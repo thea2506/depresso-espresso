@@ -40,7 +40,12 @@ const Notification = ({
     follow: "wants to follow you",
     share: "shared a post with you",
     post: "made a post",
-    like: "liked your idea",
+    like:
+      "liked your " +
+      (notificationObject.type.toLowerCase() === "like" &&
+      notificationObject.object.includes("comments")
+        ? "comment"
+        : "post"),
     comment: "commented on your post",
   };
 
