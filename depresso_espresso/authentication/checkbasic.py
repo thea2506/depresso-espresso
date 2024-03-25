@@ -18,8 +18,6 @@ def check_basic(request):
         encoded_credentials).decode("utf-8").split(':')
     username = decoded_credentials[0]
     password = decoded_credentials[1]
-    print(username, password)
-
     if not username or not password:
         return None
 
@@ -32,7 +30,6 @@ def check_basic(request):
 
     data = request.query_params
     data_mutable = data.copy()
-    print(data_mutable)
     author_object = Author(
         type="author",
         id=uuid.uuid4(),
@@ -64,7 +61,6 @@ def my_authenticate(request):
             else:
                 user = Author.objects.get(id=uid)
     else:
-        print("node-top-node")
         user = check_basic(request)
         if not user:
             return None

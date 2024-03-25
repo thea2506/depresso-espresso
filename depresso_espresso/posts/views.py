@@ -21,7 +21,7 @@ def get_posts(current_user, author_object):
         return Post.objects.filter(author=author_object).order_by('-published')
     else:
         following_object = Following.objects.filter(
-            author=current_user, following_author=author_object)
+            author__url=current_user.url, following_author=author_object)
         if following_object.exists() and following_object[0].areFriends:
             return Post.objects.filter(
                 Q(author=author_object) & ~Q(visibility="UNLISTED")).order_by('-published')
@@ -142,29 +142,44 @@ def api_feed(request):
     user = my_authenticate(request)
     if request.method == 'GET':
 
+        feed = []
+
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
+
+        public_posts = PostSerializer(
+            instance=public_posts, many=True, context={"request": request}).data
 
         friends_unlisted_posts = Post.objects.filter(
             Q(visibility="FRIENDS") | Q(visibility="UNLISTED"), Q(author=user))
 
-        Following_objects = Following.objects.filter(
+        friends_unlisted_posts = PostSerializer(
+            instance=friends_unlisted_posts, many=True, context={"request": request}).data
+
+        following_objects = Following.objects.filter(
             author=user, areFriends=True)
 
-        my_friend_posts = []
-
-        for following in Following_objects:
-            my_friend_posts = chain(my_friend_posts,
-                                    Post.objects.filter(author=following.following_author, visibility="FRIENDS"))
+        for following in following_objects:
+            following_author = following.following_author
+            if following_author.isExternalAuthor:
+                author_url = following_author.url
+                node = Node.objects.get(baseUrl=following_author.host)
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(
+                    f"{author_url}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
+                feed = chain(feed, response.json()["items"])
+            else:
+                my_friend_posts = Post.objects.filter(
+                    author=following_author, visibility="FRIENDS")
+                my_friend_posts = PostSerializer(
+                    instance=my_friend_posts, many=True, context={"request": request}).data
+                feed = chain(feed, my_friend_posts)
 
         feed = list(
-            chain(public_posts, friends_unlisted_posts, my_friend_posts))
+            chain(feed, public_posts, friends_unlisted_posts))
 
-        feed = sorted(feed, key=lambda x: x.published, reverse=True)
-
-        serializer = PostSerializer(
-            feed, many=True, context={"request": request})
-        return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
+        feed = sorted(feed, key=lambda x: x["published"], reverse=True)
+        return JsonResponse({"type": "posts", "items": feed}, safe=False)
     else:
         return JsonResponse({"error": "Invalid request"}, status=405)
 

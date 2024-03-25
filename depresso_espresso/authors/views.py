@@ -200,9 +200,7 @@ def api_follower(request, author_id, author_url):
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
             response = requests.get(
                 foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-            print(response.status_code)
             if response.status_code == 200:
-                print("Remote follow successful")
                 following_object.areFriends = True
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
@@ -211,7 +209,6 @@ def api_follower(request, author_id, author_url):
                 response = requests.put(foreign_author_url + "/followers/" + str(followed_author_object.url),
                                         auth=auth,
                                         data={"areFriends": True}, headers={"origin": request.META["HTTP_HOST"]})
-                print(response)
 
         return JsonResponse({"success": True}, status=200)
 
