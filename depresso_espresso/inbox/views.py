@@ -13,6 +13,9 @@ from posts.serializers import PostSerializer, CommentSerializer
 @api_view(['GET', 'POST', "DELETE"])
 def api_inbox(request, author_id):
 
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
     if request.method == 'GET':
         author_object = Author.objects.get(id=author_id)
 
@@ -43,7 +46,17 @@ def api_inbox(request, author_id):
             return handle_share(request, author_id)
 
     elif request.method == 'DELETE':
-        pass
+        author_object = Author.objects.get(id=author_id)
+
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
+
+        notification_object.items.all().delete()
+
+        # for notification_item_object in notification_object.items:
+        #     notification_item_object.delete()
+
+        return JsonResponse({'success': 'Inbox cleared'}, status=200)
 
 
 def handle_follow(request, author_id):
