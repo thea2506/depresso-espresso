@@ -163,7 +163,6 @@ def api_follower(request, author_id, author_url):
             author=following_author_object, following_author=followed_author_object).exists()
 
         if reverse_following_object:
-            print("Are friends")
             reverse_following_object = Following.objects.get(
                 author=following_author_object, following_author=followed_author_object)
             following_object.areFriends = True

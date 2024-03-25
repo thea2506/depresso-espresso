@@ -17,7 +17,6 @@ def check_basic(request):
         encoded_credentials).decode("utf-8").split(':')
     username = decoded_credentials[0]
     password = decoded_credentials[1]
-    print("HAS AUTHORIZATION", username, password)
     if not username or not password:
         return None
 

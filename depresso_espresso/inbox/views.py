@@ -203,7 +203,6 @@ def handle_share(request, author_id):
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
-    print(data)
     if serializer.is_valid():
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]

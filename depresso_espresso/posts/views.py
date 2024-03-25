@@ -63,7 +63,6 @@ def api_posts(request, author_id):
                                         "request": request})
 
             if serializer.is_valid():
-                print(shared_post)
                 new_shared_post = serializer.save()
 
                 returned_data = PostSerializer(instance=new_shared_post, context={
@@ -85,10 +84,7 @@ def api_posts(request, author_id):
                 return JsonResponse(
                     returned_data, status=201)
 
-            else:
-                print(serializer.errors)
-
-            return JsonResponse({"error": "Invalid request"}, status=405)
+            return JsonResponse(serializer.errors, status=405)
 
         serializer = PostSerializer(
             data=data, context={"request": request})
@@ -113,8 +109,6 @@ def api_posts(request, author_id):
                     requests.post(f"{author_url}/inbox",
                                   json=returned_data, auth=auth)
 
-                    # print(response)
-
             elif new_post.visibility == "FRIENDS":
 
                 friends_following_objects = following_objects.filter(
@@ -122,7 +116,6 @@ def api_posts(request, author_id):
 
                 for following_object in friends_following_objects:
                     following_author = following_object.following_author
-                    print(following_author.displayName)
                     author_url = following_author.url
                     author_host = following_author.host
                     node = Node.objects.get(baseUrl=author_host)
@@ -130,8 +123,6 @@ def api_posts(request, author_id):
                         node.ourUsername, node.ourPassword)
                     requests.post(f"{author_url}/inbox",
                                   json=returned_data, auth=auth)
-
-                    # print(response)
 
             return JsonResponse(
                 {
@@ -277,7 +268,6 @@ def api_comments(request, author_id, post_id):
             for node in nodes:
                 if node.baseUrl == author_host:
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    print(returned_data)
                     requests.post(f"{author_url}/inbox",
                                   json=returned_data, auth=auth)
 

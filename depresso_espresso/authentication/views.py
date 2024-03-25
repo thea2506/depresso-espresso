@@ -48,7 +48,6 @@ def loginUser(request):
         user = Login.post(request)
         if user is not None:
             login(request, user)
-            print("user id:", user.id)
             return JsonResponse({'success': True, 'id': user.id})
 
         else:
