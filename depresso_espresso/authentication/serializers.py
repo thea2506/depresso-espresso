@@ -50,7 +50,7 @@ class FollowRequestSerializer(serializers.ModelSerializer):
     def get_actor(self, obj):
         actor_obj = Author.objects.get(id=obj.requester.id)
         if actor_obj.isExternalAuthor:
-            node_obj = Node.objects.get(host=actor_obj.host)
+            node_obj = Node.objects.get(baseUrl=actor_obj.host)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
             response = requests.get(actor_obj.url, auth=auth)

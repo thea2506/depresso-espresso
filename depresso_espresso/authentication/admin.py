@@ -81,8 +81,8 @@ class RegisterConfigAdmin(admin.ModelAdmin):
 
 
 class NodeAdmin(admin.ModelAdmin):
-    fields = ('username', 'password',
-              'host', 'is_active', 'is_authenticated')
+    fields = ('ourUsername', 'ourPassword',
+              'baseUrl', 'theirUsername', 'theirPassword')
 
 
 @admin.register(Following)

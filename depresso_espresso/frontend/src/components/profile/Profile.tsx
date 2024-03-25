@@ -79,47 +79,50 @@ const Profile = ({
 
   useEffect(() => {
     const getOtherUser = async () => {
-      const response = await axios.get(`${user.url}`);
-      const data = response.data;
-      setOtherUser(data);
+      try {
+        const response = await axios.get(`${user.url}`);
+        const data = response.data;
+        console.log(response.data);
+        setOtherUser(data);
+      } catch (e) {
+        console.log("error", e);
+      }
     };
 
     const getFollowStatus = async () => {
       try {
-        try {
-          const response = await axios.get(
-            `${user.url}/followers/${encodeURIComponent(
-              encodeURIComponent(curUser?.id)
-            )}`
-          );
+        const response = await axios.get(
+          `${user.url}/followers/${encodeURIComponent(
+            encodeURIComponent(curUser?.id)
+          )}`
+        );
 
-          if (response.status === 200) {
-            // further check if they are friends
-            // sent a request to "my_id" to check for followers of "id
-            try {
-              const response2 = await axios.get(
-                `${curUser?.url}/followers/${encodeURIComponent(
-                  encodeURIComponent(user.url!)
-                )}`
-              );
-              if (response2.status === 200) {
-                setStatus("friends");
-              } else {
-                setStatus("followed");
-              }
-            } catch (error) {
-              // empty
+        if (response.status === 200) {
+          // further check if they are friends
+          // sent a request to "my_id" to check for followers of "id
+          try {
+            const response2 = await axios.get(
+              `${curUser?.url}/followers/${encodeURIComponent(
+                encodeURIComponent(user.url!)
+              )}`
+            );
+            if (response2.status === 200) {
+              setStatus("friends");
+            } else {
+              setStatus("followed");
             }
-          } else {
-            setStatus("stranger");
+          } catch (error) {
+            // empty
           }
-        } catch (error: any) {
-          if (error.response.data.status === "pending") {
-            setStatus("pending");
-          } else setStatus("stranger");
+        } else {
+          setStatus("stranger");
         }
       } catch (error: any) {
-        if (error.response.data.status === "pending") {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.status === "pending"
+        ) {
           setStatus("pending");
         } else setStatus("stranger");
       }

@@ -44,11 +44,17 @@ def api_author(request, author_id):
 
 @api_view(['GET'])
 def api_external_author(request, author_url):
+    id = author_url.split("/")[-1]
+    if (Author.objects.filter(id=id).exists()):
+        author_object = Author.objects.get(id=id)
+        serialized_author = AuthorSerializer(
+            instance=author_object, context={'request': request})
+        return JsonResponse(serialized_author.data)
     if request.method == 'GET':
         author_url = unquote(author_url)
         parsed_uri = urlparse(author_url)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        node_obj = Node.objects.get(host=result)
+        node_obj = Node.objects.get(baseUrl=result)
         auth = HTTPBasicAuth(node_obj.ourUsername,
                              node_obj.ourPassword)
         response = requests.get(author_url, auth=auth)
@@ -132,8 +138,9 @@ def api_follower(request, author_id, author_url):
             follow_request_object.delete()
             return JsonResponse({"success": True}, status=200)
 
-        Following.objects.create(author=followed_author_object,
-                                 following_author=following_author_object)
+        # accept
+        following_object = Following.objects.create(author=followed_author_object,
+                                                    following_author=following_author_object)
 
         follow_request_object = FollowRequest.objects.get(
             requester=following_author_object, receiver=followed_author_object)
@@ -148,6 +155,18 @@ def api_follower(request, author_id, author_url):
             notification_item.delete()
 
         follow_request_object.delete()
+
+        reverse_following_object = Following.objects.filter(
+            author=following_author_object, following_author=followed_author_object).exists()
+
+        if reverse_following_object:
+            print("Are friends")
+            reverse_following_object = Following.objects.get(
+                author=following_author_object, following_author=followed_author_object)
+            following_object.areFriends = True
+            reverse_following_object.areFriends = True
+            following_object.save()
+            reverse_following_object.save()
 
         return JsonResponse({"success": True}, status=200)
 

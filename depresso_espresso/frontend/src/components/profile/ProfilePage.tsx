@@ -74,7 +74,7 @@ const ProfilePage = () => {
           // empty
         }
 
-        state.reload = false;
+        if (state && state.reload) state.reload = false;
       } catch (error) {
         console.error("An error occurred", error);
       }
