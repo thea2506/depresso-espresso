@@ -4,7 +4,7 @@ import defaultImg from "../../assets/images/default_profile.jpg";
 import { Button } from "../Button";
 import axios from "axios";
 import { GoSearch } from "react-icons/go";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 //#endregion
 
 //#region interface
@@ -23,7 +23,7 @@ interface NotificationProps {
  *
  * @param {Object} props - The component props.
  * @param {string} props.id - The username associated with the notification.
- * @param {"follow" | "share"} props.type - The type of notification.
+ * @param {"follow" | "share" | "post" | "like" | "comment"} props.type - The type of notification.
  * @param {string} props.link - The link to the user's profile or the shared post.
  * @param {string} props.createdAt - The date and time the notification was created.
  * @param {boolean} props.refresh - The state of the notification.
@@ -45,7 +45,7 @@ const Notification = ({
     like: "liked your idea",
     comment: "commented on your post",
   };
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   //#region functions
   const handleAccept = async () => {
@@ -59,7 +59,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `/espresso-api/authors/${curUser.id}/followers/${encodeURIComponent(
+        `${curUser.url}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
         data
@@ -83,7 +83,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `/espresso-api/authors/${curUser.id}/followers/${encodeURIComponent(
+        `${curUser.url}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
         data
@@ -98,39 +98,39 @@ const Notification = ({
 
   const handleSeeMore = async () => {
     switch (type) {
-      case "post": {
-        const real_post_id = notificationObject.id.split("/").pop();
-        const real_author_id = notificationObject.author.id.split("/").pop();
-        navigate(`/authors/${real_author_id}/posts/${real_post_id}`);
-        break;
-      }
+      // case "post": {
+      //   const real_post_id = notificationObject.id.split("/").pop();
+      //   const real_author_id = notificationObject.author.id.split("/").pop();
+      //   navigate(`/authors/${real_author_id}/posts/${real_post_id}`);
+      //   break;
+      // }
 
-      case "comment": {
-        const real_post_id = notificationObject.id.split("/");
-        navigate(
-          `/authors/${curUser.id}/posts/${
-            real_post_id[real_post_id.length - 3]
-          }`
-        );
-        break;
-      }
+      // case "comment": {
+      //   const real_post_id = notificationObject.id.split("/");
+      //   navigate(
+      //     `/authors/${curUser.id}/posts/${
+      //       real_post_id[real_post_id.length - 3]
+      //     }`
+      //   );
+      //   break;
+      // }
 
-      case "like": {
-        const real_post_id = notificationObject.object.split("/");
-        if (notificationObject.object.includes("comments"))
-          navigate(
-            `/authors/${curUser.id}/posts/${
-              real_post_id[real_post_id.length - 3]
-            }`
-          );
-        else
-          navigate(
-            `/authors/${curUser.id}/posts/${
-              real_post_id[real_post_id.length - 1]
-            }`
-          );
-        break;
-      }
+      // case "like": {
+      //   const real_post_id = notificationObject.object.split("/");
+      //   if (notificationObject.object.includes("comments"))
+      //     navigate(
+      //       `/authors/${curUser.id}/posts/${
+      //         real_post_id[real_post_id.length - 3]
+      //       }`
+      //     );
+      //   else
+      //     navigate(
+      //       `/authors/${curUser.id}/posts/${
+      //         real_post_id[real_post_id.length - 1]
+      //       }`
+      //     );
+      //   break;
+      // }
 
       default:
         break;

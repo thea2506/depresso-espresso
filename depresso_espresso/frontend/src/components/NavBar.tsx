@@ -50,7 +50,11 @@ const NavBar = () => {
 
   const navContents = [
     { icon: <GoHome />, link: "/", name: "" },
-    { icon: <GoPerson />, link: siteAuthorPath, name: "authors" },
+    {
+      icon: <GoPerson />,
+      link: siteAuthorPath,
+      name: "authors",
+    },
     { icon: <GoInbox />, link: siteInboxPath, name: "inbox" },
     { icon: <PiNewspaperClipping />, link: "/discover", name: "discover" },
   ];
@@ -63,7 +67,7 @@ const NavBar = () => {
    */
   const changePage = (link: string) => {
     setCurrentPage(link);
-    nav(link);
+    nav(link, { state: { reload: true } });
   };
 
   /**

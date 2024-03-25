@@ -1,7 +1,7 @@
 //#region imports
 import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 // components
 import { Button } from "../Button";
@@ -24,6 +24,8 @@ const ProfilePage = () => {
     { context: "GitHub" },
     { context: "Followers" },
   ];
+  const { state } = useLocation();
+  console.log("state", state);
 
   const { authorId, "*": splat } = useParams();
   const { curUser } = useContext(AuthContext);
@@ -49,53 +51,40 @@ const ProfilePage = () => {
           }`
         );
         const data = response.data;
+        const authorUrl = data.url;
         setThisProfileUser(data);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-    if (!thisProfileUser) getData();
-  }, [thisProfileUser, authorId, refresh, splat]);
 
-  useEffect(() => {
-    const fetchFollowers = async () => {
-      if (thisProfileUser && thisProfileUser.id)
+        // followers
         try {
-          const response = await axios.get(`${thisProfileUser!.url}/followers`);
+          const response = await axios.get(`${authorUrl}/followers`);
           const data = response.data;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const followerModels = data?.items?.map((rawauthor: any) => ({
-            type: rawauthor.type,
-            id: rawauthor.id,
-            url: rawauthor.url,
-            host: rawauthor.host,
-            displayName: rawauthor.displayName,
-            username: rawauthor.username,
-            github: rawauthor.github,
-            profileImage: rawauthor.profileImage,
-          }));
+          const followerModels = (data?.items as AuthorModel[]) || [];
           if (followerModels) setFollowers(followerModels);
         } catch (error) {
           /* empty */
         }
-    };
-    fetchFollowers();
 
-    const retrievePosts = async () => {
-      try {
-        const response = await axios.get(`${thisProfileUser!.url}/posts`);
-        const posts = response.data;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = posts.items.map((rawpost: any) => {
-          return { ...rawpost };
-        });
-        setPosts(postModels);
+        // posts
+        try {
+          const response = await axios.get(`${authorUrl}/posts`);
+          const posts = response.data;
+          const postModels = (posts.items as PostModel[]) || [];
+          setPosts(postModels);
+        } catch (error) {
+          // empty
+        }
+
+        state.reload = false;
       } catch (error) {
-        // empty
+        console.error("An error occurred", error);
       }
     };
-    if (thisProfileUser && thisProfileUser.url) retrievePosts();
-  }, [thisProfileUser, refresh]);
+
+    if (!thisProfileUser || state?.reload) {
+      console.log("fetching data");
+      getData();
+    }
+  }, [thisProfileUser, authorId, refresh, splat, state]);
 
   //#endregion
 

@@ -18,6 +18,8 @@ const UserDisplay = ({
     <Link
       className={`flex items-center justify-center gap-x-4 ${className}`}
       to={link}
+      reloadDocument
+      state={{ reload: true }}
     >
       <img
         className="object-cover w-12 h-12 rounded-full md:w-13 md:h-13 lg:w-14 lg:h-14"

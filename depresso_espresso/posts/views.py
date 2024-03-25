@@ -8,7 +8,9 @@ from authentication.models import Author
 
 @api_view(['GET', 'POST'])
 def api_posts(request, author_id):
+
     my_authenticate(request)
+
     if request.method == 'GET':
         if not Author.objects.filter(id=author_id).exists():
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
@@ -17,6 +19,7 @@ def api_posts(request, author_id):
         serializer = PostSerializer(
             posts, context={"request": request}, many=True)
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
+
     elif request.method == 'POST':
         data = request.data
         serializer = PostSerializer(

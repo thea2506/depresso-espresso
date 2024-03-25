@@ -37,9 +37,11 @@ def api_inbox(request, author_id):
 def handle_follow(request, author_id):
     actor_obj = request.data.get('actor')
     actor_url = actor_obj['url']
-    # return JsonResponse({'message': 'Follow request received'}, status=404)
-    if not Author.objects.filter(url=actor_url).exists():
-        print("New external user")
+    normalized_actor_url = actor_url.replace("127.0.0.1", "localhost")
+
+    if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
+            url=normalized_actor_url).exists():
+
         actor_obj.pop('id', None)
         actor_obj["isExternalAuthor"] = True
         actor = AuthorSerializer(data=actor_obj, context={'request': request})
@@ -48,7 +50,11 @@ def handle_follow(request, author_id):
         else:
             return JsonResponse({'error': 'Invalid actor'}, status=400)
 
-    actor = Author.objects.get(url=actor_url)
+    if Author.objects.filter(url=actor_url).exists():
+        actor = Author.objects.get(url=actor_url)
+    else:
+        actor = Author.objects.get(url=normalized_actor_url)
+
     author = Author.objects.get(id=author_id)
     follow_request_object = FollowRequest.objects.create(
         requester=actor, receiver=author)

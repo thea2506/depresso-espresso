@@ -108,7 +108,7 @@ const Profile = ({
                 setStatus("followed");
               }
             } catch (error) {
-              console.log("not friend");
+              // empty
             }
           } else {
             setStatus("stranger");
