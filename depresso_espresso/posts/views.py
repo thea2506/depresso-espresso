@@ -3,9 +3,11 @@ from django.http import JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *
 from posts.serializers import *
-from authentication.models import Author, Following
+from authentication.models import Author, Following, Node
 from django.db.models import Q
 from itertools import chain
+from requests.auth import HTTPBasicAuth
+import requests
 
 
 def get_posts(current_user, author_object):
@@ -46,8 +48,33 @@ def api_posts(request, author_id):
 
         if serializer.is_valid():
             new_post = serializer.save()
+
             returned_data = PostSerializer(instance=new_post, context={
                                            "request": request}).data
+
+            following_objects = Following.objects.filter(
+                author=user)
+
+            if new_post.visibility == "PUBLIC":
+                for following_object in following_objects:
+                    following_author = following_object.following_author
+                    if following_author.isExternalAuthor:
+                        print(following_author.displayName)
+                        author_url = following_author.url
+                        author_host = following_author.host
+                        node = Node.objects.get(baseUrl=author_host)
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        response = requests.post(f"{author_url}/inbox",
+                                                 json=returned_data, auth=auth)
+
+                        print(response)
+                    else:
+                        pass
+
+            friends_following_objects = following_objects.filter(
+                areFriends=True)
+
             return JsonResponse(
                 {
                     "success": True,
@@ -89,10 +116,24 @@ def api_feed(request):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
-@api_view(['PUT', 'DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def api_post(request, author_id, post_id):
 
     user = my_authenticate(request)
+
+    if request.method == 'GET':
+        if not Author.objects.filter(id=author_id).exists():
+            return JsonResponse({"error": "Author not found", "success": False}, status=404)
+        author = Author.objects.get(id=author_id)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+        post = Post.objects.get(id=post_id)
+
+        serializer = PostSerializer(
+            instance=post, context={"request": request})
+
+        return JsonResponse(serializer.data, status=200)
 
     if request.method == 'PUT':
         if not Author.objects.filter(id=author_id).exists():

@@ -6,6 +6,10 @@ from posts.models import Post, Comment, LikeComment, LikePost, Share
 from posts.serializers import PostSerializer, CommentSerializer
 from authentication.serializers import AuthorSerializer, FollowRequestSerializer
 from utils import build_default_author_uri
+from urllib.parse import urlparse
+from authentication.models import Node
+from requests.auth import HTTPBasicAuth
+import requests
 
 
 class NotificationItemSerializer(serializers.ModelSerializer):
@@ -18,6 +22,18 @@ class NotificationItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         if isinstance(instance.content_object, FollowRequest):
             return FollowRequestSerializer(instance=instance.content_object, context=self.context).data
+        if isinstance(instance.content_object, Post):
+            return PostSerializer(instance=instance.content_object, context=self.context).data
+        if instance.object_url:
+            nodes = Node.objects.all()
+            for node in nodes:
+                if node.baseUrl in instance.object_url:
+                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                    response = requests.get(instance.object_url, auth=auth)
+                    print(response)
+                    return response.json()
+
+            return None
 
 
 class NotificationSerializer(serializers.ModelSerializer):

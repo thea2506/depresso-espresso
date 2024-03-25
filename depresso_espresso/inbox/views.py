@@ -5,19 +5,30 @@ from authentication.serializers import AuthorSerializer
 from inbox.models import Notification, NotificationItem
 from inbox.serializers import NotificationSerializer, NotificationItemSerializer
 from django.contrib.contenttypes.models import ContentType
+from urllib.parse import urlparse
+from posts.models import Post, Comment, LikeComment, LikePost
+from posts.serializers import PostSerializer, CommentSerializer
 
 
 @api_view(['GET', 'POST', "DELETE"])
 def api_inbox(request, author_id):
+
     if request.method == 'GET':
         author_object = Author.objects.get(id=author_id)
+
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
+
         notification_items = NotificationItem.objects.filter(
             notification=notification_object).order_by('-id')
+
+        print(notification_items)
+
         serializer = NotificationItemSerializer(
             notification_items, many=True, context={'request': request})
+
         return JsonResponse({'type': 'inbox', 'items': serializer.data}, status=200)
+
     elif request.method == 'POST':
         type = request.data.get('type').lower()
         if type == 'follow':
@@ -73,21 +84,42 @@ def handle_comment(request, author_id):
 
 
 def handle_post(request, author_id):
-    pass
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    author_object = Author.objects.get(id=author_id)
+
+    data = request.data
+
+    serializer = PostSerializer(
+        data=data, context={"request": request}
+    )
+
+    if serializer.is_valid():
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
+
+        create_notification_item(
+            notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
+
+        return send_notification_item(request, notification_object)
+    else:
+        return JsonResponse(serializer.errors, status=400)
 
 
 def handle_share(request, author_id):
     pass
 
 
-def create_notification_item(notification_object, object_instance=None, object_url=None):
+def create_notification_item(notification_object, object_instance=None, object_url=None, content_type=None):
     if object_instance:
         content_type = ContentType.objects.get_for_model(object_instance)
         notification_item_object = NotificationItem.objects.create(
             content_type=content_type, object_id=object_instance.id, content_object=object_instance)
     else:
-        notification_item_object = NotificationItem.objects.create(
-            object_url=object_url)
+        print(">>>>>>>>>>", object_url)
+        notification_item_object = NotificationItem.objects.create(content_type=content_type,
+                                                                   object_url=object_url)
 
     notification_object.items.add(notification_item_object)
 

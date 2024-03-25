@@ -22,8 +22,9 @@ def check_basic(request):
         return None
 
     try:
-        node = Node.objects.get(
-            username=decoded_credentials[0], password=decoded_credentials[1])
+        uri = request.build_absolute_uri("/")
+        node = Node.objects.filter(baseUrl=uri,
+                                   theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
     except Node.DoesNotExist:
         return None
 

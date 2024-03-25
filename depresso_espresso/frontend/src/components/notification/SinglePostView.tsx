@@ -19,13 +19,7 @@ const SinglePostView = () => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(
-          `/espresso-api/authors/${authorid}/posts/${postid}`,
-          {
-            auth: {
-              username: import.meta.env.VITE_USERNAME,
-              password: import.meta.env.VITE_PASSWORD,
-            },
-          }
+          `/api/authors/${authorid}/posts/${postid}`
         );
 
         const post = response.data;

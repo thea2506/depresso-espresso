@@ -17,6 +17,7 @@ import { AuthorModel } from "./components/data/AuthorModel";
 import { Outlet } from "react-router-dom";
 import ProfilePage from "./components/profile/ProfilePage";
 import NotiPage from "./components/notification/NotiPage";
+import SinglePostView from "./components/notification/SinglePostView";
 
 const router = createBrowserRouter([
   {
@@ -33,12 +34,16 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "authors/*",
-        element: <ProfilePage />,
+        path: "authors/:authorId/posts/:postId",
+        element: <SinglePostView />,
       },
       {
         path: "authors/:authorId/inbox",
         element: <NotiPage />,
+      },
+      {
+        path: "authors/*",
+        element: <ProfilePage />,
       },
     ],
   },
