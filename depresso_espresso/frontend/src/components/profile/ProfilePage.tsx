@@ -12,6 +12,7 @@ import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
+import defaultPic from "../../assets/images/default_profile.jpg";
 //#endregion
 
 /**
@@ -102,13 +103,20 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
-      {thisProfileUser && (
+      {thisProfileUser ? (
         <Profile
           user={thisProfileUser}
           setUser={setThisProfileUser}
           refresh={refresh}
           setRefresh={setRefresh}
         />
+      ) : (
+        <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3">
+          <img
+            className="object-cover w-full h-full rounded-full"
+            src={defaultPic}
+          />
+        </div>
       )}
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
         {topics.map((topic, index) => (
