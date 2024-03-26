@@ -69,11 +69,10 @@ def api_author(request, author_id):
 
 
 def api_external_author(request, author_url):
-    id = author_url.split("/")[-1]
-    if (Author.objects.filter(id=id).exists()):
-        author_object = Author.objects.get(id=id)
+    try_author_object = get_author_object(author_url)
+    if try_author_object is not None:
         serialized_author = AuthorSerializer(
-            instance=author_object, context={'request': request})
+            instance=try_author_object, context={'request': request})
         return JsonResponse(serialized_author.data)
     if request.method == 'GET':
         author_url = unquote(author_url)
