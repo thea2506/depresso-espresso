@@ -190,8 +190,12 @@ def handle_post(request, author_id):
 
 
     if serializer.is_valid():
+        print(data)
+        
         new_post = serializer.save()
         new_post.id = data.get('id').split('/')[-1]
+        new_post.save()
+        
         print("NEW POST ID:", new_post.id)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
