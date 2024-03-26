@@ -194,7 +194,6 @@ def handle_post(request, author_id):
 
 
     if serializer.is_valid():
-        print(data)
         
         new_post = serializer.save()
         new_post.id = data.get('id').split('/')[-1]

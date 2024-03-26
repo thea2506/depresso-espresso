@@ -106,7 +106,6 @@ def api_posts(request, author_id):
             data=data, context={"request": request})
 
         if serializer.is_valid():
-            print(serializer.validated_data)
             new_post = serializer.save()
 
             returned_data = PostSerializer(instance=new_post, context={
@@ -170,7 +169,13 @@ def api_feed(request):
         feed = []
 
         public_posts = Post.objects.filter(
-            visibility="PUBLIC")
+            visibility="PUBLIC" )
+        print("PUBLIC POSTS:", public_posts)
+
+        for public_post in public_posts:
+            print("public_post.author.isExternalAuthor, ", public_post.author.isExternalAuthor)
+            if public_post.author.isExternalAuthor == True:
+                public_posts = public_posts.exclude(id =public_post.id)
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
@@ -349,8 +354,6 @@ def api_comments(request, author_id, post_id):
 
 
             else:
-                print("commenting on external author post")
-
                 nodes = Node.objects.all()
                 for node in nodes:
                     if node.baseUrl == post_owner_host:
@@ -440,7 +443,6 @@ def api_likes(request, author_id, post_id):
             liked_post = Post.objects.get(id=post_id)
             author = liked_post.author
 
-
             data = request.data
             data["post_id"]= Post.objects.get(id=post_id)
             serializer = LikePostSerializer(
@@ -485,11 +487,6 @@ def api_likes(request, author_id, post_id):
                   
                   
 
-              
-
-
-
-
 @api_view(['POST'])
 def api_likes(request, author_id, post_id):
     if (request.method == 'POST'):
@@ -498,6 +495,7 @@ def api_likes(request, author_id, post_id):
           else:
             liked_post = Post.objects.get(id=post_id)
             author = liked_post.author
+            liker = my_authenticate(request)
 
 
             data = request.data
@@ -505,10 +503,11 @@ def api_likes(request, author_id, post_id):
 
             serializer = LikePostSerializer(
                 data=data, context={"request": request})
-            
+                  
 
             if serializer.is_valid():
-                new_like = LikePost.objects.create(author = author, post = liked_post)
+                new_like = LikePost.objects.create(author = liker, post = liked_post)
+
 
                 returned_data = LikePostSerializer(
                 instance=new_like, context={"request": request}).data
@@ -521,6 +520,24 @@ def api_likes(request, author_id, post_id):
 
                     create_notification_item(
                         notification_object, like_object, "like")
+                    
+                    # get all followers of the post author
+                    following_objects = Following.objects.filter(
+                    author=author)
+
+
+                    for following_object in following_objects:
+                        following_author = following_object.following_author
+                        author_url = following_author.url
+                        author_host = following_author.host
+                        node = Node.objects.filter(baseUrl=author_host)
+                        # if they are external authors, send comment ob to them
+                        if node:
+                            node = node.first()
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            requests.post(f"{author_url}/inbox",
+                                        json=returned_data, auth=auth)
 
 
 
@@ -532,6 +549,8 @@ def api_likes(request, author_id, post_id):
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{author.url}/inbox",
                                         json=returned_data, auth=auth)
+                            
+                     
                             
                         
                 return JsonResponse(
