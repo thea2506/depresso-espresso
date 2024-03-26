@@ -11,11 +11,7 @@ class AuthorField(serializers.RelatedField):
         return Author.objects.all()
 
     def to_internal_value(self, data):
-        url_id = data.get("id").split("/")[-1]
-        print("AUTHOR URL:",data.get("url") )
         if (self.get_queryset().filter(url=data.get("url")).exists()):
-
-            print("AUTHORRR:",  self.get_queryset().get(url=data.get("url")) )
             return self.get_queryset().get(url=data.get("url"))
 
     def to_representation(self, value):
@@ -115,10 +111,6 @@ class LikePostSerializer(serializers.ModelSerializer):
     def get_summary(self, obj):
         return f"{obj.author.displayName} liked your post"
     
-    def get_post(self, obj):
-        print(Post.objects.get(id= obj.split('/')[-1]), "LSJGFDLGFDL")
-        return Post.objects.get(id= obj.split('/')[-1])
-
 
 class LikeCommentSerializer(serializers.ModelSerializer):
     author = AuthorField()
