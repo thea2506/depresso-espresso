@@ -43,6 +43,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const getData = async () => {
+      console.log("fetching data");
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
