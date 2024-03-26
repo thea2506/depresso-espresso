@@ -138,6 +138,7 @@ const PostForm = ({
         visibility: visibility,
         author: { ...curUser },
         content: contentType.includes("image") ? base64Image : content,
+        type: "post",
       };
 
       let response;

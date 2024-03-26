@@ -107,11 +107,13 @@ def api_posts(request, author_id):
                     following_author = following_object.following_author
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.get(baseUrl=author_host)
-                    auth = HTTPBasicAuth(
-                        node.ourUsername, node.ourPassword)
-                    requests.post(f"{author_url}/inbox",
-                                  json=returned_data, auth=auth)
+                    node = Node.objects.filter(baseUrl=author_host)
+                    if node:
+                        node = node.first()
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
 
             elif new_post.visibility == "FRIENDS":
 

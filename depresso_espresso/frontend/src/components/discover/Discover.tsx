@@ -7,6 +7,23 @@ import { AuthorModel } from "../data/AuthorModel";
 import { useNavigate } from "react-router";
 import AuthContext from "../../contexts/AuthContext";
 
+function checkSameOrigin(url: string) {
+  let windowOrigin = window.location.origin;
+  if (windowOrigin.includes("localhost")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("localhost", "127.0.0.1");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  if (windowOrigin.includes("127.0.0.1")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("127.0.0.1", "localhost");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  return false;
+}
+
 const Discover = () => {
   const [allAuthors, setAllAuthors] = useState<AuthorModel[]>([]);
   const { curUser } = useContext(AuthContext);
@@ -50,9 +67,7 @@ const Discover = () => {
                   {author.displayName}
                 </h2>
                 <span className="px-4 py-2 text-white rounded-xl bg-secondary-dark">
-                  {author.host.includes(window.location.origin)
-                    ? "Local"
-                    : "Remote"}
+                  {checkSameOrigin(author.url) ? "Local" : "Remote"}
                 </span>
               </div>
             );
