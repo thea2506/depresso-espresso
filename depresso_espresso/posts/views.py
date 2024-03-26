@@ -287,7 +287,9 @@ def api_comments(request, author_id, post_id):
         data["post"] = post.id
         serializer = CommentSerializer(
             data=data, context={"request": request})
+        print("Checking serializer")
         if serializer.is_valid():
+            print("Valid serializer")
 
             new_comment = serializer.save()
 
@@ -296,14 +298,18 @@ def api_comments(request, author_id, post_id):
 
             returned_data.pop("post", None)
 
-            author_object = Author.objects.get(id=author_id)
-            author_url = author_object.url
+            post_owner = post.author
+            post_owner_url = post_owner.url
 
-            author_host = author_object.host
+            post_owner_host = post_owner.host
+
+
 
             # Local Author
-            if author_object.isExternalAuthor == False:
-                notification_object = Notification.objects.get_or_create(author=author_object)[
+            print("Post owner:", post_owner)
+            if post_owner.isExternalAuthor == False:
+                print("post was made by local author")
+                notification_object = Notification.objects.get_or_create(author=post_owner)[
                     0]
 
                 comment_object = new_comment
@@ -315,10 +321,11 @@ def api_comments(request, author_id, post_id):
 
                 nodes = Node.objects.all()
                 for node in nodes:
-                    if node.baseUrl == author_host:
+                    if node.baseUrl == post_owner_host:
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
+                        print("sending comment...")
+                        requests.post(f"{post_owner_url}/inbox",
                                       json=returned_data, auth=auth)
 
             return JsonResponse(

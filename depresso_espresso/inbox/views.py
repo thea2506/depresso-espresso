@@ -176,7 +176,9 @@ def handle_post(request, author_id):
     data = request.data
     print(Author.objects.filter(url = data.get("author").get("url")))
     if not Author.objects.filter(url = data.get("author").get("url")).exists():
-        Author.objects.create(isExternalAuthor = False, username=uuid.uuid4(), displayName=data.get("author").get("displayName"), url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github = data.get("author").get("Github"), profileImage= data.get("author").get("profileImage"), allowRegister= False)
+        Author.objects.create(isExternalAuthor = True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                               url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github = data.get("author").get("Github"),
+                               profileImage= data.get("author").get("profileImage"), allowRegister= False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
         
@@ -187,7 +189,9 @@ def handle_post(request, author_id):
 
 
     if serializer.is_valid():
-        serializer.save()
+        new_post = serializer.save()
+        new_post.id = data.get('id').split('/')[-1]
+        print("NEW POST ID:", new_post.id)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
