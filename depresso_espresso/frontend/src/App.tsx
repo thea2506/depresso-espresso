@@ -6,9 +6,9 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import AuthCheck from "./components/auth/Authcheck";
-import SignIn from "./components/auth/Signin";
-import SignUp from "./components/auth/Signup";
+import AuthCheck from "./components/auth/AuthCheck";
+import SignIn from "./components/auth/SignIn";
+import SignUp from "./components/auth/SignUp";
 import Home from "./components/home/Home";
 import { NavBar } from "./components/NavBar";
 import AuthContext from "./contexts/AuthContext";
