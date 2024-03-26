@@ -18,6 +18,7 @@ import { Outlet } from "react-router-dom";
 import ProfilePage from "./components/profile/ProfilePage";
 import NotiPage from "./components/notification/NotiPage";
 import SinglePostView from "./components/notification/SinglePostView";
+import Discover from "./components/discover/Discover";
 
 const router = createBrowserRouter([
   {
@@ -42,12 +43,15 @@ const router = createBrowserRouter([
         element: <NotiPage />,
       },
       {
+        path: "discover",
+        element: <Discover></Discover>,
+      },
+      {
         path: "authors/*",
         element: <ProfilePage />,
       },
     ],
   },
-
   {
     path: "/site/signin",
     element: <SignIn></SignIn>,
@@ -56,15 +60,15 @@ const router = createBrowserRouter([
     path: "/site/signup",
     element: <SignUp />,
   },
-  {
-    path: "*",
-    element: (
-      <Navigate
-        to="/site"
-        replace
-      />
-    ),
-  },
+  // {
+  //   path: "*",
+  //   element: (
+  //     <Navigate
+  //       to="/site"
+  //       replace
+  //     />
+  //   ),
+  // },
 ]);
 
 function App() {

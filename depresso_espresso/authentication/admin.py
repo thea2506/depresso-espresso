@@ -82,7 +82,7 @@ class RegisterConfigAdmin(admin.ModelAdmin):
 
 class NodeAdmin(admin.ModelAdmin):
     fields = ('ourUsername', 'ourPassword',
-              'baseUrl', 'theirUsername', 'theirPassword')
+              'baseUrl', 'theirUsername', 'theirPassword', 'service')
 
 
 @admin.register(Following)

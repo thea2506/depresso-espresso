@@ -145,8 +145,6 @@ const PostForm = ({
         response = await axios.put(url, new_post);
       } else {
         response = await axios.post(url, new_post);
-        const post_object = response.data.object;
-        console.log(post_object);
       }
 
       if (response.status != 200 && response.status != 201) {
@@ -255,7 +253,7 @@ const PostForm = ({
             onChange={(e) => setContent(e.target.value)}
           />
         ) : form === "Image" ? (
-          <form onSubmit={(e) => console.log(e)}>
+          <form>
             <label className="flex items-center justify-center py-4 text-white cursor-pointer bg-primary rounded-2xl">
               <input
                 type="file"

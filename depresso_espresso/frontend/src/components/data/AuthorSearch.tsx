@@ -17,7 +17,6 @@ const AuthorSearch = () => {
         const response = await axios.get(`/authors?search=${searchTerm}`);
 
         const authorModels = response.data?.map(
-          
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (rawauthor: any) => {
             return {
@@ -39,7 +38,6 @@ const AuthorSearch = () => {
     };
 
     const debounceTimer = setTimeout(() => {
-      console.log("Searching for:", searchTerm);
       fetchAuthors();
     }, 500);
 

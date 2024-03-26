@@ -25,7 +25,6 @@ const ProfilePage = () => {
     { context: "Followers" },
   ];
   const { state } = useLocation();
-  console.log("state", state);
 
   const { authorId, "*": splat } = useParams();
   const { curUser } = useContext(AuthContext);
@@ -92,7 +91,6 @@ const ProfilePage = () => {
     };
 
     if (!thisProfileUser || state?.reload) {
-      console.log("fetching data");
       getData();
     }
   }, [thisProfileUser, authorId, refresh, splat, state, curUser]);
