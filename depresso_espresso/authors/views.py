@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from itertools import chain
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
+from utils import Pagination
 
 
 def get_author_object(author_url):
@@ -39,11 +40,16 @@ def api_authors(request):
     if request.method == 'GET':
         authors = Author.objects.filter(
             Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
-        serialized_authors = AuthorSerializer(
-            instance=authors, context={'request': request}, many=True)
+
+        # Pagination
+        paginator = Pagination("authors")
+        page = paginator.paginate_queryset(authors, request)
+        serializer = AuthorSerializer(
+            page, context={'request': request},  many=True)
+
         return JsonResponse({
             "type": "authors",
-            "items": serialized_authors.data
+            "items": serializer.data
         }, safe=False)
 
 
@@ -79,11 +85,12 @@ def api_external_author(request, author_url):
         author_url = unquote(author_url)
         parsed_uri = urlparse(author_url)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        node_obj = Node.objects.get(baseUrl=result)
-        auth = HTTPBasicAuth(node_obj.ourUsername,
-                             node_obj.ourPassword)
-        response = requests.get(author_url, auth=auth)
-        return JsonResponse(response.json(), status=response.status_code)
+        if Node.objects.filter(baseUrl=result).exists():
+            node_obj = Node.objects.get(baseUrl=result)
+            auth = HTTPBasicAuth(node_obj.ourUsername,
+                                 node_obj.ourPassword)
+            response = requests.get(author_url, auth=auth)
+            return JsonResponse(response.json(), status=response.status_code)
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 

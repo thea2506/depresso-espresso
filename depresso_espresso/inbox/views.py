@@ -11,6 +11,7 @@ from posts.serializers import PostSerializer, CommentSerializer
 from authors.views import get_author_object
 import uuid
 from drf_yasg.utils import swagger_auto_schema
+from utils import Pagination
 
 
 @swagger_auto_schema(tags=['Inbox'], methods=["GET", "POST", "DELETE"])
@@ -29,8 +30,10 @@ def api_inbox(request, author_id):
         notification_items = NotificationItem.objects.filter(
             notification=notification_object).order_by('id')
 
+        paginator = Pagination("inbox")
+        page = paginator.paginate_queryset(notification_items, request)
         serializer = NotificationItemSerializer(
-            notification_items, many=True, context={'request': request})
+            page, context={'request': request}, many=True)
 
         return JsonResponse({'type': 'inbox', 'items': serializer.data}, status=200)
 
