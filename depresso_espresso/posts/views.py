@@ -419,7 +419,8 @@ def api_likes(request, author_id, post_id):
 
                 returned_data = LikePostSerializer(
                 instance=new_like, context={"request": request}).data
-                returned_data.pop("post", None)
+
+                print(returned_data, "returned data:::")
 
                 if author.isExternalAuthor == False:
                     notification_object = Notification.objects.get_or_create(author=author)[
