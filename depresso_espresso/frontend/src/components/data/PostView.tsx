@@ -62,7 +62,7 @@ const PostView = ({
 
   const handleShareClick = async () => {
     try {
-      await axios.post(`${curUser.url}/posts`, post);
+      await axios.post(`${curUser.url}/posts/`, post);
       setRefresh(!refresh);
     } catch (error) {
       console.error("An error occurred", error);
@@ -71,7 +71,7 @@ const PostView = ({
 
   const handleLikeToggle = async () => {
     try {
-      await axios.post(`${post.author.url}/inbox`, {
+      await axios.post(`${post.author.url}/inbox/`, {
         summary: `${curUser.displayName} liked your post`,
         type: "Like",
         object: post.id,

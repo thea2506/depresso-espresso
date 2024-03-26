@@ -9,6 +9,8 @@ from django.db.models import Q
 from itertools import chain
 from requests.auth import HTTPBasicAuth
 import requests
+from inbox.views import handle_comment, create_notification_item
+from inbox.models import Notification, NotificationItem
 
 from authors.views import get_author_object
 
@@ -76,11 +78,20 @@ def api_posts(request, author_id):
                     following_author = following_object.following_author
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.get(baseUrl=author_host)
-                    auth = HTTPBasicAuth(
-                        node.ourUsername, node.ourPassword)
-                    requests.post(f"{author_url}/inbox",
-                                  json=returned_data, auth=auth)
+
+                    if following_author.isExternalAuthor:
+
+                        node = Node.objects.get(baseUrl=author_host)
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
+
+                    else:
+                        notification_object = Notification.objects.get_or_create(
+                            author=following_author)[0]
+                        create_notification_item(
+                            notification_object, new_shared_post, "share")
 
                 return JsonResponse(
                     returned_data, status=201)
@@ -290,12 +301,25 @@ def api_comments(request, author_id, post_id):
 
             author_host = author_object.host
 
-            nodes = Node.objects.all()
-            for node in nodes:
-                if node.baseUrl == author_host:
-                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    requests.post(f"{author_url}/inbox",
-                                  json=returned_data, auth=auth)
+            # Local Author
+            if author_object.isExternalAuthor == False:
+                notification_object = Notification.objects.get_or_create(author=author_object)[
+                    0]
+
+                comment_object = new_comment
+
+                create_notification_item(
+                    notification_object, comment_object, "comment")
+
+            else:
+
+                nodes = Node.objects.all()
+                for node in nodes:
+                    if node.baseUrl == author_host:
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
 
             return JsonResponse(
                 returned_data, status=201)

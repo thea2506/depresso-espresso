@@ -19,7 +19,7 @@ const Home = () => {
   useEffect(() => {
     const getFeed = async () => {
       const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/api/feed`
+        `${import.meta.env.VITE_BACKEND_URL}/api/feed/`
       );
       if (res.status !== 200) return;
       setPosts(res.data.items);
