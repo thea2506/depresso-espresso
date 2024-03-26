@@ -402,20 +402,16 @@ def api_likes(request, author_id, post_id):
 
             data = request.data
             data["post_id"]= Post.objects.get(id=post_id)
-            print("data:", data)
+
             serializer = LikePostSerializer(
                 data=data, context={"request": request})
             
 
             if serializer.is_valid():
-                print("HEREEEEEEEEEEEEEEEE")
                 new_like = LikePost.objects.create(author = author, post = liked_post)
-                print("SLGFHSLFKHJSLFKJHL")
 
                 returned_data = LikePostSerializer(
                 instance=new_like, context={"request": request}).data
-
-                print(returned_data, "returned data:::")
 
                 if author.isExternalAuthor == False:
                     notification_object = Notification.objects.get_or_create(author=author)[
@@ -434,7 +430,6 @@ def api_likes(request, author_id, post_id):
                         if node.baseUrl == author.host:
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-                            print("sending like...")
                             requests.post(f"{author.url}/inbox",
                                         json=returned_data, auth=auth)
                             
