@@ -12,7 +12,7 @@ import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
-import defaultPic from "../../assets/images/default_profile.jpg";
+// import defaultPic from "../../assets/images/default_profile.jpg";
 //#endregion
 
 /**
@@ -37,8 +37,6 @@ const ProfilePage = () => {
     curUser && authorId && curUser.id === authorId ? curUser : null
   );
 
-  console.log("AuthorID: ", authorId);
-
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
@@ -46,7 +44,6 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const getData = async () => {
-      console.log("fetching data");
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
@@ -103,37 +100,32 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
-      {thisProfileUser ? (
+      {thisProfileUser && (
         <Profile
           user={thisProfileUser}
           setUser={setThisProfileUser}
           refresh={refresh}
           setRefresh={setRefresh}
         />
-      ) : (
-        <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3">
-          <img
-            className="object-cover w-full h-full rounded-full"
-            src={defaultPic}
-          />
-        </div>
       )}
-      <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
-        {topics.map((topic, index) => (
-          <Button
-            key={index}
-            onClick={handleClick}
-            buttonType="text"
-            className={
-              currentTopic === topic.context
-                ? "w-1/2 md:text-lg bg-secondary-light"
-                : "w-1/2 md:text-lg"
-            }
-          >
-            {topic.context}
-          </Button>
-        ))}
-      </ul>
+      {thisProfileUser && (
+        <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
+          {topics.map((topic, index) => (
+            <Button
+              key={index}
+              onClick={handleClick}
+              buttonType="text"
+              className={
+                currentTopic === topic.context
+                  ? "w-1/2 md:text-lg bg-secondary-light"
+                  : "w-1/2 md:text-lg"
+              }
+            >
+              {topic.context}
+            </Button>
+          ))}
+        </ul>
+      )}
 
       {/* Github Topic */}
       {currentTopic === "GitHub" && thisProfileUser?.github ? (
