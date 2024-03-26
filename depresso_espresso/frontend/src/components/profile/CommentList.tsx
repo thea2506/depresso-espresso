@@ -98,7 +98,7 @@ const CommentList = ({
 
   const handleLikeComment = async (comment: CommentModel) => {
     try {
-      await axios.post(`${comment.author.url}/inbox/`, {
+      await axios.post(`${comment.author.url}/inbox`, {
         summary: `${curUser!.displayName} liked your comment`,
         type: "Like",
         object: comment.id,

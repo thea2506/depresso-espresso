@@ -106,6 +106,7 @@ def api_posts(request, author_id):
             data=data, context={"request": request})
 
         if serializer.is_valid():
+            print(serializer.validated_data)
             new_post = serializer.save()
 
             returned_data = PostSerializer(instance=new_post, context={
@@ -344,25 +345,63 @@ def api_comments(request, author_id, post_id):
 
 @swagger_auto_schema(tags=['Posts'], methods=["GET"])
 @api_view(['GET'])
-def api_get_image(request, authorid, postid):
+def api_get_image(request, author_id, post_id):
     user = my_authenticate(request)
 
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
-    if not Author.objects.filter(id=authorid).exists():
+    if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({"message": "Author not found", "success": False}, status=404)
-    if not Post.objects.filter(id=postid).exists():
+    if not Post.objects.filter(id=post_id).exists():
         return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
     if request.method == 'GET':
         post = Post.objects.get(
-            id=postid, author=Author.objects.get(id=authorid))
-        if "image" in post.contentType.lower():
+            id=post_id, author=Author.objects.get(id=author_id))
+        if "image" in post.contenttype.lower():
             base64_string = post.content
             no_prefix = base64_string.split(",")[1]
             image_binary = base64.b64decode(no_prefix)
-            return HttpResponse(image_binary, content_type=post.contentType)
+            return HttpResponse(image_binary, content_type=post.contenttype)
         else:
             return JsonResponse({"message": "Post is not an image", "success": True}, status=404)
     else:
         return JsonResponse({"message": "Method not Allowed", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@api_view(['GET'])
+def api_post_like(request, author_id, post_id):
+    if request.method == 'GET':
+        user = my_authenticate(request)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+        post = Post.objects.get(id=post_id)
+        post_like_list = LikePost.objects.filter(
+            post=post)
+        data = LikePostSerializer(instance=post_like_list, context={
+            "request": request}, many=True).data
+        return JsonResponse({"type": "Like", "items": data}, safe=False)
+    else:
+        return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Comments'], methods=["GET"])
+@api_view(['GET'])
+def api_comment_like(request, author_id, post_id, comment_id):
+    if request.method == 'GET':
+        user = my_authenticate(request)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        if not Comment.objects.filter(id=comment_id).exists():
+            return JsonResponse({"error": "Comment not found", "success": False}, status=404)
+
+        comment = Comment.objects.get(id=comment_id)
+        comment_like_list = LikeComment.objects.filter(
+            comment=comment)
+        data = LikeCommentSerializer(instance=comment_like_list, context={
+            "request": request}, many=True).data
+        return JsonResponse({"type": "Like", "items": data}, safe=False)
+    else:
+        return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
