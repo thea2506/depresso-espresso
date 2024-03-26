@@ -114,6 +114,10 @@ class LikePostSerializer(serializers.ModelSerializer):
 
     def get_summary(self, obj):
         return f"{obj.author.displayName} liked your post"
+    
+    def get_post(self, obj):
+        print(Post.objects.get(id= obj.split('/')[-1]), "LSJGFDLGFDL")
+        return Post.objects.get(id= obj.split('/')[-1])
 
 
 class LikeCommentSerializer(serializers.ModelSerializer):
