@@ -85,6 +85,7 @@ def api_posts(request, author_id):
                         node = Node.objects.get(baseUrl=author_host)
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
+                        print("HERER")
                         requests.post(f"{author_url}/inbox",
                                       json=returned_data, auth=auth)
 
