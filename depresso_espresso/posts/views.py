@@ -1,5 +1,6 @@
+import base64
 from rest_framework.decorators import api_view
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *
 from posts.serializers import *
@@ -11,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 import requests
 from inbox.views import handle_comment, create_notification_item
 from inbox.models import Notification, NotificationItem
-
+from drf_yasg.utils import swagger_auto_schema
 from authors.views import get_author_object
 
 
@@ -32,6 +33,7 @@ def get_posts(current_user, author_object):
                 Q(author=author_object) & Q(visibility="PUBLIC")).order_by('-published')
 
 
+@swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
 @api_view(['GET', 'POST'])
 def api_posts(request, author_id):
 
@@ -150,7 +152,6 @@ def api_posts(request, author_id):
             return JsonResponse(serializer.errors, status=501)
 
 
-@api_view(['GET'])
 def api_feed(request):
     user = my_authenticate(request)
     if request.method == 'GET':
@@ -197,6 +198,7 @@ def api_feed(request):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
+@swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', 'DELETE'])
 def api_post(request, author_id, post_id):
 
@@ -267,6 +269,7 @@ def api_post(request, author_id, post_id):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
+@swagger_auto_schema(tags=['Comments'], methods=["GET", "POST"])
 @api_view(['GET', 'POST'])
 def api_comments(request, author_id, post_id):
     user = my_authenticate(request)
@@ -327,3 +330,29 @@ def api_comments(request, author_id, post_id):
             return JsonResponse(serializer.errors, status=501)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@api_view(['GET'])
+def api_get_image(request, authorid, postid):
+    user = my_authenticate(request)
+
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+    if not Author.objects.filter(id=authorid).exists():
+        return JsonResponse({"message": "Author not found", "success": False}, status=404)
+    if not Post.objects.filter(id=postid).exists():
+        return JsonResponse({"message": "Post not found", "success": False}, status=404)
+
+    if request.method == 'GET':
+        post = Post.objects.get(
+            id=postid, author=Author.objects.get(id=authorid))
+        if "image" in post.contentType.lower():
+            base64_string = post.content
+            no_prefix = base64_string.split(",")[1]
+            image_binary = base64.b64decode(no_prefix)
+            return HttpResponse(image_binary, content_type=post.contentType)
+        else:
+            return JsonResponse({"message": "Post is not an image", "success": True}, status=404)
+    else:
+        return JsonResponse({"message": "Method not Allowed", "success": False}, status=405)
