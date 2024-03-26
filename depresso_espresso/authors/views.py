@@ -284,7 +284,7 @@ def api_discover(request):
         for node in nodes:
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
             response = requests.get(
-                node.baseUrl + node.service + "/authors", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
             if response.status_code == 200:
                 items = response.json()["items"]
                 for item in items:

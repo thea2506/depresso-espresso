@@ -41,6 +41,7 @@ def api_inbox(request, author_id):
         if type == 'comment':
             return handle_comment(request, author_id)
         if type == 'post':
+            print("HANDLING POSTE")
             return handle_post(request, author_id)
         if type == 'share':
             return handle_share(request, author_id)
@@ -170,19 +171,29 @@ def handle_post(request, author_id):
         return JsonResponse({'error': 'Author not found'}, status=404)
 
     author_object = Author.objects.get(id=author_id)
+    
 
     data = request.data
-
+    print(Author.objects.filter(url = data.get("author").get("url")))
+    if not Author.objects.filter(url = data.get("author").get("url")).exists():
+        Author.objects.create(isExternalAuthor = False, username=uuid.uuid4(), displayName=data.get("author").get("displayName"), url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github = data.get("author").get("Github"), profileImage= data.get("author").get("profileImage"), allowRegister= False)
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
+        
+    
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
 
+
     if serializer.is_valid():
+        serializer.save()
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
         create_notification_item(
             notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
+        
 
         return send_notification_item(request, notification_object)
     else:
