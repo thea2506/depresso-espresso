@@ -210,7 +210,7 @@ const PostView = ({
         <div className="flex flex-col w-full gap-y-2 text-start">
           <p className="font-semibold text-primary">Content</p>
           {post.contentType === "text/markdown" && (
-            <Markdown className="flex w-full p-4 prose bg-white md:prose-xl text-start rounded-xl">
+            <Markdown className="flex w-full p-4 prose bg-white max-w-none text-start rounded-xl">
               {mdContent}
             </Markdown>
           )}
