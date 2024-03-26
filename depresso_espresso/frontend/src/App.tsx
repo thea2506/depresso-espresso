@@ -1,6 +1,10 @@
 import "./App.css";
 
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import {
+  RouterProvider,
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom";
 
 import AuthCheck from "./components/auth/Authcheck";
 import SignIn from "./components/auth/Signin";
@@ -56,15 +60,15 @@ const router = createBrowserRouter([
     path: "/site/signup",
     element: <SignUp />,
   },
-  // {
-  //   path: "*",
-  //   element: (
-  //     <Navigate
-  //       to="/site"
-  //       replace
-  //     />
-  //   ),
-  // },
+  {
+    path: "*",
+    element: (
+      <Navigate
+        to="/site"
+        replace
+      />
+    ),
+  },
 ]);
 
 function App() {
