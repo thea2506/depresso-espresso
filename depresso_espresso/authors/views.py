@@ -281,11 +281,8 @@ def api_discover(request):
             instance=local_author, context={'request': request}, many=True).data
 
         nodes = Node.objects.all()
-        print(nodes)
         for node in nodes:
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-            print(node.baseUrl)
-            print("service:", node.service)
             response = requests.get(
                 node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
             if response.status_code == 200:

@@ -41,7 +41,6 @@ def api_inbox(request, author_id):
         if type == 'comment':
             return handle_comment(request, author_id)
         if type == 'post':
-            print("HANDLING POSTE")
             return handle_post(request, author_id)
         if type == 'share':
             return handle_share(request, author_id)
@@ -145,7 +144,6 @@ def handle_comment(request, author_id):
     data = request.data
 
     post_id = data.get('id').split('/')[-3]
-    print("POST_ID:", post_id)
 
     data['post'] = Post.objects.get(id=post_id).id
 
@@ -157,7 +155,11 @@ def handle_comment(request, author_id):
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-        comment_object = Comment.objects.get(id=data.get('id').split('/')[-1])
+        if Comment.objects.filter(id=data.get('id').split('/')[-1]).exists():
+            comment_object = Comment.objects.get(id=data.get('id').split('/')[-1])
+        else:
+            comment_object = serializer.save()
+
 
         create_notification_item(
             notification_object, object_instance=comment_object)
@@ -175,7 +177,6 @@ def handle_post(request, author_id):
     
 
     data = request.data
-    print(Author.objects.filter(url = data.get("author").get("url")))
     if not Author.objects.filter(url = data.get("author").get("url")).exists():
         Author.objects.create(isExternalAuthor = False, username=uuid.uuid4(), displayName=data.get("author").get("displayName"), url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github = data.get("author").get("Github"), profileImage= data.get("author").get("profileImage"), allowRegister= False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
@@ -188,7 +189,8 @@ def handle_post(request, author_id):
 
 
     if serializer.is_valid():
-        serializer.save()
+        new_post = serializer.save()
+        new_post.id = data.get('id').split('/')[-1]
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
