@@ -88,10 +88,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8001',
     'http://127.0.0.1:8001',
-    'https://espresso-depresso-3e4b6938ea78.herokuapp.com',
-    'https://depresso-7eb4b3657f1c.herokuapp.com',
-    'https://espresso-a3b726fa7f99.herokuapp.com',
-
+    "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com",
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
