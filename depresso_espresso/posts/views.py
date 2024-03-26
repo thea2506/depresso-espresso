@@ -85,7 +85,6 @@ def api_posts(request, author_id):
                         node = Node.objects.get(baseUrl=author_host)
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        print("HERER")
                         requests.post(f"{author_url}/inbox",
                                       json=returned_data, auth=auth)
 
@@ -327,8 +326,30 @@ def api_comments(request, author_id, post_id):
 
                 create_notification_item(
                     notification_object, comment_object, "comment")
+                
+                # if this post has been shared on external servers, update their comments too
+
+                # get all followers of the post author
+                following_objects = Following.objects.filter(
+                author=user)
+
+
+                for following_object in following_objects:
+                    following_author = following_object.following_author
+                    author_url = following_author.url
+                    author_host = following_author.host
+                    node = Node.objects.filter(baseUrl=author_host)
+                    # if they are external authors, send comment ob to them
+                    if node:
+                        node = node.first()
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                    json=returned_data, auth=auth)
+
 
             else:
+                print("commenting on external author post")
 
                 nodes = Node.objects.all()
                 for node in nodes:
