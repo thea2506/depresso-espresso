@@ -32,7 +32,7 @@ const Discover = () => {
 
   useEffect(() => {
     async function fetchAuthors() {
-      const response = await axios.get("/api/discover");
+      const response = await axios.get("/api/discover/");
       if (response.status === 200) {
         setAllAuthors(response.data.items);
         setLoading(false);

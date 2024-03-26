@@ -55,7 +55,7 @@ const ProfilePage = () => {
 
         // followers
         try {
-          const response = await axios.get(`${authorUrl}/followers`, {
+          const response = await axios.get(`${authorUrl}/followers/`, {
             auth: {
               username: import.meta.env.VITE_USERNAME,
               password: import.meta.env.VITE_PASSWORD,
@@ -70,7 +70,7 @@ const ProfilePage = () => {
 
         // posts
         try {
-          const response = await axios.get(`${authorUrl}/posts`, {
+          const response = await axios.get(`${authorUrl}/posts/`, {
             auth: {
               username: import.meta.env.VITE_USERNAME,
               password: import.meta.env.VITE_PASSWORD,

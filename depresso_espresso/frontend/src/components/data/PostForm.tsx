@@ -129,7 +129,7 @@ const PostForm = ({
   const handlePostSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     try {
-      const url = edit ? `${oldPost?.id}` : `${curUser.id}/posts`;
+      const url = edit ? `${oldPost?.id}` : `${curUser.id}/posts/`;
 
       const new_post = {
         title: title,
