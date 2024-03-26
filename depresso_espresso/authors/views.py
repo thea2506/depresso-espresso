@@ -13,6 +13,7 @@ import requests
 from urllib.parse import unquote
 from urllib.parse import urlparse
 from itertools import chain
+from django.db.models import Q
 
 
 def get_author_object(author_url):
@@ -29,6 +30,19 @@ def get_author_object(author_url):
     if Author.objects.filter(url=author_url).exists():
         return Author.objects.get(url=author_url)
     return Author.objects.get(url=normalized_author_url)
+
+
+@api_view(['GET'])
+def api_authors(request):
+    if request.method == 'GET':
+        authors = Author.objects.filter(
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+        serialized_authors = AuthorSerializer(
+            instance=authors, context={'request': request}, many=True)
+        return JsonResponse({
+            "type": "authors",
+            "items": serialized_authors.data
+        }, safe=False)
 
 
 @api_view(['GET', 'PUT'])
@@ -200,9 +214,7 @@ def api_follower(request, author_id, author_url):
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
             response = requests.get(
                 foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-            print(response.status_code)
             if response.status_code == 200:
-                print("Remote follow successful")
                 following_object.areFriends = True
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
@@ -211,7 +223,6 @@ def api_follower(request, author_id, author_url):
                 response = requests.put(foreign_author_url + "/followers/" + str(followed_author_object.url),
                                         auth=auth,
                                         data={"areFriends": True}, headers={"origin": request.META["HTTP_HOST"]})
-                print(response)
 
         return JsonResponse({"success": True}, status=200)
 
@@ -256,3 +267,30 @@ def api_liked(request, author_id):
             return JsonResponse({"type": "liked", "items": serialized_liked}, safe=False)
 
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
+
+
+@api_view(['GET'])
+def api_discover(request):
+    if request.method == 'GET':
+        author_dicts = []
+        nodes = Node.objects.all()
+        for node in nodes:
+            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+            response = requests.get(
+                node.baseUrl + node.service + "/authors", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+            if response.status_code == 200:
+                items = response.json()["items"]
+                for item in items:
+                    flag = False
+                    for dict in author_dicts:
+                        if dict["url"] == item["url"]:
+                            flag = True
+                            break
+                    if not flag:
+                        author_dicts.append(item)
+
+        return JsonResponse(
+            {
+                "type": "authors",
+                "items": author_dicts
+            }, status=200, safe=False)

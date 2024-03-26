@@ -41,6 +41,7 @@ class Node(models.Model):
     # password for our node to authenticate with theirs
     theirPassword = models.CharField(max_length=50)
     baseUrl = models.URLField()
+    service = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):  # Reference: https://stackoverflow.com/questions/9336463/django-xxxxxx-object-display-customization-in-admin-action-sidebar
         return self.baseUrl

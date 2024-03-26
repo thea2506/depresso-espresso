@@ -76,13 +76,10 @@ const SignUp = () => {
 
       if (response.data.success) {
         toast.success("User Created Successfully", myToast);
-        console.log("User creation successful");
 
         // navigate to user's profile page on success
         nav("/site/signin");
       } else {
-        console.log("Register Failed");
-
         // Show users why their registration failed
         for (const error of response.data.errors) {
           toast.error("Register failed: " + error, myToast);

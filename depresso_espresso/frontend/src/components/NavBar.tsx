@@ -56,7 +56,7 @@ const NavBar = () => {
       name: "authors",
     },
     { icon: <GoInbox />, link: siteInboxPath, name: "inbox" },
-    { icon: <PiNewspaperClipping />, link: "/discover", name: "discover" },
+    { icon: <PiNewspaperClipping />, link: "/site/discover", name: "discover" },
   ];
 
   //#region functions

@@ -63,8 +63,6 @@ def handle_follow(request, author_id):
 
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
-        print("new external author")
-        print(actor_obj)
         actor_obj.pop('id', None)
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()

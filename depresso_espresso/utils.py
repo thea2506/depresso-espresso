@@ -4,8 +4,6 @@ from rest_framework import serializers
 
 def build_default_author_uri(obj, request, source):
     uri = request.build_absolute_uri("/")
-
-    print(">>>>>>>>>>>>", obj)
     author_id = obj.id if source == "author" else obj.author.id
 
     return f"{uri}{SERVICE}authors/{author_id}"

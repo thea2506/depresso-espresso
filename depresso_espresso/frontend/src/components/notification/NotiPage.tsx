@@ -16,7 +16,6 @@ const NotiPage = () => {
       if (!curUser?.id) return;
       try {
         const response = await axios.get(`${curUser?.url}/inbox`);
-        console.log(response.data);
         if (response.status === 200) {
           const items = response.data.items.map((item: any) => {
             if (item.type) return item;
