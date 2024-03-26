@@ -69,6 +69,7 @@ def api_author(request, author_id):
 
 
 def api_external_author(request, author_url):
+    author_url = author_url.rstrip("/")
     try_author_object = get_author_object(author_url)
     if try_author_object is not None:
         serialized_author = AuthorSerializer(
