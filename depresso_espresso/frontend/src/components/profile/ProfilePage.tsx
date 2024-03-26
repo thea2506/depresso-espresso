@@ -36,6 +36,8 @@ const ProfilePage = () => {
     curUser && authorId && curUser.id === authorId ? curUser : null
   );
 
+  console.log("AuthorID: ", authorId);
+
   //#region functions
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCurrentTopic((e.target as HTMLButtonElement).innerText);
