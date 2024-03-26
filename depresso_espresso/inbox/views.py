@@ -145,6 +145,7 @@ def handle_comment(request, author_id):
     data = request.data
 
     post_id = data.get('id').split('/')[-3]
+    print("POST_ID:", post_id)
 
     data['post'] = Post.objects.get(id=post_id).id
 
