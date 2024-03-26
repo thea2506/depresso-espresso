@@ -334,3 +334,46 @@ def api_comments(request, author_id, post_id):
             return JsonResponse(serializer.errors, status=501)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+
+@api_view(['POST'])
+def api_likes(request, post_id):
+    if (request.method == 'POST'):
+          if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+          else:
+            liked_post = Post.objects.get(id=post_id)
+            author = liked_post.author
+
+
+            data = request.data
+            serializer = LikePostSerializer(
+                data=data, context={"request": request})
+            
+
+            if serializer.is_valid():
+              new_like = serializer.save()
+              returned_data = LikePostSerializer(
+              instance=new_like, context={"request": request}).data
+              returned_data.pop("post", None)
+
+            if author.isExternalAuthor == False:
+                notification_object = Notification.objects.get_or_create(author=author)[
+                    0]
+
+                comment_object = new_like
+
+                create_notification_item(
+                    notification_object, comment_object, "like")
+
+
+
+            if author.isExternalAuthor == True:
+                nodes = Node.objects.all()
+                for node in nodes:
+                    if node.baseUrl == author.host:
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        print("sending like...")
+                        requests.post(f"{author.url}/inbox",
+                                    json=returned_data, auth=auth)
