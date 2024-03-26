@@ -57,7 +57,7 @@ const Notification = ({
       object: curUser,
       type: "Follow",
       summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
-      decision: "accept",
+      accepted: true,
     };
 
     try {
@@ -81,7 +81,7 @@ const Notification = ({
       object: curUser,
       type: "Follow",
       summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
-      decision: "decline",
+      accepted: false,
     };
 
     try {

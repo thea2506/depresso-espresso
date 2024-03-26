@@ -173,7 +173,7 @@ def api_follower(request, author_id, author_url):
         if Following.objects.filter(author=followed_author_object, following_author=following_author_object).exists():
             return JsonResponse({"error": "Already following", "success": False}, status=400)
 
-        if request.data.get("decision") == "decline":
+        if request.data.get("accepted") == False:
             follow_request_object = FollowRequest.objects.get(
                 requester=following_author_object, receiver=followed_author_object)
 
