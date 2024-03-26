@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'authors',
     'posts',
     "inbox",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ LOGIN_EXEMPT_URLS = (
     r'make_post',
     r'/inbox/',
     r'espresso-api/',
+    r'docs/',
 )
 
 CORS_ALLOWED_ORIGINS = [
@@ -86,10 +88,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8001',
     'http://127.0.0.1:8001',
-    'https://espresso-depresso-3e4b6938ea78.herokuapp.com',
-    'https://depresso-7eb4b3657f1c.herokuapp.com',
-    'https://espresso-a3b726fa7f99.herokuapp.com',
-
+    "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com",
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
@@ -133,15 +132,15 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 #     }
 # }
 
-# DATABASES = {'default': dj_database_url.config()}
+DATABASES = {'default': dj_database_url.config()}
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation

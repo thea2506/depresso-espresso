@@ -62,7 +62,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `${curUser.url}/followers/${encodeURIComponent(
+        `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
         data
@@ -86,7 +86,7 @@ const Notification = ({
 
     try {
       const response = await axios.put(
-        `${curUser.url}/followers/${encodeURIComponent(
+        `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
         data

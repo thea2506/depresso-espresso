@@ -10,8 +10,10 @@ from posts.models import Post, Comment, LikeComment, LikePost
 from posts.serializers import PostSerializer, CommentSerializer
 from authors.views import get_author_object
 import uuid
+from drf_yasg.utils import swagger_auto_schema
 
 
+@swagger_auto_schema(tags=['Inbox'], methods=["GET", "POST", "DELETE"])
 @api_view(['GET', 'POST', "DELETE"])
 def api_inbox(request, author_id):
 
@@ -90,6 +92,7 @@ def handle_like(request, author_id):
 
     data = request.data
 
+    print(data)
     liking_author_object = get_author_object(data.get('author')['url'])
 
     if "comments" in data.get('object'):

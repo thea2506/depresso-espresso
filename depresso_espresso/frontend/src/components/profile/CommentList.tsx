@@ -53,7 +53,7 @@ const CommentList = ({
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`${post.id}/comments/`);
+        const response = await axios.get(`${post.id}/comments`);
         if (response.status === 200) {
           const comment_list = (response.data.items as CommentModel[]) || [];
           setComments(comment_list);
@@ -70,7 +70,7 @@ const CommentList = ({
 
   const handleCommentSubmit = async () => {
     try {
-      const response = await axios.post(`${post.id}/comments/`, {
+      const response = await axios.post(`${post.id}/comments`, {
         type: "comment",
         author: {
           type: "author",
@@ -98,7 +98,7 @@ const CommentList = ({
 
   const handleLikeComment = async (comment: CommentModel) => {
     try {
-      await axios.post(`${comment.author.url}/inbox/`, {
+      await axios.post(`${comment.author.url}/inbox`, {
         summary: `${curUser!.displayName} liked your comment`,
         type: "Like",
         object: comment.id,

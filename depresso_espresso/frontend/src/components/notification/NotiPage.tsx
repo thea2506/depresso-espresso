@@ -15,7 +15,7 @@ const NotiPage = () => {
     const getNotifications = async () => {
       if (!curUser?.id) return;
       try {
-        const response = await axios.get(`${curUser?.url}/inbox/`);
+        const response = await axios.get(`${curUser?.url}/inbox`);
         if (response.status === 200) {
           const items = response.data.items.map((item: any) => {
             if (item && item.type) return item;
@@ -32,7 +32,7 @@ const NotiPage = () => {
   }, [curUser, refresh]);
 
   const handleClearInbox = async () => {
-    await axios.delete(`${curUser?.url}/inbox/`);
+    await axios.delete(`${curUser?.url}/inbox`);
     setRefresh(!refresh);
   };
 

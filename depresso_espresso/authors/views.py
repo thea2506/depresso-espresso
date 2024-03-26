@@ -14,6 +14,7 @@ from urllib.parse import unquote
 from urllib.parse import urlparse
 from itertools import chain
 from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
 
 
 def get_author_object(author_url):
@@ -32,6 +33,7 @@ def get_author_object(author_url):
     return Author.objects.get(url=normalized_author_url)
 
 
+@swagger_auto_schema(tags=['Authors'], methods=["GET"])
 @api_view(['GET'])
 def api_authors(request):
     if request.method == 'GET':
@@ -45,6 +47,7 @@ def api_authors(request):
         }, safe=False)
 
 
+@swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT"])
 @api_view(['GET', 'PUT'])
 def api_author(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
@@ -58,19 +61,19 @@ def api_author(request, author_id):
         author_object = Author.objects.get(id=author_id)
         serialized_author = AuthorSerializer(
             instance=author_object, data=request.data, context={'request': request})
+        print(serialized_author)
         if serialized_author.is_valid():
             serialized_author.save()
             return JsonResponse(serialized_author.data, status=200)
         return JsonResponse({"success": False}, status=400)
 
 
-@api_view(['GET'])
 def api_external_author(request, author_url):
-    id = author_url.split("/")[-1]
-    if (Author.objects.filter(id=id).exists()):
-        author_object = Author.objects.get(id=id)
+    author_url = author_url.rstrip("/")
+    try_author_object = get_author_object(author_url)
+    if try_author_object is not None:
         serialized_author = AuthorSerializer(
-            instance=author_object, context={'request': request})
+            instance=try_author_object, context={'request': request})
         return JsonResponse(serialized_author.data)
     if request.method == 'GET':
         author_url = unquote(author_url)
@@ -84,6 +87,7 @@ def api_external_author(request, author_url):
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
+@swagger_auto_schema(tags=['Authors'], methods=["GET"])
 @api_view(['GET'])
 def api_followers(request, author_id):
     if request.method == 'GET':
@@ -99,6 +103,7 @@ def api_followers(request, author_id):
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
 
+@swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', "DELETE"])
 def api_follower(request, author_id, author_url):
     following_author_object = get_author_object(author_url)
@@ -245,6 +250,7 @@ def api_follower(request, author_id, author_url):
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
+@swagger_auto_schema(tags=['Authors'], methods=["GET"])
 @api_view(['GET'])
 def api_liked(request, author_id):
     if request.method == 'GET':
@@ -269,7 +275,6 @@ def api_liked(request, author_id):
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
 
-@api_view(['GET'])
 def api_discover(request):
     if request.method == 'GET':
         author_dicts = []

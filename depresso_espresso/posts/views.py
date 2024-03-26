@@ -1,5 +1,7 @@
-from rest_framework.decorators import api_view
-from django.http import JsonResponse
+import base64
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *
 from posts.serializers import *
@@ -11,7 +13,7 @@ from requests.auth import HTTPBasicAuth
 import requests
 from inbox.views import handle_comment, create_notification_item
 from inbox.models import Notification, NotificationItem
-
+from drf_yasg.utils import swagger_auto_schema
 from authors.views import get_author_object
 
 
@@ -32,6 +34,7 @@ def get_posts(current_user, author_object):
                 Q(author=author_object) & Q(visibility="PUBLIC")).order_by('-published')
 
 
+@swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
 @api_view(['GET', 'POST'])
 def api_posts(request, author_id):
 
@@ -56,10 +59,8 @@ def api_posts(request, author_id):
             shared_post = data
             shared_post.pop("id", None)
             shared_post["type"] = "share"
-
             shared_post["author"] = AuthorSerializer(
                 instance=user, context={"request": request}).data
-
             shared_post["source"] = old_id
 
             serializer = PostSerializer(data=shared_post, context={
@@ -105,6 +106,7 @@ def api_posts(request, author_id):
             data=data, context={"request": request})
 
         if serializer.is_valid():
+            print(serializer.validated_data)
             new_post = serializer.save()
 
             returned_data = PostSerializer(instance=new_post, context={
@@ -125,21 +127,32 @@ def api_posts(request, author_id):
                             node.ourUsername, node.ourPassword)
                         requests.post(f"{author_url}/inbox",
                                       json=returned_data, auth=auth)
+                    else:
+                        notification_object = Notification.objects.get_or_create(
+                            author=following_author)[0]
+                        create_notification_item(
+                            notification_object, new_post, "post")
 
             elif new_post.visibility == "FRIENDS":
 
                 friends_following_objects = following_objects.filter(
                     areFriends=True)
-
                 for following_object in friends_following_objects:
                     following_author = following_object.following_author
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.get(baseUrl=author_host)
-                    auth = HTTPBasicAuth(
-                        node.ourUsername, node.ourPassword)
-                    requests.post(f"{author_url}/inbox",
-                                  json=returned_data, auth=auth)
+                    node = Node.objects.filter(baseUrl=author_host)
+                    if node:
+                        node = node.first()
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
+                    else:
+                        notification_object = Notification.objects.get_or_create(
+                            author=following_author)[0]
+                        create_notification_item(
+                            notification_object, new_post, "post")
 
             return JsonResponse(
                 {
@@ -150,7 +163,6 @@ def api_posts(request, author_id):
             return JsonResponse(serializer.errors, status=501)
 
 
-@api_view(['GET'])
 def api_feed(request):
     user = my_authenticate(request)
     if request.method == 'GET':
@@ -197,6 +209,7 @@ def api_feed(request):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
+@swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', 'DELETE'])
 def api_post(request, author_id, post_id):
 
@@ -267,6 +280,7 @@ def api_post(request, author_id, post_id):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
+@swagger_auto_schema(tags=['Comments'], methods=["GET", "POST"])
 @api_view(['GET', 'POST'])
 def api_comments(request, author_id, post_id):
     user = my_authenticate(request)
@@ -329,6 +343,70 @@ def api_comments(request, author_id, post_id):
             return JsonResponse(serializer.errors, status=501)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@api_view(['GET'])
+def api_get_image(request, author_id, post_id):
+    user = my_authenticate(request)
+
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({"message": "Author not found", "success": False}, status=404)
+    if not Post.objects.filter(id=post_id).exists():
+        return JsonResponse({"message": "Post not found", "success": False}, status=404)
+
+    if request.method == 'GET':
+        post = Post.objects.get(
+            id=post_id, author=Author.objects.get(id=author_id))
+        if "image" in post.contenttype.lower():
+            base64_string = post.content
+            no_prefix = base64_string.split(",")[1]
+            image_binary = base64.b64decode(no_prefix)
+            return HttpResponse(image_binary, content_type=post.contenttype)
+        else:
+            return JsonResponse({"message": "Post is not an image", "success": True}, status=404)
+    else:
+        return JsonResponse({"message": "Method not Allowed", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@api_view(['GET'])
+def api_post_like(request, author_id, post_id):
+    if request.method == 'GET':
+        user = my_authenticate(request)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+        post = Post.objects.get(id=post_id)
+        post_like_list = LikePost.objects.filter(
+            post=post)
+        data = LikePostSerializer(instance=post_like_list, context={
+            "request": request}, many=True).data
+        return JsonResponse({"type": "Like", "items": data}, safe=False)
+    else:
+        return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
+
+
+@swagger_auto_schema(tags=['Comments'], methods=["GET"])
+@api_view(['GET'])
+def api_comment_like(request, author_id, post_id, comment_id):
+    if request.method == 'GET':
+        user = my_authenticate(request)
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        if not Comment.objects.filter(id=comment_id).exists():
+            return JsonResponse({"error": "Comment not found", "success": False}, status=404)
+
+        comment = Comment.objects.get(id=comment_id)
+        comment_like_list = LikeComment.objects.filter(
+            comment=comment)
+        data = LikeCommentSerializer(instance=comment_like_list, context={
+            "request": request}, many=True).data
+        return JsonResponse({"type": "Like", "items": data}, safe=False)
+    else:
+        return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
 
 
 @api_view(['POST'])
