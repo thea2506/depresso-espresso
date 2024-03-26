@@ -47,6 +47,10 @@ const router = createBrowserRouter([
         element: <Discover></Discover>,
       },
       {
+        path: "authors/:authorId",
+        element: <ProfilePage />,
+      },
+      {
         path: "authors/*",
         element: <ProfilePage />,
       },
