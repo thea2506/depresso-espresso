@@ -12,6 +12,6 @@ urlpatterns = [
          views.api_follower, name='authors'),
     path('api/authors/<str:author_id>/liked/',
          views.api_liked, name='authors'),
-    path('api/authors/<path:author_url>',
-         views.api_external_author, name='external_authors'),
+
+
 ]

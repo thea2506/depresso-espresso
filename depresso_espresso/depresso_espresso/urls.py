@@ -8,6 +8,7 @@ from django.conf import settings
 
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
+import authors.views as views
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
@@ -31,6 +32,8 @@ urlpatterns = [
 
     re_path(r"site*", TemplateView.as_view(template_name='index.html')),
     path("", RedirectView.as_view(url='/site')),
+    path('api/authors/<path:author_url>',
+         views.api_external_author, name='external_authors'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

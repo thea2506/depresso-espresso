@@ -1,5 +1,6 @@
 import base64
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *
@@ -58,10 +59,8 @@ def api_posts(request, author_id):
             shared_post = data
             shared_post.pop("id", None)
             shared_post["type"] = "share"
-
             shared_post["author"] = AuthorSerializer(
                 instance=user, context={"request": request}).data
-
             shared_post["source"] = old_id
 
             serializer = PostSerializer(data=shared_post, context={
@@ -127,21 +126,32 @@ def api_posts(request, author_id):
                             node.ourUsername, node.ourPassword)
                         requests.post(f"{author_url}/inbox",
                                       json=returned_data, auth=auth)
+                    else:
+                        notification_object = Notification.objects.get_or_create(
+                            author=following_author)[0]
+                        create_notification_item(
+                            notification_object, new_post, "post")
 
             elif new_post.visibility == "FRIENDS":
 
                 friends_following_objects = following_objects.filter(
                     areFriends=True)
-
                 for following_object in friends_following_objects:
                     following_author = following_object.following_author
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.get(baseUrl=author_host)
-                    auth = HTTPBasicAuth(
-                        node.ourUsername, node.ourPassword)
-                    requests.post(f"{author_url}/inbox",
-                                  json=returned_data, auth=auth)
+                    node = Node.objects.filter(baseUrl=author_host)
+                    if node:
+                        node = node.first()
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
+                    else:
+                        notification_object = Notification.objects.get_or_create(
+                            author=following_author)[0]
+                        create_notification_item(
+                            notification_object, new_post, "post")
 
             return JsonResponse(
                 {

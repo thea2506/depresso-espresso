@@ -164,7 +164,7 @@ const Profile = ({
           github: newGithub,
           profileImage: newImageURL,
         };
-        return axios.put(`${user.url}`, data);
+        return axios.put(`${user.url}/`, data);
       })
       .then((response) => {
         setUser(response.data);
@@ -285,7 +285,7 @@ const Profile = ({
             setImageURL(user.profileImage || "");
           }}
         >
-          <div className="flex flex-col py-4 px-6 bg-white rounded-xl gap-y-8 w-[20rem] sm:w-[30rem] md:w-[40rem]">
+          <div className="flex flex-col justify-center w-full px-6 py-4 bg-white rounded-xl gap-y-8">
             <p className="text-2xl font-semibold text-center text-primary">
               Edit Profile
             </p>

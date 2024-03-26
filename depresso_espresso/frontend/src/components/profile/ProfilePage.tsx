@@ -33,7 +33,7 @@ const ProfilePage = () => {
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const [thisProfileUser, setThisProfileUser] = useState<AuthorModel | null>(
-    curUser && authorId && curUser.url === authorId ? curUser : null
+    curUser && authorId && curUser.id === authorId ? curUser : null
   );
 
   //#region functions
@@ -55,7 +55,7 @@ const ProfilePage = () => {
 
         // followers
         try {
-          const response = await axios.get(`${authorUrl}/followers/`, {
+          const response = await axios.get(`${authorUrl}/followers`, {
             auth: {
               username: import.meta.env.VITE_USERNAME,
               password: import.meta.env.VITE_PASSWORD,

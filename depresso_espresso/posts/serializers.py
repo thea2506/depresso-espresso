@@ -11,7 +11,6 @@ class AuthorField(serializers.RelatedField):
         return Author.objects.all()
 
     def to_internal_value(self, data):
-        url_id = data.get("id").split("/")[-1]
         return self.get_queryset().get(url=data.get("url"))
 
     def to_representation(self, value):

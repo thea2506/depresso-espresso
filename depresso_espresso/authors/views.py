@@ -61,6 +61,7 @@ def api_author(request, author_id):
         author_object = Author.objects.get(id=author_id)
         serialized_author = AuthorSerializer(
             instance=author_object, data=request.data, context={'request': request})
+        print(serialized_author)
         if serialized_author.is_valid():
             serialized_author.save()
             return JsonResponse(serialized_author.data, status=200)
