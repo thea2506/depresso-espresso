@@ -273,6 +273,13 @@ def api_liked(request, author_id):
 def api_discover(request):
     if request.method == 'GET':
         author_dicts = []
+
+        local_author = Author.objects.filter(
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+
+        author_dicts = AuthorSerializer(
+            instance=local_author, context={'request': request}, many=True).data
+
         nodes = Node.objects.all()
         for node in nodes:
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
