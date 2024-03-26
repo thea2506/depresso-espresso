@@ -287,9 +287,7 @@ def api_comments(request, author_id, post_id):
         data["post"] = post.id
         serializer = CommentSerializer(
             data=data, context={"request": request})
-        print("Checking serializer")
         if serializer.is_valid():
-            print("Valid serializer")
 
             new_comment = serializer.save()
 
@@ -306,9 +304,7 @@ def api_comments(request, author_id, post_id):
 
 
             # Local Author
-            print("Post owner:", post_owner)
             if post_owner.isExternalAuthor == False:
-                print("post was made by local author")
                 notification_object = Notification.objects.get_or_create(author=post_owner)[
                     0]
 
@@ -337,7 +333,7 @@ def api_comments(request, author_id, post_id):
 
 
 @api_view(['POST'])
-def api_likes(request, post_id):
+def api_likes(request, author_id, post_id):
     if (request.method == 'POST'):
           if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
@@ -347,33 +343,117 @@ def api_likes(request, post_id):
 
 
             data = request.data
+            data["post_id"]= Post.objects.get(id=post_id)
+            print("data:", data)
             serializer = LikePostSerializer(
                 data=data, context={"request": request})
             
 
             if serializer.is_valid():
-              new_like = serializer.save()
-              returned_data = LikePostSerializer(
-              instance=new_like, context={"request": request}).data
-              returned_data.pop("post", None)
+                print("HEREEEEEEEEEEEEEEEE")
+                new_like = LikePost.objects.create(author = author, post = liked_post)
+                print("SLGFHSLFKHJSLFKJHL")
 
-            if author.isExternalAuthor == False:
-                notification_object = Notification.objects.get_or_create(author=author)[
-                    0]
+                returned_data = LikePostSerializer(
+                instance=new_like, context={"request": request}).data
+                returned_data.pop("post", None)
 
-                comment_object = new_like
+                if author.isExternalAuthor == False:
+                    notification_object = Notification.objects.get_or_create(author=author)[
+                        0]
 
-                create_notification_item(
-                    notification_object, comment_object, "like")
+                    like_object = new_like
+
+                    create_notification_item(
+                        notification_object, like_object, "like")
 
 
 
-            if author.isExternalAuthor == True:
-                nodes = Node.objects.all()
-                for node in nodes:
-                    if node.baseUrl == author.host:
-                        auth = HTTPBasicAuth(
-                            node.ourUsername, node.ourPassword)
-                        print("sending like...")
-                        requests.post(f"{author.url}/inbox",
-                                    json=returned_data, auth=auth)
+                if author.isExternalAuthor == True:
+                    nodes = Node.objects.all()
+                    for node in nodes:
+                        if node.baseUrl == author.host:
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            print("sending like...")
+                            requests.post(f"{author.url}/inbox",
+                                        json=returned_data, auth=auth)
+                            
+                        
+                return JsonResponse(
+                    returned_data, status=201)
+            else:
+                return JsonResponse(serializer.errors, status=501)
+
+    return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+                  
+                  
+
+              
+
+
+
+
+@api_view(['POST'])
+def api_likes(request, author_id, post_id):
+    if (request.method == 'POST'):
+          if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+          else:
+            liked_post = Post.objects.get(id=post_id)
+            author = liked_post.author
+
+
+            data = request.data
+            data["post_id"]= Post.objects.get(id=post_id)
+            print("data:", data)
+            serializer = LikePostSerializer(
+                data=data, context={"request": request})
+            
+
+            if serializer.is_valid():
+                print("HEREEEEEEEEEEEEEEEE")
+                new_like = LikePost.objects.create(author = author, post = liked_post)
+                print("SLGFHSLFKHJSLFKJHL")
+
+                returned_data = LikePostSerializer(
+                instance=new_like, context={"request": request}).data
+                returned_data.pop("post", None)
+
+                if author.isExternalAuthor == False:
+                    notification_object = Notification.objects.get_or_create(author=author)[
+                        0]
+
+                    like_object = new_like
+
+                    create_notification_item(
+                        notification_object, like_object, "like")
+
+
+
+                if author.isExternalAuthor == True:
+                    nodes = Node.objects.all()
+                    for node in nodes:
+                        if node.baseUrl == author.host:
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            print("sending like...")
+                            requests.post(f"{author.url}/inbox",
+                                        json=returned_data, auth=auth)
+                            
+                        
+                return JsonResponse(
+                    returned_data, status=201)
+            else:
+                return JsonResponse(serializer.errors, status=501)
+
+    return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+                  
+                  
+
+              
+
+
+
