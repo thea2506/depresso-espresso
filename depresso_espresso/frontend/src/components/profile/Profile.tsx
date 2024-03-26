@@ -4,7 +4,7 @@ import { Button } from "../Button";
 import Popup from "reactjs-popup";
 import { ToastContainer, toast, ToastOptions } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import editIcon from "../../assets/icons/edit.svg";
 import {
@@ -15,16 +15,15 @@ import {
 } from "react-icons/go";
 import defaultPic from "../../assets/images/default_profile.jpg";
 import { AuthorModel } from "../data/AuthorModel";
+import AuthContext from "../../contexts/AuthContext";
 //#endregion
 
 //#region interfaces
 interface ProfileProps {
-  id: string | undefined;
-  display_name: string;
-  github?: string;
-  imageURL?: string;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+  user: AuthorModel;
+  setUser: React.Dispatch<React.SetStateAction<AuthorModel | null>>;
+  refresh: boolean;
+  setRefresh: (loading: boolean) => void;
 }
 //#endregion
 
@@ -33,20 +32,15 @@ interface ProfileProps {
  *
  * @component
  * @param {Object} props - The component props.
- * @param {string} props.display_name - The username to display.
- * @param {string} props.github - The GitHub link to display.
- * @param {string} props.imageURL - The URL of the avatar image to display.
- * @oaram {boolean} props.loading - The loading state.
- * @param {Function} props.setLoading - The function to set the loading state.
+ * @oaram {Boolean} props.refresh - The loading state.
+ * @param {Function} props.setRefresh - The function to set the loading state.
  * @returns {JSX.Element} The rendered profile component.
  */
 const Profile = ({
-  id,
-  display_name,
-  github,
-  imageURL,
-  loading,
-  setLoading,
+  user,
+  setUser,
+  refresh,
+  setRefresh,
 }: ProfileProps): JSX.Element => {
   //#region variables
   const myToast: ToastOptions<unknown> = {
@@ -59,16 +53,19 @@ const Profile = ({
     closeButton: false,
   };
   const editFields = [
-    { label: "Display Name", value: "display_name", placeholder: display_name },
-    { label: "GitHub URL", value: "github", placeholder: github },
-    { label: "Image URL", value: "image", placeholder: imageURL },
+    {
+      label: "Display Name",
+      value: "displayName",
+      placeholder: user.displayName,
+    },
+    { label: "GitHub URL", value: "github", placeholder: user.github },
+    { label: "Image URL", value: "image", placeholder: user.profileImage },
   ];
 
-  const [newDisplayName, setDisplayName] = useState<string>(display_name);
-  const [newGithub, setGithub] = useState<string>(github || "");
-  const [newImageURL, setImageURL] = useState<string>(imageURL || "");
-  const [curUser, setCurUser] = useState<AuthorModel>();
-  const [otherUser, setOtherUser] = useState<AuthorModel>();
+  const [newDisplayName, setDisplayName] = useState<string>(user.displayName);
+  const [newGithub, setGithub] = useState<string>(user.github || "");
+  const [newImageURL, setImageURL] = useState<string>(user.profileImage || "");
+  const { curUser, setCurUser } = useContext(AuthContext);
 
   // Follow
   const [status, setStatus] = useState<string>();
@@ -80,86 +77,46 @@ const Profile = ({
   //#region Functions
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const response = await axios.get(`/curUser`);
-      if (response.data) setCurUser(response.data);
-    };
-
-    getCurrentUser();
-  }, [id, loading]);
-
-  useEffect(() => {
-    const getOtherUser = async () => {
-      const response = await axios.get(
-        checkUrl(decodeURI(`${id}`))
-          ? decodeURI(`${id}`)
-          : `/espresso-api/authors/${id}`
-      );
-      const data = response.data;
-      setOtherUser(data);
-    };
-
     const getFollowStatus = async () => {
       try {
-        const actor_object = await axios.get(
-          `/espresso-api/authors/${curUser?.id}`
+        const response = await axios.get(
+          `${user.url}/followers/${encodeURIComponent(
+            encodeURIComponent(curUser?.id)
+          )}`
         );
-        if (actor_object.status === 200) {
-          const my_id = actor_object.data.id.toString();
-          try {
-            const response = await axios.get(
-              `${id}/followers/${encodeURIComponent(encodeURIComponent(my_id))}`
-            );
 
-            if (response.status === 200) {
-              // further check if they are friends
-              // sent a request to "my_id" to check for followers of "id
-              try {
-                const response2 = await axios.get(
-                  `${my_id}/followers/${encodeURIComponent(
-                    encodeURIComponent(id!)
-                  )}`
-                );
-                if (response2.status === 200) {
-                  setStatus("friends");
-                } else {
-                  setStatus("followed");
-                }
-              } catch (error) {
-                console.log("not friend");
-              }
+        if (response.status === 200) {
+          // further check if they are friends
+          // sent a request to "my_id" to check for followers of "id
+          try {
+            const response2 = await axios.get(
+              `${curUser?.url}/followers/${encodeURIComponent(
+                encodeURIComponent(user.url!)
+              )}`
+            );
+            if (response2.status === 200) {
+              setStatus("friends");
             } else {
-              setStatus("stranger");
+              setStatus("followed");
             }
-          } catch (error: any) {
-            if (error.response.data.status === "pending") {
-              setStatus("pending");
-            } else setStatus("stranger");
+          } catch (error) {
+            // empty
           }
+        } else {
+          setStatus("stranger");
         }
       } catch (error: any) {
-        if (error.response.data.status === "pending") {
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.status === "pending"
+        ) {
           setStatus("pending");
         } else setStatus("stranger");
       }
     };
-    getOtherUser();
-    if (curUser && curUser.id) getFollowStatus();
-  }, [curUser, id, loading]);
-
-  /**
-   * Checks if the given URL is a valid URL.
-   * @param string - The URL to check
-   * @returns boolean
-   */
-  function checkUrl(givenUrl: string) {
-    try {
-      new URL(decodeURI(givenUrl));
-    } catch (error) {
-      return false;
-    }
-    return true;
-  }
+    if (curUser && curUser.url !== user.url) getFollowStatus();
+  }, [curUser, user, refresh]);
 
   /**
    * Extracts the new value input by the user and updates the corresponding state.
@@ -168,7 +125,7 @@ const Profile = ({
    */
   const extractValue = (value: string, field: string) => {
     switch (field) {
-      case "display_name":
+      case "displayName":
         setDisplayName(value);
         break;
       case "github":
@@ -201,26 +158,21 @@ const Profile = ({
    */
   const saveEdits = async () => {
     checkGitHubProfile(newGithub)
-      .then(async () => {
-        // toast.success("Profile updated successfully", myToast);
-        // closeModal();
-        const formField = new FormData();
-        if (newDisplayName !== "")
-          formField.append("displayName", newDisplayName);
-        formField.append("github", newGithub);
-        formField.append("profileImage", newImageURL);
-
+      .then(() => {
         const data = {
           displayName: newDisplayName,
           github: newGithub,
           profileImage: newImageURL,
         };
-        await axios.put(`${id}`, data);
+        return axios.put(`${user.url}`, data);
       })
-      .then(() => {
-        // toast.success("Profile updated successfully", myToast);
+      .then((response) => {
+        setUser(response.data);
+        if (curUser?.url === user.url) {
+          setCurUser(response.data);
+        }
         closeModal();
-        setLoading(!loading);
+        setRefresh(!refresh);
       })
       .catch((error) => {
         toast.error(error.message, myToast);
@@ -232,19 +184,16 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const actor_object = await axios.get(
-        `/espresso-api/authors/${curUser?.id}`
-      );
-      const response = await axios.post(`${id}/inbox`, {
-        type: "Follow",
-        summary: `${curUser?.displayName} wants to follow ${otherUser?.displayName}`,
-        actor: actor_object.data,
-        object: otherUser,
+      const response = await axios.post(`${user?.url}/inbox/`, {
+        type: "follow",
+        summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
+        actor: curUser,
+        object: user,
       });
-      if (response.status === 200) {
+      if (response.status === 201) {
         setStatus("pending");
+        setRefresh(!refresh);
       }
-      setLoading(!loading);
     } catch (error) {
       toast.error("Failed to send follow request", myToast);
     }
@@ -255,19 +204,20 @@ const Profile = ({
    */
   const handleUnffollowRequest = async () => {
     try {
-      const real_id = id;
       const response = await axios.delete(
-        `${real_id}/followers/${curUser?.id}`
+        `${user.url}/followers/${curUser?.url}`
       );
       if (response.data.success === true) {
         setStatus("stranger");
       }
-      setLoading(!loading);
+      setRefresh(!refresh);
     } catch (error) {
       toast.error("Failed to unfollow", myToast);
     }
   };
   //#endregion
+
+  if (Object.entries(curUser).length === 0) return <></>;
 
   return (
     <div className="flex flex-col items-center justify-first-line:center gap-y-4">
@@ -277,12 +227,12 @@ const Profile = ({
         <div className="w-48 h-48 rounded-full md:w-60 md:h-60 bg-accent-3">
           <img
             className="object-cover w-full h-full rounded-full"
-            src={imageURL || defaultPic}
+            src={user.profileImage || defaultPic}
           />
         </div>
 
         {/* Edit button */}
-        {curUser?.id === id?.split("/").pop() ? (
+        {curUser?.url === user.url ? (
           <Button
             buttonType="icon"
             icon={editIcon}
@@ -292,7 +242,7 @@ const Profile = ({
         ) : null}
 
         {/* Follow button */}
-        {curUser?.id !== id?.split("/").pop() && status === "stranger" ? (
+        {curUser?.url !== user.url && status === "stranger" ? (
           <Button
             buttonType="icon"
             icon={<GoPlusCircle className="w-8 h-8" />}
@@ -302,7 +252,7 @@ const Profile = ({
         ) : null}
 
         {/* Pending */}
-        {curUser?.id !== id?.split("/").pop() && status === "pending" ? (
+        {curUser?.url !== user.url && status === "pending" ? (
           <Button
             buttonType="icon"
             icon={<GoClock className="w-8 h-8" />}
@@ -311,7 +261,7 @@ const Profile = ({
         ) : null}
 
         {/* Unfollow button */}
-        {curUser?.id !== id?.split("/").pop() &&
+        {curUser?.url !== user.url &&
         status !== "stranger" &&
         status !== "pending" ? (
           <Button
@@ -330,9 +280,9 @@ const Profile = ({
           lockScroll={true}
           onClose={() => {
             setOpen(false);
-            setDisplayName(display_name);
-            setGithub(github || "");
-            setImageURL(imageURL || "");
+            setDisplayName(user.displayName);
+            setGithub(user.github || "");
+            setImageURL(user.profileImage || "");
           }}
         >
           <div className="flex flex-col py-4 px-6 bg-white rounded-xl gap-y-8 w-[20rem] sm:w-[30rem] md:w-[40rem]">
@@ -377,18 +327,18 @@ const Profile = ({
       <div className="flex flex-col items-center">
         <div className="flex items-center justify-center gap-x-4">
           <p className="text-xl font-semibold md:text-2xl opacity-95">
-            {display_name}
+            {user.displayName}
           </p>
           {status?.toLowerCase() === "friends" && (
             <GoCodeOfConduct className="w-6 h-6 text-primary" />
           )}
         </div>
-        {github && (
+        {user.github && (
           <a
             className="text-sm md:text-base text-secondary-dark"
-            href={github}
+            href={user.github}
           >
-            {github}
+            {user.github}
           </a>
         )}
       </div>

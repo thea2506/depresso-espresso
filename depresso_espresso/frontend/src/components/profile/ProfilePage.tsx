@@ -1,7 +1,7 @@
 //#region imports
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
 // components
 import { Button } from "../Button";
@@ -11,6 +11,7 @@ import PostList from "./PostList";
 import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
+import AuthContext from "../../contexts/AuthContext";
 //#endregion
 
 /**
@@ -23,17 +24,16 @@ const ProfilePage = () => {
     { context: "GitHub" },
     { context: "Followers" },
   ];
+  const { state } = useLocation();
 
-  const { authorId } = useParams<{ authorId: string }>();
-  const [displayName, setDisplayName] = useState("");
-  const [githubLink, setGithubLink] = useState("");
-  const [profileImage, setProfileImage] = useState("");
+  const { authorId, "*": splat } = useParams();
+  const { curUser } = useContext(AuthContext);
   const [currentTopic, setCurrentTopic] = useState<string>(topics[0].context);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [refresh, setRefresh] = useState<boolean>(false);
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const [thisProfileUser, setThisProfileUser] = useState<AuthorModel | null>(
-    null
+    curUser && authorId && curUser.url === authorId ? curUser : null
   );
 
   //#region functions
@@ -44,84 +44,67 @@ const ProfilePage = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(`/espresso-api/authors/${authorId}`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
+            authorId ? authorId : splat
+          }`
+        );
         const data = response.data;
-        setDisplayName(data.displayName);
-        setGithubLink(data.github);
-        setProfileImage(data.profileImage);
+        const authorUrl = data.url;
         setThisProfileUser(data);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-    if (authorId) getData();
-  }, [authorId, loading]);
 
-  useEffect(() => {
-    const fetchFollowers = async () => {
-      if (thisProfileUser && thisProfileUser.id)
+        // followers
         try {
-          const response = await axios.get(`${thisProfileUser!.id}/followers`);
+          const response = await axios.get(`${authorUrl}/followers/`, {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+          });
           const data = response.data;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const followerModels = data?.items?.map((rawauthor: any) => ({
-            type: rawauthor.type,
-            id: rawauthor.id,
-            url: rawauthor.url,
-            host: rawauthor.host,
-            displayName: rawauthor.displayName,
-            username: rawauthor.username,
-            github: rawauthor.github,
-            profileImage: rawauthor.profileImage,
-          }));
+          const followerModels = (data?.items as AuthorModel[]) || [];
           if (followerModels) setFollowers(followerModels);
         } catch (error) {
           /* empty */
         }
-    };
-    fetchFollowers();
 
-    const retrievePosts = async () => {
-      try {
-        const response = await axios.get(`${thisProfileUser!.id}/posts/`);
-        const posts = response.data;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const postModels = posts.items.map((rawpost: any) => {
-          return {
-            title: rawpost.title,
-            id: rawpost.id,
-            author: rawpost.author,
-            description: rawpost.description,
-            contenttype: rawpost.contentType,
-            content: rawpost.content,
-            count: rawpost.count,
-            published: rawpost.published,
-            visibility: rawpost.visibility,
-            likecount: rawpost.like_count,
-            sharecount: rawpost.sharecount,
-            origin: rawpost.origin,
-            source: rawpost.source,
-          };
-        });
-        setPosts(postModels);
+        // posts
+        try {
+          const response = await axios.get(`${authorUrl}/posts/`, {
+            auth: {
+              username: import.meta.env.VITE_USERNAME,
+              password: import.meta.env.VITE_PASSWORD,
+            },
+            params: curUser,
+          });
+          const posts = response.data;
+          const postModels = (posts.items as PostModel[]) || [];
+          setPosts(postModels);
+        } catch (error) {
+          // empty
+        }
+
+        if (state && state.reload) state.reload = false;
       } catch (error) {
-        // empty
+        console.error("An error occurred", error);
       }
     };
-    if (thisProfileUser && thisProfileUser.id) retrievePosts();
-  }, [thisProfileUser, loading]);
+
+    if (!thisProfileUser || state?.reload) {
+      getData();
+    }
+  }, [thisProfileUser, authorId, refresh, splat, state, curUser]);
 
   //#endregion
+
   return (
     <div className="flex flex-col w-full px-4 py-8 gap-y-8 sm:px-12 md:px-20">
       {thisProfileUser && (
         <Profile
-          id={thisProfileUser!.id}
-          display_name={displayName}
-          imageURL={profileImage}
-          github={githubLink}
-          loading={loading}
-          setLoading={setLoading}
+          user={thisProfileUser}
+          setUser={setThisProfileUser}
+          refresh={refresh}
+          setRefresh={setRefresh}
         />
       )}
       <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
@@ -142,14 +125,14 @@ const ProfilePage = () => {
       </ul>
 
       {/* Github Topic */}
-      {currentTopic === "GitHub" && githubLink ? (
+      {currentTopic === "GitHub" && thisProfileUser?.github ? (
         <GitHubActionsList
-          github={githubLink}
-          displayName={displayName}
+          github={thisProfileUser?.github}
+          displayName={thisProfileUser?.displayName}
         />
       ) : null}
 
-      {currentTopic === "GitHub" && !githubLink ? (
+      {currentTopic === "GitHub" && !thisProfileUser?.github ? (
         <div className="flex items-center justify-center text-lg opacity-80">
           No Github link...
         </div>
@@ -170,14 +153,14 @@ const ProfilePage = () => {
       {currentTopic === "Posts" && posts.length > 0 && (
         <PostList
           posts={posts}
-          refresh={loading}
-          setRefresh={setLoading}
+          refresh={refresh}
+          setRefresh={setRefresh}
         />
       )}
 
       {currentTopic === "Posts" && posts.length == 0 && (
         <div className="flex items-center justify-center text-lg opacity-80">
-          No posts yet... or maybe it is loading!
+          No posts yet... or maybe it is refresh!
         </div>
       )}
     </div>

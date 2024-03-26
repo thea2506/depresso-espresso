@@ -1,49 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Notification } from "./Notification";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { AuthorModel } from "../data/AuthorModel";
+import AuthContext from "../../contexts/AuthContext";
 
 const NotiPage = () => {
-  const [curUser, setCurUser] = useState<AuthorModel>();
+  const { curUser } = useContext(AuthContext);
   // const [followRequests, setFollowRequests] = useState<[]>();
   const [refresh, setRefresh] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-    // Get the current user's ID
-    const getCurUser = async () => {
+    // get the notifications
+    const getNotifications = async () => {
+      if (!curUser?.id) return;
       try {
-        const response = await axios.get("/curUser");
-        if (response.data.success) {
-          setCurUser(response.data);
+        const response = await axios.get(`${curUser?.url}/inbox/`);
+        if (response.status === 200) {
+          const items = response.data.items.map((item: any) => {
+            if (item && item.type) return item;
+          });
+
+          setNotifications(items);
         }
       } catch (error) {
         console.error("An error occurred", error);
       }
     };
-
-    // get the notifications
-    const getNotifications = async () => {
-      if (!curUser?.id) return;
-      try {
-        const response = await axios.get(
-          `/espresso-api/authors/${curUser?.id}/inbox`
-        );
-        console.log(response.data);
-        if (response.status === 200) setNotifications(response.data.items);
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-
-    getCurUser();
     //getFollowRequests();
     getNotifications();
-  }, [curUser?.id, refresh]);
+  }, [curUser, refresh]);
 
   const handleClearInbox = async () => {
-    await axios.delete(`/espresso-api/authors/${curUser?.id}/inbox`);
+    await axios.delete(`${curUser?.url}/inbox/`);
     setRefresh(!refresh);
   };
 

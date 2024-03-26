@@ -1,12 +1,9 @@
 //#region imports
-import React from "react";
-import { useState } from "react";
+import React, { useContext } from "react";
 import { PostModel } from "../data/PostModel";
 import { PostView } from "../data/PostView";
 import { twMerge } from "tailwind-merge";
-import { useEffect } from "react";
-import { AuthorModel } from "../data/AuthorModel";
-import axios from "axios";
+import AuthContext from "../../contexts/AuthContext";
 //#endregion
 
 //#region interfaces
@@ -19,21 +16,8 @@ interface PostListProps {
 //#endregion
 
 const PostList = ({ posts, refresh, setRefresh, className }: PostListProps) => {
-  const [curUser, setCurUser] = useState({} as AuthorModel);
-
-  useEffect(() => {
-    const retrieveData = async () => {
-      try {
-        const response = await axios("/curUser");
-        if (response.data.success) {
-          setCurUser(response.data);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    retrieveData();
-  }, []);
+  const { curUser } = useContext(AuthContext);
+  if (!Object.entries(curUser).length) return <></>;
 
   return (
     <ul

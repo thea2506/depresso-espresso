@@ -1,11 +1,12 @@
 import base64
 from django.contrib.sessions.models import Session
 from .models import Author, Node
+import uuid
 
 # Reference: https://stackoverflow.com/questions/46426683/django-basic-auth-for-one-view-avoid-middleware from meshy accessed 3/11/2024
 
 
-def checkBasic(request):
+def check_basic(request):
     ''' This function checks if a request is from a node that is allowed to connect with our node (it has the correct username and password)'''
 
     auth_header = request.META.get('HTTP_AUTHORIZATION')
@@ -15,21 +16,33 @@ def checkBasic(request):
     encoded_credentials = auth_header.split(' ')[1]
     decoded_credentials = base64.b64decode(
         encoded_credentials).decode("utf-8").split(':')
-
     username = decoded_credentials[0]
     password = decoded_credentials[1]
-
     if not username or not password:
         return None
 
     try:
-        node = Node.objects.get(
-            username=decoded_credentials[0], password=decoded_credentials[1])
+        uri = request.headers['Origin'] + "/"
+        node = Node.objects.filter(baseUrl=uri,
+                                   theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
     except Node.DoesNotExist:
         return None
 
-    request.node = node
-    return node
+    data = request.query_params
+    data_mutable = data.copy()
+    author_object = Author(
+        type="author",
+        id=uuid.uuid4(),
+        username=username,
+        url=data_mutable.get('url'),
+        host=data_mutable.get('host'),
+        displayName=data_mutable.get(
+            'displayName'),
+        github=data_mutable.get('github'),
+        profileImage=data_mutable.get('profileImage'),
+        isExternalAuthor=True)
+
+    return author_object
 
 
 def my_authenticate(request):
@@ -42,13 +55,13 @@ def my_authenticate(request):
             uid = session_data.get('_auth_user_id')
 
             if not Author.objects.filter(id=uid).exists():
-                user = checkBasic(request)
+                user = check_basic(request)
                 if not user:
                     return None
             else:
                 user = Author.objects.get(id=uid)
     else:
-        user = checkBasic(request)
+        user = check_basic(request)
         if not user:
             return None
 

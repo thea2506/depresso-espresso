@@ -21,5 +21,5 @@ export interface PostModel {
   published: string;
   visibility: string;
 
-  image_file?: string;
+  imageFile?: string;
 }

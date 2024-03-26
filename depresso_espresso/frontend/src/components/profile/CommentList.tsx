@@ -1,4 +1,4 @@
-import { Dispatch, useState, SetStateAction } from "react";
+import { Dispatch, useState, SetStateAction, useContext } from "react";
 import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
@@ -9,10 +9,8 @@ import { CommentModel } from "../data/CommentModel";
 
 import { Button } from "../Button";
 import { UserDisplay } from "../UserDisplay";
-import { AuthorModel } from "../data/AuthorModel";
 
-import { act } from "react-dom/test-utils";
-
+import AuthContext from "../../contexts/AuthContext";
 
 const myToast: ToastOptions = {
   position: "top-center",
@@ -36,7 +34,7 @@ const CommentList = ({
 }) => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<CommentModel[]>([]);
-  const [curUser, setCurUser] = useState<AuthorModel>();
+  const { curUser } = useContext(AuthContext);
 
   //#region functions
   const formatDateString = (inputDateString: string) => {
@@ -53,43 +51,12 @@ const CommentList = ({
   //#endregion
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get("/curUser");
-        const data = response.data;
-
-        if (data.success) {
-          setCurUser(data);
-        }
-      } catch (error) {
-        console.error("An error occurred", error);
-      }
-    };
-
     const fetchComments = async () => {
       try {
-        const real_postid = post.id.split("/").pop();
-        const real_authorid = post.author.id.split("/").pop();
-        const response = await axios.get(
-          `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`
-        );
+        const response = await axios.get(`${post.id}/comments/`);
         if (response.status === 200) {
-          const comment_list = response.data.comments;
-          const commentModels = comment_list.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (rawcomment: any) => {
-              return {
-                type: rawcomment.type,
-                author: rawcomment.author,
-                comment: rawcomment.comment,
-                contenttype: rawcomment.contenttype,
-                published: rawcomment.published,
-                id: rawcomment.id,
-                likecount: rawcomment.like_count,
-              };
-            }
-          );
-          setComments(commentModels);
+          const comment_list = (response.data.items as CommentModel[]) || [];
+          setComments(comment_list);
         } else {
           console.error("Failed to fetch comments");
         }
@@ -98,65 +65,27 @@ const CommentList = ({
       }
     };
 
-    fetchProfile();
     fetchComments();
   }, [post.author.id, post.id, refresh]);
 
-  const handleLikeToggle = async (commentId: string) => {
-    try{  
-      const respone = await axios.post(`/authors/${post.author.pk}/posts/${post.id}/comments/${commentId}/like_comment`);
-      const {likecount, action} = respone.data;
-      const updatedComments = comments.map((comment) => {
-        if (comment.id === commentId) {
-          return { ...comment, likecount};
-        }
-        return comment;
-      });
-      console.log("Like count updated", action, likecount);
-  
-      // Set the updated comments array to trigger re-render
-      setComments(updatedComments);
-    } catch (error) {
-      console.error("An error occurred while liking a comment", error);
-    }
-  };
-        
-
-
-
   const handleCommentSubmit = async () => {
     try {
-      const formField = new FormData();
-      formField.append("comment", comment);
-      formField.append("postid", post.id);
-      const real_postid = post.id.split("/").pop();
-      const real_authorid = post.author.id.split("/").pop();
+      const response = await axios.post(`${post.id}/comments/`, {
+        type: "comment",
+        author: {
+          type: "author",
+          id: curUser!.id,
+          url: curUser!.url,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
+        },
+        comment: comment,
+        contentType: "text/plain",
+      });
 
-      const response = await axios.post(
-        `/espresso-api/authors/${real_authorid}/posts/${real_postid}/comments`,
-        {
-          type: "comment",
-          author: {
-            type: "author",
-            id: curUser!.id,
-            url: curUser!.url,
-            host: curUser!.host,
-            displayName: curUser!.displayName,
-            github: curUser!.github,
-            profileImage: curUser!.profileImage,
-          },
-          comment: comment,
-          contenttype: "text/plain",
-        }
-      );
-
-      if (response.data.success) {
-        const comment_object = response.data.comment;
-        await axios.post(
-          `/espresso-api/authors/${real_authorid}/inbox`,
-          comment_object
-        );
-
+      if (response.status === 200 || response.status === 201) {
         setRefresh(!refresh);
         setComment("");
       } else {
@@ -168,9 +97,8 @@ const CommentList = ({
   };
 
   const handleLikeComment = async (comment: CommentModel) => {
-    const real_authorid = post.author.id.split("/").pop();
     try {
-      await axios.post(`/espresso-api/authors/${real_authorid}/inbox`, {
+      await axios.post(`${comment.author.url}/inbox/`, {
         summary: `${curUser!.displayName} liked your comment`,
         type: "Like",
         object: comment.id,
@@ -186,7 +114,7 @@ const CommentList = ({
       });
       setRefresh(!refresh);
     } catch (error) {
-      console.error("An error occurred", error);
+      // console.error("An error occurred", error);
     }
   };
 
@@ -225,18 +153,18 @@ const CommentList = ({
               </p>
             </div>
 
-            <p className="p-4 bg-white text-start rounded-xl">
-              {comment.comment}
-            </p>
-          <button
-            onClick={() => handleLikeToggle(comment.id)}
-            className={`flex items-center justify-center gap-x-1 text-primary`}
-          >
-            <GoHeart/>
-            <p>{comment.likecount}</p>
-
-          </button>
-          
+            <div className="flex justify-between w-full gap-2">
+              <p className="flex-1 p-4 bg-white text-start rounded-xl">
+                {comment.comment}
+              </p>
+              <button
+                onClick={() => handleLikeComment(comment)}
+                className={`flex items-center justify-center gap-x-1 text-primary`}
+              >
+                <GoHeart />
+                <p>{comment.likecount}</p>
+              </button>
+            </div>
           </div>
         ))}
       </div>

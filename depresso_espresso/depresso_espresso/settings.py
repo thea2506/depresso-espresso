@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import django_on_heroku
 from pathlib import Path
 import os
+import dj_database_url
+
 
 LOGIN_URL = "/signin"
 
@@ -28,7 +30,7 @@ SECRET_KEY = 'django-insecure-jnu+=&0bx_4l@l6f7o^c017i5m8hlw1#jqa0*fmfqx&v2)jqw5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
@@ -50,8 +52,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'authentication',
-    'home',
-    'author_profile',
+    'authors',
     'posts',
     "inbox",
 ]
@@ -82,8 +83,13 @@ LOGIN_EXEMPT_URLS = (
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8001',
+    'http://127.0.0.1:8001',
     'https://espresso-depresso-3e4b6938ea78.herokuapp.com',
+    'https://depresso-7eb4b3657f1c.herokuapp.com',
     'https://espresso-a3b726fa7f99.herokuapp.com',
+
 ]
 
 ROOT_URLCONF = 'depresso_espresso.urls'
@@ -126,6 +132,9 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
+
+# DATABASES = {'default': dj_database_url.config()}
+
 
 DATABASES = {
     'default': {
