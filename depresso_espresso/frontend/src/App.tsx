@@ -1,10 +1,6 @@
 import "./App.css";
 
-import {
-  RouterProvider,
-  createBrowserRouter,
-  Navigate,
-} from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import AuthCheck from "./components/auth/AuthCheck";
 import SignIn from "./components/auth/SignIn";
