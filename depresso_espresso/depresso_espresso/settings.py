@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'authors',
     'posts',
     "inbox",
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +79,7 @@ LOGIN_EXEMPT_URLS = (
     r'make_post',
     r'/inbox/',
     r'espresso-api/',
+    r'docs/',
 )
 
 CORS_ALLOWED_ORIGINS = [
