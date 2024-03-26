@@ -62,7 +62,7 @@ const PostView = ({
 
   const handleShareClick = async () => {
     try {
-      await axios.post(`${curUser.url}/posts/`, post);
+      await axios.post(`${curUser.id}/posts/`, post);
       setRefresh(!refresh);
     } catch (error) {
       console.error("An error occurred", error);
@@ -207,10 +207,10 @@ const PostView = ({
           </p>
         </div>
 
-        <div className="flex flex-col gap-y-2 text-start">
+        <div className="flex flex-col w-full gap-y-2 text-start">
           <p className="font-semibold text-primary">Content</p>
           {post.contentType === "text/markdown" && (
-            <Markdown className="p-4 prose bg-white text-start rounded-xl">
+            <Markdown className="flex w-full p-4 prose bg-white max-w-none text-start rounded-xl">
               {mdContent}
             </Markdown>
           )}

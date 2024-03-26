@@ -12,6 +12,7 @@ import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
+// import defaultPic from "../../assets/images/default_profile.jpg";
 //#endregion
 
 /**
@@ -33,7 +34,7 @@ const ProfilePage = () => {
   const [posts, setPosts] = useState<PostModel[]>([]);
   const [followers, setFollowers] = useState<AuthorModel[]>([]);
   const [thisProfileUser, setThisProfileUser] = useState<AuthorModel | null>(
-    curUser && authorId && curUser.url === authorId ? curUser : null
+    curUser && authorId && curUser.id === authorId ? curUser : null
   );
 
   //#region functions
@@ -46,7 +47,7 @@ const ProfilePage = () => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
-            authorId ? authorId : splat
+            authorId ? authorId + "/" : splat
           }`
         );
         const data = response.data;
@@ -55,7 +56,7 @@ const ProfilePage = () => {
 
         // followers
         try {
-          const response = await axios.get(`${authorUrl}/followers/`, {
+          const response = await axios.get(`${authorUrl}/followers`, {
             auth: {
               username: import.meta.env.VITE_USERNAME,
               password: import.meta.env.VITE_PASSWORD,
@@ -107,22 +108,24 @@ const ProfilePage = () => {
           setRefresh={setRefresh}
         />
       )}
-      <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
-        {topics.map((topic, index) => (
-          <Button
-            key={index}
-            onClick={handleClick}
-            buttonType="text"
-            className={
-              currentTopic === topic.context
-                ? "w-1/2 md:text-lg bg-secondary-light"
-                : "w-1/2 md:text-lg"
-            }
-          >
-            {topic.context}
-          </Button>
-        ))}
-      </ul>
+      {thisProfileUser && (
+        <ul className="flex items-center justify-between gap-x-2 sm:gap-x-4">
+          {topics.map((topic, index) => (
+            <Button
+              key={index}
+              onClick={handleClick}
+              buttonType="text"
+              className={
+                currentTopic === topic.context
+                  ? "w-1/2 md:text-lg bg-secondary-light"
+                  : "w-1/2 md:text-lg"
+              }
+            >
+              {topic.context}
+            </Button>
+          ))}
+        </ul>
+      )}
 
       {/* Github Topic */}
       {currentTopic === "GitHub" && thisProfileUser?.github ? (

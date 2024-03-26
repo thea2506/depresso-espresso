@@ -49,7 +49,9 @@ const Discover = () => {
     <div className="flex flex-col items-center justify-center w-full">
       <div className="flex flex-col w-4/5 gap-4">
         {loading ? (
-          <>Loading</>
+          <div className="m-8 text-lg font-semibold text-primary opacity-70">
+            Loading... or there is no other servers yet
+          </div>
         ) : (
           allAuthors.map((author, key: number) => {
             if (author.url === curUser?.url) return null;
