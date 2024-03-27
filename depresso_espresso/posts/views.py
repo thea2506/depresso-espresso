@@ -508,10 +508,13 @@ def api_execute(request):
 
         # handle follow request
         if user_response is None:
-            response = requests.post(url, json=obj)
-            print(">>>>", response)
-            if response.status_code == 201:
-                return JsonResponse({"success": True}, status=201)
+            for node in Node.objects.all():
+                if node.baseUrl in url:
+                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                    response = requests.post(url, json=obj)
+                    print(">>>>", response)
+                    if response.status_code == 201:
+                        return JsonResponse({"success": True}, status=201)
 
         # handle follow response
         else:
