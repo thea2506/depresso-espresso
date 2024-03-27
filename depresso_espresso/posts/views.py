@@ -527,6 +527,8 @@ def api_execute(request):
                     response = requests.post(url, json=obj, auth=auth, headers={
                         "origin": request.META["HTTP_HOST"]
                     })
+                    print(">>>>>", response.request.body,
+                          response.status_code, response.reason, response.text)
                     if response.status_code == 201:
                         return JsonResponse(response.json(), status=201)
 
