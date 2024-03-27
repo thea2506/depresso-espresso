@@ -62,8 +62,10 @@ const Notification = ({
 
     try {
       const response = await axios.post("/api/execute", {
-        method: "POST",
-        url: `${notificationObject.actor.id.replace(/\/+$/, "")}/inbox`,
+        method: "PUT",
+        url: `${curUser.id}/followers/${encodeURIComponent(
+          notificationObject.actor.id
+        )}`,
         data: data,
       });
       if (response.data.success) {
