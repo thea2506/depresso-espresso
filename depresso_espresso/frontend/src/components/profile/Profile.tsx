@@ -95,6 +95,7 @@ const Profile = ({
         if (response.status === 200) {
           // further check if they are friends
           // sent a request to "my_id" to check for followers of "id
+          console.log("Good, I am following this user");
           try {
             const response2 = await axios.get(
               `/api/authors/${curUser?.id
@@ -102,6 +103,7 @@ const Profile = ({
                 .pop()}/followers/${encodeURIComponent(user.url!)}`
             );
             if (response2.status === 200) {
+              console.log("Good, this user is following me");
               setStatus("friends");
             } else {
               setStatus("followed");
