@@ -23,8 +23,8 @@ def check_basic(request):
 
     try:
         uri = request.headers['Origin'] + "/"
-        node = Node.objects.filter(baseUrl=uri,
-                                   theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
+        node = Node.objects.filter(
+            theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
     except Node.DoesNotExist:
         return None
 
