@@ -586,7 +586,7 @@ def api_execute(request):
                 "origin": request.META["HTTP_HOST"]})
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
             if r.status_code == 200:
-                return JsonResponse(r.json(), status=200)
+                return JsonResponse(r.json(), safe=False, status=200)
         else:
             auth = node_auth_helper(url)
 
@@ -600,6 +600,6 @@ def api_execute(request):
             print(">>>>>", response.request.body,
                   response.status_code, response.reason, response.text)
             if response.status_code == 200:
-                return JsonResponse(response.json(), status=200)
+                return JsonResponse(response.json(), safe=False, status=200)
 
     return JsonResponse({"message": "If you see this message, it means something's wrong"}, status=404)

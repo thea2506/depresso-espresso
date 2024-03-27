@@ -247,10 +247,10 @@ def api_follower(request, author_id, author_url):
                 print("WHAT WE RECEIVED:",
                       response.status_code, response.reason)
                 try:
-                    print("WHAT WE RECEIVED:", response.json())
+                    print("JSON WE RECEIVED:", response.json())
                     message = response.json()
                 except:
-                    print("WHAT WE RECEIVED:", response.text)
+                    print("MESSAGE WE RECEIVED:", response.text)
                     return HttpResponse(response.text, status=response.status_code)
             else:
                 return JsonResponse({"error": "Node not found", "success": False}, status=404)
