@@ -87,7 +87,7 @@ const Profile = ({
 
         const response = await axios.post("/api/execute", {
           method: "GET",
-          url: `${user.url}/followers/${encodeURIComponent(
+          url: `${user.url.replace(/\/+$/, "")}/followers/${encodeURIComponent(
             encodeURIComponent(curUser?.url)
           )}`,
         });
@@ -97,7 +97,9 @@ const Profile = ({
           // sent a request to "my_id" to check for followers of "id
           try {
             const response2 = await axios.get(
-              `${curUser?.url}/followers/${encodeURIComponent(
+              `/api/${curUser?.id
+                .split("/")
+                .pop()}/followers/${encodeURIComponent(
                 encodeURIComponent(user.url!)
               )}`
             );
