@@ -8,6 +8,8 @@ urlpatterns = [
     path('api/authors', views.api_authors, name='authors'),
     path('api/authors/<str:author_id>/', views.api_author, name='author'),
     path('api/authors/<str:author_id>', views.api_author, name='author'),
+    path('api/authors/<str:author_id>/make_friends/<path:author_url>',
+         views.api_make_friends, name='author_make_friends'),
     path('api/authors/<str:author_id>/followers',
          views.api_followers, name='authors'),
     path('api/authors/<str:author_id>/followers/<path:author_url>',

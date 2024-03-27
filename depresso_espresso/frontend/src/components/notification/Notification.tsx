@@ -55,7 +55,7 @@ const Notification = ({
     const data = {
       actor: notificationObject.actor,
       object: curUser,
-      type: "Follow",
+      type: "FollowResponse",
       summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
       accepted: true,
     };
@@ -80,7 +80,7 @@ const Notification = ({
     const data = {
       actor: notificationObject.actor,
       object: curUser,
-      type: "Follow",
+      type: "FollowResponse",
       summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
       accepted: false,
     };

@@ -322,3 +322,25 @@ def api_discover(request):
                 "type": "authors",
                 "items": author_dicts
             }, status=200, safe=False)
+
+
+@api_view(['POST'])
+def api_make_friends(request, author_id, author_url):
+    author_url = unquote(author_url)
+    if request.method == 'POST':
+        following_author_object = get_author_object(author_url)
+        if following_author_object is None:
+            return JsonResponse({"error": "Author not found", "success": False}, status=404)
+        followed_author_object = Author.objects.get(id=author_id)
+        following_objects = Following.objects.filter(
+            author=followed_author_object, following_author=following_author_object)
+        if following_objects.exists():
+            following_object = following_objects.first()
+            following_object.areFriends = True
+            reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                following_author=followed_author_object, areFriends=True)
+            following_object.save()
+            reverse_following_object.save()
+            return JsonResponse({"success": True}, status=200)
+        return JsonResponse({"error": "Follower not found", "success": False}, status=404)
+    return JsonResponse({"error": "Invalid request", "success": False}, status=405)

@@ -104,6 +104,15 @@ const Profile = ({
             );
             if (response2.status === 200) {
               console.log("Good, this user is following me");
+              const response3 = await axios.post(
+                `/api/authors/${curUser?.id
+                  .split("/")
+                  .pop()}/make_friends/${encodeURIComponent(user.url!)}`
+              );
+              if (response3.status === 200) {
+                console.log("Make friends successfully");
+              }
+
               setStatus("friends");
             } else {
               setStatus("followed");
