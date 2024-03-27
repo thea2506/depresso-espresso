@@ -71,7 +71,7 @@ def handle_follow(request, author_id):
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         print("The old id", old_id)
-        actor_obj["id"] = uuid.UUID(old_id)
+        actor_obj["id"] = old_id
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
         print("This shit runs")
