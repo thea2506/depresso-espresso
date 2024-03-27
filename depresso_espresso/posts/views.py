@@ -559,6 +559,7 @@ def api_execute(request):
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
             if r.status_code == 201:
                 return JsonResponse(r.json(), status=201)
+            return r
         else:
             auth = node_auth_helper(hostname)
 
