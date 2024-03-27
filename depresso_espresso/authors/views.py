@@ -28,13 +28,18 @@ def get_author_object(author_url):
     else:
         normalized_author_url = author_url
     if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
-            url=normalized_author_url).exists():
+            url=normalized_author_url).exists() and not Author.objects.filter(url=author_url + "/").exists() and not Author.objects.filter(url=normalized_author_url + "/").exists():
         print("It breaks in checking")
         return None
     if Author.objects.filter(url=author_url).exists():
-        print("It does not break")
         return Author.objects.get(url=author_url)
-    return Author.objects.get(url=normalized_author_url)
+    if Author.objects.filter(url=author_url + "/").exists():
+        return Author.objects.get(url=author_url + "/")
+    if Author.objects.filter(url=normalized_author_url).exists():
+        return Author.objects.get(url=normalized_author_url)
+    if Author.objects.filter(url=normalized_author_url + "/").exists():
+        return Author.objects.get(url=normalized_author_url + "/")
+    return None
 
 
 @swagger_auto_schema(tags=['Authors'], methods=["GET"])
