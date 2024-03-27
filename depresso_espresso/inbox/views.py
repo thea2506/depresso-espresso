@@ -247,7 +247,7 @@ def handle_post(request, author_id):
     if serializer.is_valid():
 
         new_post = serializer.save()
-        new_post.id = data.get('id').split('/')[-1]
+        new_post.id = data.get('id').rstrip("/").split('/')[-1]
         new_post.save()
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
