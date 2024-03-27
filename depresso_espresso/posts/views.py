@@ -56,7 +56,7 @@ def api_posts(request, author_id):
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
-
+        print("RECEIVED DATA",  request.data)
         data = request.data
 
         if data.get("id") is not None:
@@ -121,18 +121,28 @@ def api_posts(request, author_id):
                 author=user)
 
             if new_post.visibility == "PUBLIC":
+                print("GET TO PUBLIC POST")
                 for following_object in following_objects:
                     following_author = following_object.following_author
+                    print("SENDING TO FOLLOWING AUTHOR", following_author.url)
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.filter(baseUrl=author_host)
+                    node = Node.objects.filter(
+                        baseUrl=author_host.rstrip("/") + "/")
                     if node:
+                        print("NODE FOUND", node.first().baseUrl)
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
-                                      json=returned_data, auth=auth)
+                        response = requests.post(f"{author_url}/inbox",
+                                                 json=returned_data, auth=auth)
+                        try:
+                            print("JSON RESPONSE", response.json())
+                        except:
+                            print("RESPONSE", response.text)
+                            return HttpResponse(response.text, status=response.status_code)
                     else:
+                        print("NODE NOT FOUND")
                         notification_object = Notification.objects.get_or_create(
                             author=following_author)[0]
                         create_notification_item(
