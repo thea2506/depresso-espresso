@@ -67,7 +67,6 @@ def api_author(request, author_id):
         author_object = Author.objects.get(id=author_id)
         serialized_author = AuthorSerializer(
             instance=author_object, data=request.data, context={'request': request})
-        print(serialized_author)
         if serialized_author.is_valid():
             serialized_author.save()
             return JsonResponse(serialized_author.data, status=200)
@@ -87,13 +86,11 @@ def api_external_author(request, author_url):
         parsed_uri = urlparse(author_url)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
         if Node.objects.filter(baseUrl=result).exists():
-            print("found")
             node_obj = Node.objects.get(baseUrl=result)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
             response = requests.get(author_url, auth=auth)
             return JsonResponse(response.json(), status=response.status_code)
-        print("not found")
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 

@@ -44,10 +44,6 @@ const NavBar = () => {
   const siteAuthorPath = `${userId}`;
   const siteInboxPath = `${userId}/inbox`;
 
-  // console.log("User ID ", userId);
-  // console.log("site Author Path ", siteAuthorPath);
-  // console.log("site Inbox Path ", siteInboxPath);
-
   const navContents = [
     { icon: <GoHome />, link: "/", name: "" },
     {

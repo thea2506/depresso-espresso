@@ -173,11 +173,7 @@ def api_feed(request):
 
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
-        print("PUBLIC POSTS:", public_posts)
-
         for public_post in public_posts:
-            print("public_post.author.isExternalAuthor, ",
-                  public_post.author.isExternalAuthor)
             if public_post.author.isExternalAuthor == True:
                 public_posts = public_posts.exclude(id=public_post.id)
 
@@ -281,7 +277,6 @@ def api_post(request, author_id, post_id):
         notification_objects = NotificationItem.objects.filter(
             object_id=post.id)
 
-        print(notification_objects)
         for notification_object in notification_objects:
             notification_object.delete()
         post.delete()

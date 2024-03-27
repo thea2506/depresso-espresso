@@ -95,7 +95,6 @@ def handle_like(request, author_id):
 
     data = request.data
 
-    print(data)
     liking_author_object = get_author_object(data.get('author')['url'])
 
     if "comments" in data.get('object'):
