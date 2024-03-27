@@ -53,7 +53,7 @@ class FollowRequestSerializer(serializers.ModelSerializer):
             node_obj = Node.objects.get(baseUrl=actor_obj.host)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
-            response = requests.get(actor_obj.url, auth=auth)
+            response = requests.get(actor_obj.url + "/", auth=auth)
             return response.json()
 
         else:

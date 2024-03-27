@@ -23,6 +23,23 @@ const myToast: ToastOptions = {
   closeButton: false,
 };
 
+function checkSameOrigin(url: string) {
+  let windowOrigin = window.location.origin;
+  if (windowOrigin.includes("localhost")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("localhost", "127.0.0.1");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  if (windowOrigin.includes("127.0.0.1")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("127.0.0.1", "localhost");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  return false;
+}
+
 const CommentList = ({
   post,
   refresh,
@@ -56,6 +73,16 @@ const CommentList = ({
         const response = await axios.get(`${post.id}/comments`);
         if (response.status === 200) {
           const comment_list = (response.data.items as CommentModel[]) || [];
+
+          comment_list.forEach(async (comment: CommentModel) => {
+            const response = await axios.get(`${comment.id}/likes`);
+            if (response.status === 200) {
+              comment.likecount = response.data.items.length;
+            } else {
+              console.error("Failed to fetch likes");
+            }
+          });
+
           setComments(comment_list);
         } else {
           console.error("Failed to fetch comments");
@@ -70,26 +97,40 @@ const CommentList = ({
 
   const handleCommentSubmit = async () => {
     try {
-      const response = await axios.post(`${post.id}/comments`, {
-        type: "comment",
-        author: {
-          type: "author",
-          id: curUser!.id,
-          url: curUser!.url,
-          host: curUser!.host,
-          displayName: curUser!.displayName,
-          github: curUser!.github,
-          profileImage: curUser!.profileImage,
-        },
-        comment: comment,
-        contentType: "text/plain",
-      });
+      if (checkSameOrigin(post.id)) {
+        const response = await axios.post(`${post.id}/comments`, {
+          type: "comment",
+          author: {
+            type: "author",
+            id: curUser!.id,
+            url: curUser!.url,
+            host: curUser!.host,
+            displayName: curUser!.displayName,
+            github: curUser!.github,
+            profileImage: curUser!.profileImage,
+          },
+          comment: comment,
+          contentType: "text/plain",
+        });
 
-      if (response.status === 200 || response.status === 201) {
-        setRefresh(!refresh);
-        setComment("");
+        if (response.status === 200 || response.status === 201) {
+          setRefresh(!refresh);
+          setComment("");
+        } else {
+          toast.error("Failed to create comment", myToast);
+        }
       } else {
-        toast.error("Failed to create comment", myToast);
+        const response = await axios.post(`${post.author.url}/inbox`, {
+          type: "comment",
+          author: curUser,
+          comment: comment,
+          contentType: "text/plain",
+        });
+        if (response.status === 200 || response.status === 201) {
+          toast.success("Commented", myToast);
+          setComment("");
+          setRefresh(!refresh);
+        }
       }
     } catch (error) {
       toast.error("An error occurred", myToast);

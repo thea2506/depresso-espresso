@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from itertools import chain
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
+from utils import Pagination
 
 
 def get_author_object(author_url):
@@ -39,11 +40,16 @@ def api_authors(request):
     if request.method == 'GET':
         authors = Author.objects.filter(
             Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
-        serialized_authors = AuthorSerializer(
-            instance=authors, context={'request': request}, many=True)
+
+        # Pagination
+        paginator = Pagination("authors")
+        page = paginator.paginate_queryset(authors, request)
+        serializer = AuthorSerializer(
+            page, context={'request': request},  many=True)
+
         return JsonResponse({
             "type": "authors",
-            "items": serialized_authors.data
+            "items": serializer.data
         }, safe=False)
 
 
@@ -77,13 +83,19 @@ def api_external_author(request, author_url):
         return JsonResponse(serialized_author.data)
     if request.method == 'GET':
         author_url = unquote(author_url)
+        author_url += "/"
         parsed_uri = urlparse(author_url)
+        print(parsed_uri)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        node_obj = Node.objects.get(baseUrl=result)
-        auth = HTTPBasicAuth(node_obj.ourUsername,
-                             node_obj.ourPassword)
-        response = requests.get(author_url, auth=auth)
-        return JsonResponse(response.json(), status=response.status_code)
+        print(result)
+        if Node.objects.filter(baseUrl=result).exists():
+            print("found")
+            node_obj = Node.objects.get(baseUrl=result)
+            auth = HTTPBasicAuth(node_obj.ourUsername,
+                                 node_obj.ourPassword)
+            response = requests.get(author_url, auth=auth)
+            return JsonResponse(response.json(), status=response.status_code)
+        print("not found")
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
@@ -166,7 +178,7 @@ def api_follower(request, author_id, author_url):
         if Following.objects.filter(author=followed_author_object, following_author=following_author_object).exists():
             return JsonResponse({"error": "Already following", "success": False}, status=400)
 
-        if request.data.get("decision") == "decline":
+        if request.data.get("accepted") == False:
             follow_request_object = FollowRequest.objects.get(
                 requester=following_author_object, receiver=followed_author_object)
 

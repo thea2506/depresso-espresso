@@ -1,5 +1,7 @@
+from rest_framework.pagination import PageNumberPagination
 from depresso_espresso.constants import *
 from rest_framework import serializers
+from django.http import JsonResponse
 
 
 def build_default_author_uri(obj, request, source):
@@ -31,3 +33,21 @@ def customize_like_representation(serializer_instance, instance):
         serializer_instance, instance)
 
     return representation
+
+
+class Pagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'size'
+    max_page_size = 100
+
+    def __init__(self, type) -> None:
+        super().__init__()
+        self.items_type = type
+
+    def get_paginated_response(self, data):
+        return JsonResponse({
+            "type": self.items_type,
+            "next": self.get_next_link(),
+            "prev": self.get_previous_link(),
+            "items": data
+        })

@@ -182,9 +182,10 @@ const Profile = ({
   /**
    * Sends a follow request to the user.
    */
+  console.log(curUser);
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(`${user?.url}/inbox/`, {
+      const response = await axios.post(`${user?.url}/inbox`, {
         type: "follow",
         summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
         actor: curUser,

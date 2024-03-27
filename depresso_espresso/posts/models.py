@@ -78,7 +78,8 @@ class LikeComment(models.Model):
     author = models.ForeignKey(
         Author, on_delete=models.CASCADE, related_name="comment_liking_author")
     comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="liked_comment")
+        Comment, on_delete=models.CASCADE, related_name="liked_comment", null=True)
+    comment_url = models.CharField(max_length=255, null=True)
 
     class Meta:
         managed = True

@@ -11,10 +11,10 @@ from django.db.models import Q
 from itertools import chain
 from requests.auth import HTTPBasicAuth
 import requests
-from inbox.views import handle_comment, create_notification_item
+from inbox.views import create_notification_item
 from inbox.models import Notification, NotificationItem
 from drf_yasg.utils import swagger_auto_schema
-from authors.views import get_author_object
+from utils import Pagination
 
 
 def get_posts(current_user, author_object):
@@ -45,8 +45,11 @@ def api_posts(request, author_id):
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
         author = Author.objects.get(id=author_id)
         posts = get_posts(user, author)
+
+        paginator = Pagination("posts")
+        page = paginator.paginate_queryset(posts, request)
         serializer = PostSerializer(
-            posts, context={"request": request}, many=True)
+            page, context={"request": request}, many=True)
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
@@ -275,8 +278,11 @@ def api_post(request, author_id, post_id):
             return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
 
         notification_objects = NotificationItem.objects.filter(
-            object_url=post.id)
-        notification_objects.delete()
+            object_id=post.id)
+
+        print(notification_objects)
+        for notification_object in notification_objects:
+            notification_object.delete()
         post.delete()
 
         return JsonResponse({"success": True}, status=200)
@@ -292,10 +298,15 @@ def api_comments(request, author_id, post_id):
     if request.method == 'GET':
         if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
         post = Post.objects.get(id=post_id)
         comments = Comment.objects.filter(post=post).order_by('-published')
+
+        paginator = Pagination("comments")
+        page = paginator.paginate_queryset(comments, request)
         serializer = CommentSerializer(
-            comments, context={"request": request}, many=True)
+            page, context={"request": request}, many=True)
+
         return JsonResponse({"type": "comments", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
