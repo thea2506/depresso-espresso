@@ -1,0 +1,1975 @@
+swagger: '2.0'
+info:
+  title: API Documentation
+  description: API Documentation for Espresso
+  version: 1.0.0
+host: depresso-espresso-7e0a859d2d18.herokuapp.com
+basePath: /api
+schemes:
+  - https
+
+consumes:
+  - application/json
+produces:
+  - application/json
+security:
+  - Basic: []
+paths:
+  /authors:
+    get:
+      operationId: authors_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+        # add a description
+#         from django.db import models
+# import uuid
+# from django.contrib.auth.models import AbstractUser
+# # Create your models here.
+
+
+# class Author(AbstractUser):
+#     # Identifiers, can't be modified by the user
+#     id = models.UUIDField(db_column='authorID',
+#                           primary_key=True, default=uuid.uuid4)
+#     username = models.CharField(
+#         unique=True, null=False, blank=False, max_length=50)
+#     url = models.URLField(null=True, blank=True)
+#     host = models.URLField(null=True, blank=True)
+#     type = models.CharField(max_length=50, default="author")
+
+#     # These can be modified by the user
+#     displayName = models.CharField(null=False, blank=False, max_length=50)
+#     github = models.URLField(null=True, blank=True)
+#     profileImage = models.URLField(null=True, blank=True)
+#     # For US.08.02. When admin changes requireRegisterPerms, this field
+#     # will be changed so that users need an OK to login after registering
+#     allowRegister = models.BooleanField(null=False, blank=False, default=False)
+#     # Identifier to separate local and external authors
+#     isExternalAuthor = models.BooleanField(
+#         null=False, blank=False, default=False)
+#     # For US.08.02. When admin changes requireRegisterPerms, users need an OK to login after registering
+
+
+# class RegisterConfig(models.Model):
+#     requireRegisterPerms = models.BooleanField(null=False, blank=False)
+
+
+# class Node(models.Model):
+#     # username for their node to authenticate with ours
+#     ourUsername = models.CharField(max_length=50)
+#     # password for their node to authenticate with ours
+#     ourPassword = models.CharField(max_length=50)
+#     # username for our node to authenticate with theirs
+#     theirUsername = models.CharField(max_length=50)
+#     # password for our node to authenticate with theirs
+#     theirPassword = models.CharField(max_length=50)
+#     baseUrl = models.URLField()
+#     service = models.CharField(max_length=50, null=True, blank=True)
+
+#     def __str__(self):  # Reference: https://stackoverflow.com/questions/9336463/django-xxxxxx-object-display-customization-in-admin-action-sidebar
+#         return self.baseUrl
+
+
+# class Following(models.Model):
+#     author = models.ForeignKey(
+#         Author, on_delete=models.CASCADE, related_name="following")
+#     following_author = models.ForeignKey(
+#         Author, on_delete=models.CASCADE, related_name="followers")
+#     areFriends = models.BooleanField(null=False, blank=False, default=False)
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         managed = True
+#         unique_together = ('author', 'following_author')
+
+
+# class FollowRequest(models.Model):
+#     # Assuming receivers will only ever be stored on our server but requesters can come from external authors
+#     requester = models.ForeignKey(
+#         Author, on_delete=models.CASCADE, related_name="follow_requests_sent")
+#     receiver = models.ForeignKey(
+#         Author, on_delete=models.CASCADE, related_name="follow_requests_received")
+
+#     class Meta:
+#         managed = True
+#use the models above to create a response schema
+# @swagger_auto_schema(tags=['Authors'], methods=["GET"])
+# @api_view(['GET'])
+# def api_authors(request):
+#     if request.method == 'GET':
+#         authors = Author.objects.filter(
+#             Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+
+#         # Pagination
+#         paginator = Pagination("authors")
+#         page = paginator.paginate_queryset(authors, request)
+#         serializer = AuthorSerializer(
+#             page, context={'request': request},  many=True)
+
+#         return JsonResponse({
+#             "type": "authors",
+#             "items": serializer.data
+#         }, safe=False)
+
+          description: ' Returns a list of authors'
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                username:
+                  type: string
+                url:
+                  type: string
+                host:
+                  type: string
+                type:
+                  type: string
+                displayName:
+                  type: string
+                github:
+                  type: string
+                profileImage:
+                  type: string
+                allowRegister:
+                  type: boolean
+                isExternalAuthor:
+                  type: boolean
+      tags:
+        - Authors
+    parameters: []
+#     @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT"])
+# @api_view(['GET', 'PUT'])
+# def api_author(request, author_id):
+#     if not Author.objects.filter(id=author_id).exists():
+#         return JsonResponse({"error": "Author not found", "success": False}, status=404)
+#     if request.method == 'GET':
+#         author_object = Author.objects.get(id=author_id)
+#         serialized_author = AuthorSerializer(
+#             instance=author_object, context={'request': request})
+#         return JsonResponse(serialized_author.data)
+#     elif request.method == 'PUT':
+#         author_object = Author.objects.get(id=author_id)
+#         serialized_author = AuthorSerializer(
+#             instance=author_object, data=request.data, context={'request': request})
+#         print(serialized_author)
+#         if serialized_author.is_valid():
+#             serialized_author.save()
+#             return JsonResponse(serialized_author.data, status=200)
+#         return JsonResponse({"success": False}, status=400)
+  /authors/:
+    get:
+      operationId: authors_list
+      description: ' Returns a list of authors'
+      parameters: []
+      responses:
+        '200':
+            description: ' Returns a list of authors'
+            schema:
+                type: array
+                items:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                        username:
+                            type: string
+                        url:
+                            type: string
+                        host:
+                            type: string
+                        type:
+                            type: string
+                        displayName:
+                            type: string
+                        github:
+                            type: string
+                        profileImage:
+                            type: string
+                        allowRegister:
+                            type: boolean
+                        isExternalAuthor:
+                            type: boolean
+      tags:
+        - Authors
+    put:
+            operationId: authors_update
+            description: ' Updates an author'
+            parameters: []
+            responses:
+                '200':
+                    description: ' Updates an author'
+                    schema:
+                        type: object
+                        properties:
+                            id:
+                                type: string
+                            username:
+                                type: string
+                            url:
+                                type: string
+                            host:
+                                type: string
+                            type:
+                                type: string
+                            displayName:
+                                type: string
+                            github:
+                                type: string
+                            profileImage:
+                                type: string
+                            allowRegister:
+                                type: boolean
+                            isExternalAuthor:
+                                type: boolean
+            tags:
+                - Authors
+
+# @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT"])
+# @api_view(['GET', 'PUT'])
+# def api_author(request, author_id):
+#     if not Author.objects.filter(id=author_id).exists():
+#         return JsonResponse({"error": "Author not found", "success": False}, status=404)
+#     if request.method == 'GET':
+#         author_object = Author.objects.get(id=author_id)
+#         serialized_author = AuthorSerializer(
+#             instance=author_object, context={'request': request})
+#         return JsonResponse(serialized_author.data)
+#     elif request.method == 'PUT':
+#         author_object = Author.objects.get(id=author_id)
+#         serialized_author = AuthorSerializer(
+#             instance=author_object, data=request.data, context={'request': request})
+#         print(serialized_author)
+#         if serialized_author.is_valid():
+#             serialized_author.save()
+#             return JsonResponse(serialized_author.data, status=200)
+#         return JsonResponse({"success": False}, status=400)
+  /authors/{author_id}/:
+    get:
+      operationId: authors_read
+      description: ' Returns an author'
+      parameters: []
+      responses:
+        '200':
+            description: ' Returns an author'
+            schema:
+                type: object
+                properties:
+                    id:
+                        type: string
+                        example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                    username:
+                        type: string
+                        example: "author1"
+                    url:
+                        type: string
+                        example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                    host:
+                        type: string
+                        example: "http://127.0.0.1:5454/"
+                    type:
+                        type: string
+                        example: "author"
+                    displayName:
+                        type: string
+                        example: "Author 1"
+                    github:
+                        type: string
+                        example: https://github.com/author1
+                    profileImage:
+                        type: string
+                        example: https://i.imgur.com/k7XVwpB.jpeg
+                    allowRegister:
+                        type: boolean
+                        example: true
+                    isExternalAuthor:
+                        type: boolean
+                        example: false
+      tags:
+        - Authors
+    put:
+      operationId: authors_update
+      description: ' Updates an author'
+      parameters: []
+      responses:
+        '200':
+            description: ' Updates an author'
+            schema:
+                type: object
+                properties:
+                    id:
+                        type: string
+                        example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                    username:
+                        type: string
+                        example: "author1"
+                    url:
+                        type: string
+                        example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                    host:
+                        type: string
+                        example: "http://127.0.0.1:5454/"
+                    type:
+                        type: string
+                        example: "author"
+                    displayName:
+                        type: string
+                        example: "Author 1"
+                    github:
+                        type: string
+                        # example github link
+                        example: https://github.com/author1
+                    profileImage:
+                        type: string
+                        # example profile image link
+                        example: https://i.imgur.com/k7XVwpB.jpeg
+                    allowRegister:
+                        type: boolean
+                        example: true
+                    isExternalAuthor:
+                        type: boolean
+                        example: false
+        '400':
+            description: 'Bad Request'
+            schema:
+                type: object
+                properties:
+                    success:
+                        type: boolean
+                        # it should be false
+                        default: false
+
+      tags:
+        - Authors
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+
+
+  /authors/{author_id}/followers:
+    get:
+      operationId: authors_followers_list
+      description: Returns a list of followers for a given author
+      parameters: []
+      responses:
+        '200':
+            description: Successfull returns a list of followers for a given author
+#           {
+#   "type": "followers",
+#   "items": [
+#     {
+#       "id": "123e4567-e89b-12d3-a456-426614174000",
+#       "username": "follower1",
+#       "url": "http://depresso-espresso-7e0a859d2d18.herokuapp.com/api/authors/123e4567-e89b-12d3-a456-426614174000/",
+#       "host": "http://depresso-espresso-7e0a859d2d18.herokuapp.com",
+#       "type": "author",
+#       "displayName": "Follower One",
+#       "github": "https://github.com/follower1",
+#       "profileImage": "https://example.com/images/follower1.png",
+#       "allowRegister": false,
+#       "isExternalAuthor": false
+#     },
+#     {
+#       "id": "89e3156d-e89b-12d3-a456-426614174001",
+#       "username": "follower2",
+#       "url": "http://depresso-espresso-7e0a859d2d18.herokuapp.com/api/authors/89e3156d-e89b-12d3-a456-426614174001/",
+#       "host": "http://depresso-espresso-7e0a859d2d18.herokuapp.com",
+#       "type": "author",
+#       "displayName": "Follower Two",
+#       "github": "https://github.com/follower2",
+#       "profileImage": "https://example.com/images/follower2.png",
+#       "allowRegister": true,
+#       "isExternalAuthor": false
+#     }
+#   ]
+# }     
+            schema:
+                type: object
+                properties:
+                    type:
+                        type: string
+                        example: "followers"
+                    items:
+                        type: array
+                        items:
+                            type: object
+                            properties:
+                                id:
+                                    type: string
+                                    example: "123e4567-e89b-12d3-a456-426614174000"
+                                username:
+                                    type: string
+                                    example: "follower1"
+                                url:
+                                    type: string
+                                    example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com/api/authors/123e4567-e89b-12d3-a456-426614174000/"
+                                host:
+                                    type: string
+                                    example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com"
+                                displayName:
+                                    type: string
+                                    example: "Follower One"
+                                github:
+                                    type: string
+                                    example: "https://github.com/follower1"
+                                profileImage:
+                                    type: string
+                                    example: "https://example.com/images/follower1.png"
+                                allowRegister:
+                                    type: boolean
+                                    example: false
+                                isExternalAuthor:
+                                    type: boolean
+                                    example: false
+
+      tags:
+        - Authors
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+
+# @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT", "DELETE"])
+# @api_view(['GET', 'PUT', "DELETE"])
+# def api_follower(request, author_id, author_url):
+#     following_author_object = get_author_object(author_url)
+#     if request.method == 'GET':
+#         if following_author_object is None:
+
+#             return JsonResponse({"status": "stranger", "success": False}, status=404)
+
+#         # The object
+#         followed_author_object = Author.objects.get(id=author_id)
+
+#         follow_request_object = FollowRequest.objects.filter(
+#             requester=following_author_object, receiver=followed_author_object)
+
+#         if follow_request_object.exists():
+#             return JsonResponse({"status": "pending", "success": False}, status=404)
+
+#         following_objects = Following.objects.filter(author=followed_author_object,
+#                                                      following_author=following_author_object)
+
+#         if following_objects.exists():
+#             actor_object = AuthorSerializer(instance=following_author_object, context={
+#                                             'request': request}).data
+#             actor_object["id"] = author_url
+#             actor_display_name = actor_object["displayName"]
+#             return JsonResponse({
+#                 "type": "follow",
+#                 "summary": f"{actor_display_name} followed {followed_author_object.displayName}",
+#                 "actor": actor_object,
+#                 "object": AuthorSerializer(instance=followed_author_object, context={'request': request}).data
+#             }, safe=False)
+
+#         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
+
+#     elif request.method == 'PUT':
+
+#         if following_author_object is None:
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+
+#         data = request.data
+
+#         # The object
+#         followed_author_object = Author.objects.get(id=author_id)
+
+#         if data.get("areFriends") is not None:
+#             following_objects = Following.objects.filter(
+#                 author=followed_author_object, following_author=following_author_object)
+
+#             if following_objects.exists():
+#                 following_object = following_objects.first()
+#                 following_object.areFriends = data.get("areFriends")
+#                 reverse_following_object = Following.objects.create(author=following_author_object,
+#                                                                     following_author=followed_author_object, areFriends=True)
+#                 following_object.save()
+#                 reverse_following_object.save()
+#                 return JsonResponse({"success": True}, status=200)
+
+#             return JsonResponse({"error": "Follower not found", "success": False}, status=404)
+
+#         if Following.objects.filter(author=followed_author_object, following_author=following_author_object).exists():
+#             return JsonResponse({"error": "Already following", "success": False}, status=400)
+
+#         if request.data.get("accepted") == False:
+#             follow_request_object = FollowRequest.objects.get(
+#                 requester=following_author_object, receiver=followed_author_object)
+
+#             follow_request_content_type = ContentType.objects.get_for_model(
+#                 follow_request_object)
+
+#             notification_item = NotificationItem.objects.filter(
+#                 content_type=follow_request_content_type, object_id=follow_request_object.id).first()
+
+#             if notification_item:
+#                 notification_item.delete()
+
+#             follow_request_object.delete()
+#             return JsonResponse({"success": True}, status=200)
+
+#         # accept
+#         following_object = Following.objects.create(author=followed_author_object,
+#                                                     following_author=following_author_object)
+
+#         follow_request_object = FollowRequest.objects.get(
+#             requester=following_author_object, receiver=followed_author_object)
+
+#         follow_request_content_type = ContentType.objects.get_for_model(
+#             follow_request_object)
+
+#         notification_item = NotificationItem.objects.filter(
+#             content_type=follow_request_content_type, object_id=follow_request_object.id).first()
+
+#         if notification_item:
+#             notification_item.delete()
+
+#         follow_request_object.delete()
+
+#         # LOCAL FOLLOW
+#         reverse_following_object = Following.objects.filter(
+#             author=following_author_object, following_author=followed_author_object).exists()
+
+#         if reverse_following_object:
+#             reverse_following_object = Following.objects.get(
+#                 author=following_author_object, following_author=followed_author_object)
+#             following_object.areFriends = True
+#             reverse_following_object.areFriends = True
+#             following_object.save()
+#             reverse_following_object.save()
+
+#         # REMOTE FOLLOW
+#         if following_author_object.isExternalAuthor:
+#             foreign_author_url = following_author_object.url
+#             node = Node.objects.get(baseUrl=following_author_object.host)
+#             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+#             response = requests.get(
+#                 foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+#             if response.status_code == 200:
+#                 following_object.areFriends = True
+#                 reverse_following_object = Following.objects.create(author=following_author_object,
+#                                                                     following_author=followed_author_object, areFriends=True)
+#                 following_object.save()
+#                 reverse_following_object.save()
+#                 response = requests.put(foreign_author_url + "/followers/" + str(followed_author_object.url),
+#                                         auth=auth,
+#                                         data={"areFriends": True}, headers={"origin": request.META["HTTP_HOST"]})
+
+#         return JsonResponse({"success": True}, status=200)
+
+#     elif request.method == 'DELETE':
+
+#         if following_author_object is None:
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+
+#         followed_author_object = Author.objects.get(id=author_id)
+
+#         following_objects = Following.objects.filter(
+#             author=followed_author_object, following_author=following_author_object)
+
+#         if following_objects.exists():
+#             following_objects.delete()
+#             return JsonResponse({"success": True}, status=200)
+
+#         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
+
+#     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+  /authors/{author_id}/followers/{author_url}:
+    get:
+      operationId: authors_followers_read
+      description: Check follow status between authors
+      parameters: []
+      responses:
+        '200':
+          description: Follow status retrieved successfully.
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "follow"
+              summary:
+                type: string
+                example: "Follower One followed Author 1"
+              actor:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                  username:
+                    type: string
+                    example: "follower1"
+                  url:
+                    type: string
+                    example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com/api/authors/1d698d25ff008f7538453c120f581471/"
+                  host:
+                    type: string
+                    example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com"
+                  displayName:
+                    type: string
+                    example: "Follower One"
+                  github:
+                    type: string
+                    example: "https://github.com/follower1"
+                  profileImage:
+                    type: string
+                    example: "https://example.com/images/follower1.png"
+                  allowRegister:
+                    type: boolean
+                    example: true
+                  isExternalAuthor:
+                    type: boolean
+                    example: true
+              object:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "http://127.0.0.1:5454/authors/1d698d25ff008f7538453c120f581471"
+                    username:
+                      type: string
+                      example: "author1"
+                    url:
+                      type: string
+                      example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com/api/authors/1d698d25ff008f7538453c120f581471/"
+                    host:
+                      type: string
+                      example: "http://depresso-espresso-7e0a859d2d18.herokuapp.com"
+                    type:
+                      type: string
+                      example: "author"
+                    displayName:
+                      type: string
+                      example: "Author 1"
+                    github:
+                      type: string
+                      example: "https://github.com/author1"
+                    profileImage:
+                      type: string
+                      example: "https://i.imgur.com/k7XVwpB.jpeg"
+                    allowRegister:
+                      type: boolean
+                      example: true
+                    isExternalAuthor:
+                      type: boolean
+                      example: false
+        '404':
+          description: Follower not found
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Follower not found"
+              success:
+                type: boolean
+                example: false           
+      tags:
+        - Authors
+    put:
+      operationId: authors_followers_update
+      description: 'Update follow status between authors'
+      parameters: []
+      responses:
+        '200':
+          description: 'Follow status updated successfully.'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+        '400':
+          description: 'Bad Request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+        '404':
+          description: 'Follower not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Follower not found"
+              success:
+                type: boolean
+                example: false
+
+      tags:
+        - Authors
+    delete:
+      operationId: authors_followers_delete
+      description: 'Delete follow status between authors'
+      parameters: []
+      responses:
+        '204':
+          description: 'Follow status deleted successfully.'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+        '404':
+          description: 'Follower not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Follower not found"
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Authors
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: author_url
+        in: path
+        required: true
+        type: string
+# @swagger_auto_schema(tags=['Inbox'], methods=["GET", "POST", "DELETE"])
+# @api_view(['GET', 'POST', "DELETE"])
+# def api_inbox(request, author_id):
+
+#     if not Author.objects.filter(id=author_id).exists():
+#         return JsonResponse({'error': 'Author not found'}, status=404)
+
+#     if request.method == 'GET':
+#         author_object = Author.objects.get(id=author_id)
+
+#         notification_object = Notification.objects.get_or_create(author=author_object)[
+#             0]
+
+#         notification_items = NotificationItem.objects.filter(
+#             notification=notification_object).order_by('id')
+
+#         paginator = Pagination("inbox")
+#         page = paginator.paginate_queryset(notification_items, request)
+#         serializer = NotificationItemSerializer(
+#             page, context={'request': request}, many=True)
+
+#         return JsonResponse({'type': 'inbox', 'items': serializer.data}, status=200)
+
+#     elif request.method == 'POST':
+#         type = request.data.get('type').lower()
+#         if type == 'follow':
+#             return handle_follow(request, author_id)
+#         if type == 'like':
+#             return handle_like(request, author_id)
+#         if type == 'comment':
+#             return handle_comment(request, author_id)
+#         if type == 'post':
+#             return handle_post(request, author_id)
+#         if type == 'share':
+#             return handle_share(request, author_id)
+
+#     elif request.method == 'DELETE':
+#         author_object = Author.objects.get(id=author_id)
+
+#         notification_object = Notification.objects.get_or_create(author=author_object)[
+#             0]
+
+#         notification_object.items.all().delete()
+
+#         return JsonResponse({'success': 'Inbox cleared'}, status=200)
+  /authors/{author_id}/inbox:
+    get:
+      operationId: authors_inbox_list
+      description: ' Returns a list of notifications for a given author'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a list of notifications for a given author'
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "inbox"
+              author:
+                type: string
+                example: "http://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581471"
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "123e4567-e89b-12d3-a456-426614174000"
+                    type:
+                      type: string
+                      example: "post"
+                    author:
+                      type: string
+                      example: "https://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581471"
+                    content:
+                      type: string
+                      example: "This is a post"
+                    created_at:
+                      type: string
+                      example: "2021-04-01T12:00:00Z"
+        
+                    
+      tags:
+        - Inbox
+    post:
+      operationId: authors_inbox_create
+      description: "Creates a new notification in the author's inbox. This can be triggered by various actions such as a new follow request, like, comment, etc."
+      parameters: []
+      responses:
+        '201':
+          description: 'Notification created successfully'
+      tags:
+        - Inbox
+    delete:
+      operationId: authors_inbox_delete
+      description: 'Deletes all notifications in the author inbox'
+      parameters: []
+      responses:
+        '200':
+          description: 'Inbox cleared successfully'
+          schema:
+            type: object
+            properties:
+              success:
+                type: string
+                example: "Inbox cleared"
+      tags:
+        - Inbox
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+
+  /authors/{author_id}/liked/:
+    get:
+      operationId: authors_liked_list
+      description: ' Returns a list of liked posts and comments for a given author'
+      parameters: []
+      responses:
+        '200':
+          description: ' Successfully returns a list of liked posts and comments for a given author'
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "liked"
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: Like
+                    author:
+                      type: string
+                      example: "https://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581471"
+                    object:
+                      type: string
+                      example: "https://127.0.0.1:5454/api/posts/1d698d25ff008f7538453c120f581471"
+                    summary:
+                      type: string
+                      example: "Author 1 liked your post"
+        '404':
+            description: 'Author not found'
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Author not found"
+                success:
+                  type: boolean
+                  example: false
+      tags:
+        - Authors
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+
+# @swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
+# @api_view(['GET', 'POST'])
+# def api_posts(request, author_id):
+
+#     user = my_authenticate(request)
+
+#     if request.method == 'GET':
+#         if not Author.objects.filter(id=author_id).exists():
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+#         author = Author.objects.get(id=author_id)
+#         posts = get_posts(user, author)
+
+#         paginator = Pagination("posts")
+#         page = paginator.paginate_queryset(posts, request)
+#         serializer = PostSerializer(
+#             page, context={"request": request}, many=True)
+#         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
+
+#     elif request.method == 'POST':
+
+#         data = request.data
+
+#         if data.get("id") is not None:
+#             old_id = data.get("id")
+#             # Share
+#             shared_post = data
+#             shared_post.pop("id", None)
+#             shared_post["type"] = "share"
+#             shared_post["author"] = AuthorSerializer(
+#                 instance=user, context={"request": request}).data
+#             shared_post["source"] = old_id
+
+#             serializer = PostSerializer(data=shared_post, context={
+#                                         "request": request})
+
+#             if serializer.is_valid():
+#                 new_shared_post = serializer.save()
+
+#                 returned_data = PostSerializer(instance=new_shared_post, context={
+#                                                "request": request}).data
+
+#                 following_objects = Following.objects.filter(
+#                     author=user)
+
+#                 for following_object in following_objects:
+#                     following_author = following_object.following_author
+#                     author_url = following_author.url
+#                     author_host = following_author.host
+
+#                     if following_author.isExternalAuthor:
+
+#                         node = Node.objects.get(baseUrl=author_host)
+#                         auth = HTTPBasicAuth(
+#                             node.ourUsername, node.ourPassword)
+#                         requests.post(f"{author_url}/inbox",
+#                                       json=returned_data, auth=auth)
+
+#                     else:
+#                         notification_object = Notification.objects.get_or_create(
+#                             author=following_author)[0]
+#                         create_notification_item(
+#                             notification_object, new_shared_post, "share")
+
+#                 return JsonResponse(
+#                     returned_data, status=201)
+
+#             return JsonResponse(serializer.errors, status=405)
+
+#         else:
+#             data["type"] = "post"
+
+#         serializer = PostSerializer(
+#             data=data, context={"request": request})
+
+#         if serializer.is_valid():
+#             new_post = serializer.save()
+
+#             returned_data = PostSerializer(instance=new_post, context={
+#                                            "request": request}).data
+
+#             following_objects = Following.objects.filter(
+#                 author=user)
+
+#             if new_post.visibility == "PUBLIC":
+#                 for following_object in following_objects:
+#                     following_author = following_object.following_author
+#                     author_url = following_author.url
+#                     author_host = following_author.host
+#                     node = Node.objects.filter(baseUrl=author_host)
+#                     if node:
+#                         node = node.first()
+#                         auth = HTTPBasicAuth(
+#                             node.ourUsername, node.ourPassword)
+#                         requests.post(f"{author_url}/inbox",
+#                                       json=returned_data, auth=auth)
+#                     else:
+#                         notification_object = Notification.objects.get_or_create(
+#                             author=following_author)[0]
+#                         create_notification_item(
+#                             notification_object, new_post, "post")
+
+#             elif new_post.visibility == "FRIENDS":
+
+#                 friends_following_objects = following_objects.filter(
+#                     areFriends=True)
+#                 for following_object in friends_following_objects:
+#                     following_author = following_object.following_author
+#                     author_url = following_author.url
+#                     author_host = following_author.host
+#                     node = Node.objects.filter(baseUrl=author_host)
+#                     if node:
+#                         node = node.first()
+#                         auth = HTTPBasicAuth(
+#                             node.ourUsername, node.ourPassword)
+#                         requests.post(f"{author_url}/inbox",
+#                                       json=returned_data, auth=auth)
+#                     else:
+#                         notification_object = Notification.objects.get_or_create(
+#                             author=following_author)[0]
+#                         create_notification_item(
+#                             notification_object, new_post, "post")
+
+#             return JsonResponse(
+#                 {
+#                     "success": True,
+#                     "object": returned_data
+#                 }, status=201)
+#         else:
+#             return JsonResponse(serializer.errors, status=501)
+  /authors/{author_id}/posts:
+    get:
+      operationId: authors_posts_list
+      description: ' Returns a list of posts for a given author'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a list of posts for a given author'
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "posts"
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "https://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581471"
+                    title:
+                      type: string
+                      example: "Post 1"
+                    content:
+                      type: string
+                      example: "This is a post"
+                    contentType:
+                      type: string
+                      example: "text/plain"
+                    description:
+                      type: string
+                      example: "This is a description of the post"
+                    source:
+                      type: string
+                      example: "https://127.0.0.1:5454/api/posts/1d698d25ff008f7538453c120f581471"
+                    origin:
+                      type: string
+                      example: "https://original-post.com/api/posts/1d698d25ff008f7538453c120f581471"
+                    published:
+                      type: string
+                      example: "2021-04-01T12:00:00Z"
+                    visibility:
+                      type: string
+                      example: "PUBLIC"
+                    count:
+                      type: integer
+                      example: 5
+                    comments:
+                      type: string
+                      example: "https://example.com/api/authors/1d698d25ff008f7538453c120f581471/posts/123e4567-e89b-12d3-a456-426614174000/comments"
+                    likecount:
+                      type: integer
+                      example: 5
+                    author:
+                      type: object
+                      properties: 
+                        type:
+                          type: string
+                          example: "author"
+                        id:
+                          type: string
+                          example: "https://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581563"
+                        host:
+                          type: string
+                          example: "https://127.0.0.1:5454"
+                        displayName:
+                          type: string
+                          example: "Author 1"
+                        url:
+                          type: string
+                          example: "https://127.0.0.1:5454/api/authors/1d698d25ff008f7538453c120f581563"
+                        github:
+                          type: string
+                          example: "https://github.com/author1"
+                        profileImage:
+                          type: string
+                          example: "https://i.imgur.com/k7XVwpB.jpeg"
+        '404':
+            description: 'Author not found'
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Author not found"
+                success:
+                  type: boolean
+                  example: false
+                
+      tags:
+        - Posts
+    post:
+      operationId: authors_posts_create
+      description: 'Creates a new post for a given author'
+      parameters: []
+      responses:
+        '201':
+          description: 'Post created successfully'
+          schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: "post"
+                  id:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}"
+                  title:
+                    type: string
+                    example: "New Post Title"
+                  content:
+                    type: string
+                    example: "This is the content of the new post."
+                  contentType:
+                    type: string
+                    example: "text/plain"
+                  description:
+                    type: string
+                    example: "This is a brief description of the new post."
+                  source:
+                    type: string
+                    format: uri
+                    example: "https://example.com/posts/{post_id}"
+                  origin:
+                    type: string
+                    format: uri
+                    example: "https://originalsource.com/posts/{post_id}"
+                  published:
+                    type: string
+                    format: date-time
+                    example: "2023-10-04T14:48:00.000Z"
+                  visibility:
+                    type: string
+                    example: "PUBLIC"
+                  count:
+                    type: integer
+                    example: 0
+                  comments:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}/comments"
+                  likecount:
+                    type: integer
+                    example: 0
+                  author:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "author"
+                      id:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+                      displayName:
+                        type: string
+                        example: "Author's Name"
+                      github:
+                        type: string
+                        example: "https://github.com/authorusername"
+                      host:
+                        type: string
+                        format: uri
+                        example: "https://example.com/"
+                      profileImage:
+                        type: string
+                        format: uri
+                        example: "https://example.com/images/authorprofile.jpg"
+                      url:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+        '405':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+
+        '501':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Posts
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+# @swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
+# @api_view(['GET', 'PUT', 'DELETE'])
+# def api_post(request, author_id, post_id):
+
+#     user = my_authenticate(request)
+
+#     if request.method == 'GET':
+#         if not Author.objects.filter(id=author_id).exists():
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+#         author = Author.objects.get(id=author_id)
+#         if not Post.objects.filter(id=post_id).exists():
+#             return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+#         post = Post.objects.get(id=post_id)
+
+#         serializer = PostSerializer(
+#             instance=post, context={"request": request})
+
+#         return JsonResponse(serializer.data, status=200)
+
+#     if request.method == 'PUT':
+#         if not Author.objects.filter(id=author_id).exists():
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+
+#         author = Author.objects.get(id=author_id)
+
+#         if not Post.objects.filter(id=post_id).exists():
+#             return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+#         post = Post.objects.get(id=post_id)
+
+#         if post.author != author:
+#             return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
+
+#         data = request.data
+
+#         serializer = PostSerializer(
+#             instance=post, data=data, context={"request": request})
+
+#         if serializer.is_valid():
+
+#             new_post = serializer.save()
+
+#             returned_data = PostSerializer(instance=new_post, context={
+#                                            "request": request}).data
+#             return JsonResponse(
+#                 returned_data, status=200)
+#         else:
+#             return JsonResponse(serializer.errors, status=501)
+
+#     elif request.method == 'DELETE':
+#         if not Author.objects.filter(id=author_id).exists():
+#             return JsonResponse({"error": "Author not found", "success": False}, status=404)
+#         author = Author.objects.get(id=author_id)
+#         if not Post.objects.filter(id=post_id).exists():
+#             return JsonResponse({"error": "Post not found", "success": False}, status=404)
+#         post = Post.objects.get(id=post_id)
+#         if post.author != author:
+#             return JsonResponse({"error": "You are not the author of this post", "success": False}, status=403)
+
+#         notification_objects = NotificationItem.objects.filter(
+#             object_id=post.id)
+
+#         print(notification_objects)
+#         for notification_object in notification_objects:
+#             notification_object.delete()
+#         post.delete()
+
+#         return JsonResponse({"success": True}, status=200)
+
+#     else:
+#         return JsonResponse({"error": "Invalid request"}, status=405)
+  /authors/{author_id}/posts/{post_id}:
+    get:
+      operationId: authors_posts_read
+      description: 'Returns a post for a given author'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a post for a given author'
+          schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: "post"
+                  id:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}"
+                  title:
+                    type: string
+                    example: "New Post Title"
+                  content:
+                    type: string
+                    example: "This is the content of the new post."
+                  contentType:
+                    type: string
+                    example: "text/plain"
+                  description:
+                    type: string
+                    example: "This is a brief description of the new post."
+                  source:
+                    type: string
+                    format: uri
+                    example: "https://example.com/posts/{post_id}"
+                  origin:
+                    type: string
+                    format: uri
+                    example: "https://originalsource.com/posts/{post_id}"
+                  published:
+                    type: string
+                    format: date-time
+                    example: "2023-10-04T14:48:00.000Z"
+                  visibility:
+                    type: string
+                    example: "PUBLIC"
+                  count:
+                    type: integer
+                    example: 0
+                  comments:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}/comments"
+                  likecount:
+                    type: integer
+                    example: 0
+                  author:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "author"
+                      id:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+                      displayName:
+                        type: string
+                        example: "Author's Name"
+                      github:
+                        type: string
+                        example: "https://github.com/authorusername"
+                      host:
+                        type: string
+                        format: uri
+                        example: "https://example.com/"
+                      profileImage:
+                        type: string
+                        format: uri
+                        example: "https://example.com/images/authorprofile.jpg"
+                      url:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+        '404':
+            description: 'Post not found'
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Post not found"
+                success:
+                  type: boolean
+                  example: false
+
+      tags:
+        - Posts
+    put:
+      operationId: authors_posts_update
+      description: 'Update a post for a given author'
+      parameters: []
+      responses:
+        '200':
+          description: 'Post updated successfully'
+          schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: "post"
+                  id:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}"
+                  title:
+                    type: string
+                    example: "New Post Title"
+                  content:
+                    type: string
+                    example: "This is the content of the new post."
+                  contentType:
+                    type: string
+                    example: "text/plain"
+                  description:
+                    type: string
+                    example: "This is a brief description of the new post."
+                  source:
+                    type: string
+                    format: uri
+                    example: "https://example.com/posts/{post_id}"
+                  origin:
+                    type: string
+                    format: uri
+                    example: "https://originalsource.com/posts/{post_id}"
+                  published:
+                    type: string
+                    format: date-time
+                    example: "2023-10-04T14:48:00.000Z"
+                  visibility:
+                    type: string
+                    example: "PUBLIC"
+                  count:
+                    type: integer
+                    example: 0
+                  comments:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{author_id}/posts/{post_id}/comments"
+                  likecount:
+                    type: integer
+                    example: 0
+                  author:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "author"
+                      id:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+                      displayName:
+                        type: string
+                        example: "Author's Name"
+                      github:
+                        type: string
+                        example: "https://github.com/authorusername"
+                      host:
+                        type: string
+                        format: uri
+                        example: "https://example.com/"
+                      profileImage:
+                        type: string
+                        format: uri
+                        example: "https://example.com/images/authorprofile.jpg"
+                      url:
+                        type: string
+                        format: uri
+                        example: "https://example.com/api/authors/{author_id}"
+        '403':
+          description: 'You are not the author of this post'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "You are not the author of this post"
+              success:
+                type: boolean
+                example: false
+
+        '404':
+          description: 'Post not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Post not found"
+              success:
+                type: boolean
+                example: false
+
+        '501':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Posts
+    delete:
+      operationId: authors_posts_delete
+      description: 'Delete a post for a given author'
+      parameters: []
+      responses:
+        '204':
+          description: 'Post deleted successfully'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+        '403':
+          description: 'You are not the author of this post'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "You are not the author of this post"
+              success:
+                type: boolean
+                example: false
+
+        '404':
+          description: 'Post not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Post not found"
+              success:
+                type: boolean
+                example: false
+
+        '405':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Posts
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: post_id
+        in: path
+        required: true
+        type: string
+
+  /authors/{author_id}/posts/{post_id}/comments:
+    get:
+      operationId: authors_posts_comments_list
+      description: 'Returns a list of comments for a given post'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a list of comments for a given post'
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "comments"
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uri
+                      example: "https://example.com/api/authors/{author_id}/posts/{post_id}/comments/{comment_id}"
+                    author:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uri
+                          example: "https://example.com/api/authors/{author_id}"
+                        displayName:
+                          type: string
+                          example: "John Doe"
+                        github:
+                          type: string
+                          example: "https://github.com/johndoe"
+                        host:
+                          type: string
+                          format: uri
+                          example: "https://example.com/"
+                        profileImage:
+                          type: string
+                          format: uri
+                          example: "https://example.com/images/johndoe.jpg"
+                        url:
+                          type: string
+                          format: uri
+                          example: "https://example.com/api/authors/{author_id}"
+                    comment:
+                      type: string
+                      example: "This is a sample comment on the post."
+                    contentType:
+                      type: string
+                      example: "text/plain"
+                    published:
+                      type: string
+                      format: date-time
+                      example: "2023-10-04T14:48:00.000Z"
+                    likecount:
+                      type: integer
+                      example: 5
+        '404':
+            description: 'Post not found'
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Post not found"
+                success:
+                  type: boolean
+                  example: false
+      tags:
+        - Comments
+    post:
+      operationId: authors_posts_comments_create
+      description: 'Creates a new comment for a given post'
+      parameters: []
+      responses:
+        '201':
+          description: 'Comment created successfully'
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uri
+                example: "https://example.com/api/authors/{author_id}/posts/{post_id}/comments/{comment_id}"
+              author:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{comment_author_id}"
+                  displayName:
+                    type: string
+                    example: "Comment Author Name"
+                  github:
+                    type: string
+                    example: "https://github.com/commentauthor"
+                  host:
+                    type: string
+                    format: uri
+                    example: "https://example.com/"
+                  profileImage:
+                    type: string
+                    format: uri
+                    example: "https://example.com/images/commentauthor.jpg"
+                  url:
+                    type: string
+                    format: uri
+                    example: "https://example.com/api/authors/{comment_author_id}"
+              comment:
+                type: string
+                example: "This is a new comment."
+              contentType:
+                type: string
+                example: "text/plain"
+              published:
+                type: string
+                format: date-time
+                example: "2023-10-04T14:48:00.000Z"
+              likecount:
+                type: integer
+                example: 0
+
+        '404':
+          description: 'Post not found'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Post not found"
+              success:
+                type: boolean
+                example: false
+
+        '501':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+
+        '405':
+          description: 'Invalid request'
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Comments
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: post_id
+        in: path
+        required: true
+        type: string
+  /authors/{author_id}/posts/{post_id}/comments/{comment_id}/likes:
+    get:
+      operationId: authors_posts_comments_likes_list
+      description: 'Returns a list of likes for a given comment'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a list of likes for a given comment'
+      tags:
+        - Comments
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: post_id
+        in: path
+        required: true
+        type: string
+      - name: comment_id
+        in: path
+        required: true
+        type: string
+
+# @swagger_auto_schema(tags=['Posts'], methods=["GET"])
+# @api_view(['GET'])
+# def api_get_image(request, author_id, post_id):
+#     user = my_authenticate(request)
+
+#     if user is None:
+#         return JsonResponse({"message": "User not authenticated"}, status=401)
+#     if not Author.objects.filter(id=author_id).exists():
+#         return JsonResponse({"message": "Author not found", "success": False}, status=404)
+#     if not Post.objects.filter(id=post_id).exists():
+#         return JsonResponse({"message": "Post not found", "success": False}, status=404)
+
+#     if request.method == 'GET':
+#         post = Post.objects.get(
+#             id=post_id, author=Author.objects.get(id=author_id))
+#         if "image" in post.contenttype.lower():
+#             base64_string = post.content
+#             no_prefix = base64_string.split(",")[1]
+#             image_binary = base64.b64decode(no_prefix)
+#             return HttpResponse(image_binary, content_type=post.contenttype)
+#         else:
+#             return JsonResponse({"message": "Post is not an image", "success": True}, status=404)
+#     else:
+#         return JsonResponse({"message": "Method not Allowed", "success": False}, status=405)
+  /authors/{author_id}/posts/{post_id}/image:
+    get:
+      operationId: authors_posts_image_list
+      description: 'Returns an image for a given post'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns an image for a given post'
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "image"
+              content:
+                type: string
+                example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABwUlEQVRIS+2VvUoDQRDGv"
+              contentType:
+                type: string
+                example: "image/png"
+
+        '401':
+          description: 'User not authenticated'
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "User not authenticated"
+              success:
+                type: boolean
+                example: false
+
+        '404':
+          description: 'Post is not an image'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Post is not an image"
+              success:
+                type: boolean
+                example: false
+
+        '405':
+          description: 'Method not Allowed'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Method not Allowed"
+              success:
+                type: boolean
+                example: false
+
+      tags:
+        - Posts
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: post_id
+        in: path
+        required: true
+        type: string
+
+#  @swagger_auto_schema(tags=['Posts'], methods=["GET"])
+# @api_view(['GET'])
+# def api_post_like(request, author_id, post_id):
+#     if request.method == 'GET':
+#         user = my_authenticate(request)
+#         if not Post.objects.filter(id=post_id).exists():
+#             return JsonResponse({"error": "Post not found", "success": False}, status=404)
+
+#         post = Post.objects.get(id=post_id)
+#         post_like_list = LikePost.objects.filter(
+#             post=post)
+#         data = LikePostSerializer(instance=post_like_list, context={
+#             "request": request}, many=True).data
+#         return JsonResponse({"type": "Like", "items": data}, safe=False)
+#     else:
+#         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)       
+  /authors/{author_id}/posts/{post_id}/likes:
+    get:
+      operationId: authors_posts_likes_list
+      description: 'Returns a list of likes for a given post'
+      parameters: []
+      responses:
+        '200':
+          description: 'Successfully returns a list of likes for a given post'
+          schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: "Like"
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: "Like"
+                        author:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uri
+                              example: "https://example.com/api/authors/{author_id}"
+                            displayName:
+                              type: string
+                              example: "Author 1"
+                            github:
+                              type: string
+                              example: "https://github.com/author1"
+                            host:
+                              type: string
+                              format: uri
+                              example: "https://example.com/"
+                            profileImage:
+                              type: string
+                              format: uri
+                              example: "https://example.com/images/author.jpg"
+                            url:
+                              type: string
+                              format: uri
+                              example: "https://example.com/api/authors/{author_id}"
+                        object:
+                          type: string
+                          format: uri
+                          example: "https://example.com/api/authors/{author_id}/posts/{post_id}"
+                        summary:
+                          type: string
+                          example: "Author 1 liked your post"
+        '404':
+            description: 'Post not found'
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: "Post not found"
+                success:
+                  type: boolean
+                  example: false
+
+        '405':
+          description: 'Method not Allowed'
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Method not Allowed"
+              success:
+                type: boolean
+                example: false
+      tags:
+        - Posts
+    parameters:
+      - name: author_id
+        in: path
+        required: true
+        type: string
+      - name: post_id
+        in: path
+        required: true
+        type: string
+definitions: {}
+securityDefinitions:
+  Basic:
+    type: basic
