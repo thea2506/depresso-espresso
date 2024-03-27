@@ -79,7 +79,7 @@ def handle_follow(request, author_id):
             data=actor_obj, context={"request": request})
         if serializer.is_valid():
             print("Valid")
-            actor = serializer.save()
+            actor = serializer.save(username=uuid.uuid4())
             print(actor)
         else:
             return JsonResponse(serializer.errors, status=500)
