@@ -234,10 +234,15 @@ def api_follower(request, author_id, author_url):
                     foreign_author_url.rstrip("/") + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
                 if response.status_code == 200:
                     following_object.areFriends = True
-                    reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                        following_author=followed_author_object, areFriends=True)
+                    reverse_following_objects = Following.objects.filter(author=following_author_object,
+                                                                         following_author=followed_author_object)
+                    if reverse_following_objects.exists():
+                        reverse_following_objects.update(areFriends=True)
+                    else:
+                        reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                            following_author=followed_author_object)
+
                     following_object.save()
-                    reverse_following_object.save()
 
                 # No matter what, we send a follow response object
                 print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
