@@ -53,10 +53,10 @@ const Notification = ({
   //#region functions
   const handleAccept = async () => {
     const data = {
-      actor: notificationObject.actor,
-      object: curUser,
+      actor: curUser,
+      object: notificationObject.actor,
       type: "FollowResponse",
-      summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
+      summary: `${notificationObject.actor.displayName} accepted your friend request`,
       accepted: true,
     };
 

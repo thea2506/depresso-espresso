@@ -270,6 +270,9 @@ def api_follower(request, author_id, author_url):
 
         follow_request_object.delete()
 
+        print("FOLLOWING REQUEST OBJECT DELETED")
+        print("MESSAGE WE SENT BACK TO FRONTEND:", message)
+
         return JsonResponse(message, safe=False, status=200)
 
     elif request.method == 'DELETE':
