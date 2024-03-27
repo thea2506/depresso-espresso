@@ -20,6 +20,7 @@ from utils import Pagination
 
 def get_author_object(author_url):
     author_url = unquote(author_url)
+    print("???????", author_url)
     if "127.0.0.1" in author_url:
         normalized_author_url = author_url.replace("127.0.0.1", "localhost")
     elif "localhost" in author_url:
@@ -28,8 +29,10 @@ def get_author_object(author_url):
         normalized_author_url = author_url
     if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
             url=normalized_author_url).exists():
+        print("It breaks in checking")
         return None
     if Author.objects.filter(url=author_url).exists():
+        print("It does not break")
         return Author.objects.get(url=author_url)
     return Author.objects.get(url=normalized_author_url)
 

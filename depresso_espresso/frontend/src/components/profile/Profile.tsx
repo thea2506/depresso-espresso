@@ -88,7 +88,7 @@ const Profile = ({
         const response = await axios.post("/api/execute", {
           method: "GET",
           url: `${user.url.replace(/\/+$/, "")}/followers/${encodeURIComponent(
-            encodeURIComponent(curUser?.url)
+            curUser?.url
           )}`,
         });
 
@@ -99,9 +99,7 @@ const Profile = ({
             const response2 = await axios.get(
               `/api/authors/${curUser?.id
                 .split("/")
-                .pop()}/followers/${encodeURIComponent(
-                encodeURIComponent(user.url!)
-              )}`
+                .pop()}/followers/${encodeURIComponent(user.url!)}`
             );
             if (response2.status === 200) {
               setStatus("friends");

@@ -64,7 +64,7 @@ const Notification = ({
       const response = await axios.post("/api/execute", {
         method: "PUT",
         url: `${curUser.id}/followers/${encodeURIComponent(
-          encodeURIComponent(notificationObject.actor.id)
+          notificationObject.actor.id
         )}`,
         data: data,
       });
@@ -89,7 +89,7 @@ const Notification = ({
       const response = await axios.post("/api/execute", {
         method: "PUT",
         url: `${curUser.id}/followers/${encodeURIComponent(
-          encodeURIComponent(notificationObject.actor.id)
+          notificationObject.actor.id
         )}`,
 
         data: data,
