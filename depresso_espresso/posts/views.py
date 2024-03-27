@@ -15,6 +15,7 @@ from inbox.views import create_notification_item
 from inbox.models import Notification, NotificationItem
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
+from urllib.parse import urlparse
 
 
 def get_posts(current_user, author_object):
@@ -497,8 +498,8 @@ def api_likes(request, author_id, post_id):
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
-# FRONTEND URLS
 
+# FRONTEND URLS
 
 def node_auth_helper(url):
     for node in Node.objects.all():
@@ -517,8 +518,12 @@ def api_execute(request):
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
+    url = urlparse(url)
+    hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=url)
+    print("HOSTNAME", hostname)
+
     if method == "GET":
-        if (request.META["HTTP_HOST"] in url):  # Same host
+        if (request.META["HTTP_HOST"] in hostname):  # Same host
             session = requests.Session()
             r = session.get(url, headers={"origin": request.META["HTTP_HOST"]})
             if r.status_code == 200:
@@ -526,7 +531,7 @@ def api_execute(request):
             else:
                 return JsonResponse(r.json(), safe=False, status=404)
         else:
-            auth = node_auth_helper(url)
+            auth = node_auth_helper(hostname)
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
             response = requests.get(url, auth=auth, headers={
@@ -547,7 +552,7 @@ def api_execute(request):
     # POST external API
     elif method == "POST":
         obj = request.data["data"]
-        if (request.META["HTTP_HOST"] in url):  # Same host
+        if (request.META["HTTP_HOST"] in hostname):  # Same host
             session = requests.Session()
             r = session.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
@@ -555,7 +560,7 @@ def api_execute(request):
             if r.status_code == 201:
                 return JsonResponse(r.json(), status=201)
         else:
-            auth = node_auth_helper(url)
+            auth = node_auth_helper(hostname)
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
