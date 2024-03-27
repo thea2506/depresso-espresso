@@ -97,7 +97,7 @@ const Profile = ({
           // sent a request to "my_id" to check for followers of "id
           try {
             const response2 = await axios.get(
-              `/api/${curUser?.id
+              `/api/authors/${curUser?.id
                 .split("/")
                 .pop()}/followers/${encodeURIComponent(
                 encodeURIComponent(user.url!)

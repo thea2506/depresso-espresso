@@ -446,7 +446,18 @@ def api_likes(request, author_id, post_id):
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
         else:
             liked_post = Post.objects.get(id=post_id)
-            author = liked_post.author
+
+            author = request.data.get("author")
+            if not Author.objects.filter(url=author.get("url")).exists():
+
+                serializer = AuthorSerializer(
+                    data=author, context={"request": request})
+                if serializer.valid():
+                    author = serializer.save()
+                else:
+                    return JsonResponse(serializer.errors, status=501)
+            else:
+                author = Author.objects.get(url=author.get("url"))
 
             data = request.data
             data["post_id"] = Post.objects.get(id=post_id)
@@ -489,6 +500,14 @@ def api_likes(request, author_id, post_id):
 # FRONTEND URLS
 
 
+def node_auth_helper(url):
+    for node in Node.objects.all():
+        if node.baseUrl in url:
+            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+            return auth
+    return None
+
+
 @api_view(['POST'])
 def api_execute(request):
     url = request.data["url"]
@@ -499,42 +518,79 @@ def api_execute(request):
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
     if method == "GET":
-        for node in Node.objects.all():
-            if node.baseUrl in url:
-                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                response = requests.get(url, auth=auth, headers={
-                    "origin": request.META["HTTP_HOST"]
-                })
-                if response.status_code == 200:
-                    return JsonResponse(response.json(), status=200)
-                else:
-                    try:
-                        response_json = response.json()
-                        return JsonResponse(response_json, status=response.status_code)
-                    except:
-                        return JsonResponse(response.text, status=404)
+        if (request.META["HTTP_HOST"] in url):  # Same host
+            session = requests.Session()
+            r = session.get(url, headers={"origin": request.META["HTTP_HOST"]})
+            if r.status_code == 200:
+                return JsonResponse(r.json(), status=200)
+            else:
+                return JsonResponse(r.json(), safe=False, status=404)
+        else:
+            auth = node_auth_helper(url)
+            if not auth:
+                return JsonResponse({"message": "Node not found"}, status=404)
+            response = requests.get(url, auth=auth, headers={
+                "origin": request.META["HTTP_HOST"]
+            })
 
-    # Send follow request
+            print(">>>>>", response.request.body, response.text,
+                  response.status_code, response.reason)
+            if response.status_code == 200:
+                return JsonResponse(response.json(), status=200)
+            else:
+                try:
+                    response_json = response.json()
+                    return JsonResponse(response_json, status=response.status_code)
+                except:
+                    return JsonResponse(response.text, status=404)
+
+    # POST external API
     elif method == "POST":
         obj = request.data["data"]
-        user_response = obj.get("accepted")
-
-        # handle follow request
-        if user_response is None:
-            for node in Node.objects.all():
-                if node.baseUrl in url:
-                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    response = requests.post(url, json=obj, auth=auth, headers={
-                        "origin": request.META["HTTP_HOST"]
-                    })
-                    print(">>>>>", response.request.body,
-                          response.status_code, response.reason, response.text)
-                    if response.status_code == 201:
-                        return JsonResponse(response.json(), status=201)
-
-        # handle follow response
+        if (request.META["HTTP_HOST"] in url):  # Same host
+            session = requests.Session()
+            r = session.post(url, json=obj, headers={
+                "origin": request.META["HTTP_HOST"]})
+            print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
+            if r.status_code == 201:
+                return JsonResponse(r.json(), status=201)
         else:
-            obj = request.data["data"]
-            response = requests.put(url, json=obj)
+            auth = node_auth_helper(url)
 
-    return JsonResponse({"message": "If you see this message, it means something's wrong"}, status=200)
+            if not auth:
+                return JsonResponse({"message": "Node not found"}, status=404)
+            response = requests.post(url, json=obj, auth=auth, headers={
+                "origin": request.META["HTTP_HOST"]
+            })
+            print(">>>>>", response.request.body,
+                  response.status_code, response.reason, response.text)
+            if response.status_code == 201:
+                return JsonResponse(response.json(), status=201)
+
+    # PUT external API
+    elif method == "PUT":
+
+        obj = request.data["data"]
+        if (request.META["HTTP_HOST"] in url):  # Same host
+            session = requests.Session()
+            r = session.put(url, json=obj, headers={
+                "origin": request.META["HTTP_HOST"]})
+            print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
+            if r.status_code == 200:
+                return JsonResponse(r.json(), status=200)
+        else:
+            auth = node_auth_helper(url)
+
+            if not auth:
+                return JsonResponse({"message": "Node not found"}, status=404)
+
+            response = requests.put(url, json=obj, auth=auth, headers={
+                "origin": request.META["HTTP_HOST"]
+            })
+
+            print(">>>>>", response.request.body,
+                  response.status_code, response.reason, response.text)
+            if response.status_code == 200:
+                return JsonResponse(response.json(), status=200)
+
+    return JsonResponse({"message": "If you see this message, it means something's wrong"}, status=404)

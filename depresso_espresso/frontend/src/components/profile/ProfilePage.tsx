@@ -88,6 +88,7 @@ const ProfilePage = () => {
           if (followerModels) setFollowers(followerModels);
         } catch (error) {
           /* empty */
+          console.log("error");
         }
 
         if (checkSameOrigin(authorUrl)) {

@@ -62,7 +62,7 @@ const Notification = ({
 
     try {
       const response = await axios.post("/api/execute", {
-        method: "POST",
+        method: "PUT",
         url: `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
@@ -87,7 +87,7 @@ const Notification = ({
 
     try {
       const response = await axios.post("/api/execute", {
-        method: "POST",
+        method: "PUT",
         url: `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,

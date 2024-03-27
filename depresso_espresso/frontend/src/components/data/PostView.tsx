@@ -218,11 +218,13 @@ const PostView = ({
             <p className="p-4 bg-white text-start rounded-xl">{post.content}</p>
           )}
           {post.contentType?.includes("image") && (
-            <img
-              src={post.content}
-              alt="post"
-              className="w-full h-96 object-cover rounded-[1.4rem]"
-            />
+            <a href={`${post.id.replace(/\/+$/, "")}/image`}>
+              <img
+                src={post.content}
+                alt="post"
+                className="w-full h-96 object-cover rounded-[1.4rem]"
+              />
+            </a>
           )}
         </div>
 
