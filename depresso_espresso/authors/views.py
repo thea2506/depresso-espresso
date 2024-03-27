@@ -220,6 +220,7 @@ def api_follower(request, author_id, author_url):
             reverse_following_object.save()
 
         # REMOTE FOLLOW
+        message = {}
         if following_author_object.isExternalAuthor:
             print("REMOTE FOLLOW")
             foreign_author_url = following_author_object.url
@@ -247,6 +248,7 @@ def api_follower(request, author_id, author_url):
                       response.status_code, response.reason)
                 try:
                     print("WHAT WE RECEIVED:", response.json())
+                    message = response.json()
                 except:
                     print("WHAT WE RECEIVED:", response.text)
                     return HttpResponse(response.text, status=response.status_code)
@@ -268,7 +270,7 @@ def api_follower(request, author_id, author_url):
 
         follow_request_object.delete()
 
-        return JsonResponse({"success": True}, status=200)
+        return JsonResponse(message, safe=False, status=200)
 
     elif request.method == 'DELETE':
 
