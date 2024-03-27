@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
 from authentication.serializers import AuthorSerializer
@@ -161,6 +161,8 @@ def api_follower(request, author_id, author_url):
 
         data = request.data
 
+        obj = request.data
+
         # The object
         followed_author_object = Author.objects.get(id=author_id)
 
@@ -231,19 +233,31 @@ def api_follower(request, author_id, author_url):
         # REMOTE FOLLOW
         if following_author_object.isExternalAuthor:
             foreign_author_url = following_author_object.url
-            node = Node.objects.get(baseUrl=following_author_object.host)
-            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-            response = requests.get(
-                foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-            if response.status_code == 200:
-                following_object.areFriends = True
-                reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                    following_author=followed_author_object, areFriends=True)
-                following_object.save()
-                reverse_following_object.save()
-                response = requests.put(foreign_author_url + "/followers/" + str(followed_author_object.url),
-                                        auth=auth,
-                                        data={"areFriends": True}, headers={"origin": request.META["HTTP_HOST"]})
+            node = Node.objects.filter(
+                baseUrl=following_author_object.host.rstrip("/")+"/")
+            if node.exists():
+                node = node.first()
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(
+                    foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                if response.status_code == 200:
+                    following_object.areFriends = True
+                    reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                        following_author=followed_author_object, areFriends=True)
+                    following_object.save()
+                    reverse_following_object.save()
+                    print(" >>>> ", obj)
+                    response = requests.put(foreign_author_url.rstrip("/") + "/inbox",
+                                            auth=auth,
+                                            json=obj, headers={"origin": request.META["HTTP_HOST"]})
+                    print(response.status_code, response.reason)
+                    try:
+                        print(response.json())
+                    except:
+                        print(response.text)
+                        return HttpResponse(response.text, status=response.status_code)
+            else:
+                return JsonResponse({"error": "Node not found", "success": False}, status=404)
 
         return JsonResponse({"success": True}, status=200)
 
