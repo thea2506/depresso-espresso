@@ -335,12 +335,14 @@ def api_make_friends(request, author_id, author_url):
         following_objects = Following.objects.filter(
             author=followed_author_object, following_author=following_author_object)
         if following_objects.exists():
-            following_object = following_objects.first()
-            following_object.areFriends = True
-            reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                following_author=followed_author_object, areFriends=True)
-            following_object.save()
-            reverse_following_object.save()
+            following_objects.update(areFriends=True)
+            reverse_following_object = Following.objects.filter(author=following_author_object,
+                                                                following_author=followed_author_object)
+            if reverse_following_object.exists():
+                reverse_following_object.update(areFriends=True)
+            else:
+                reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                    following_author=followed_author_object, areFriends=True)
             return JsonResponse({"success": True}, status=200)
         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
