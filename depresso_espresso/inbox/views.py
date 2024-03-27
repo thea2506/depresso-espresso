@@ -154,7 +154,7 @@ def handle_follow_response(request, author_id):
         # Now we have actor
 
         following_object = Following.objects.filter(
-            author=actor_object, following_author_object=following_author_object)
+            author=actor_object, following_author=following_author_object)
 
         if following_object.exists():
             print("Already following")
@@ -162,7 +162,7 @@ def handle_follow_response(request, author_id):
 
         else:
             following_object = Following.objects.create(
-                author=actor_object, following_author_object=following_author_object)
+                author=actor_object, following_author=following_author_object)
 
             reverse_following_object = Following.objects.filter(
                 author=following_author_object, following_author=actor_object)
