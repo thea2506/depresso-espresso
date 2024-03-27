@@ -61,12 +61,13 @@ const Notification = ({
     };
 
     try {
-      const response = await axios.put(
-        `${curUser.id}/followers/${encodeURIComponent(
+      const response = await axios.post("/api/execute", {
+        method: "POST",
+        url: `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
-        data
-      );
+        data: data,
+      });
       if (response.data.success) {
         setRefresh(!refresh);
       }
@@ -85,12 +86,14 @@ const Notification = ({
     };
 
     try {
-      const response = await axios.put(
-        `${curUser.id}/followers/${encodeURIComponent(
+      const response = await axios.post("/api/execute", {
+        method: "POST",
+        url: `${curUser.id}/followers/${encodeURIComponent(
           encodeURIComponent(notificationObject.actor.id)
         )}`,
-        data
-      );
+
+        data: data,
+      });
       if (response.data.success) {
         setRefresh(!refresh);
       }
@@ -105,20 +108,7 @@ const Notification = ({
   return (
     <div className="flex flex-col justify-between flex-grow p-4 md:items-center md:flex-row rounded-2xl bg-accent-3 gap-y-6">
       {/* Notification info */}
-      <a
-        className="flex items-center gap-x-4"
-        href={
-          notificationObject.author
-            ? notificationObject.author.url.substring(
-                notificationObject.author.url.indexOf("espresso-api") +
-                  "espresso-api".length
-              )
-            : notificationObject.actor.url.substring(
-                notificationObject.actor.url.indexOf("espresso-api") +
-                  "espresso-api".length
-              )
-        }
-      >
+      <div className="flex items-center gap-x-4">
         <img
           className="rounded-full w-14 h-14"
           src={
@@ -140,7 +130,7 @@ const Notification = ({
           </span>
           {messages[type]}
         </div>
-      </a>
+      </div>
 
       {/* Buttons - Follow only */}
       {type === "follow" ? (

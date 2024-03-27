@@ -184,15 +184,18 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post(
-        `${user?.url.replace(/\/+$/, "")}/inbox`,
-        {
+      const response = await axios.post("/api/execute", {
+        method: "POST",
+        url: `${user?.url.replace(/\/+$/, "")}/inbox`,
+
+        data: {
           type: "follow",
           summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
           actor: curUser,
           object: user,
-        }
-      );
+        },
+      });
+
       if (response.status === 201) {
         setStatus("pending");
         setRefresh(!refresh);
