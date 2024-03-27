@@ -511,12 +511,13 @@ def api_execute(request):
             for node in Node.objects.all():
                 if node.baseUrl in url:
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                    print(obj)
                     print(">>>>>", node.baseUrl,
                           node.ourUsername, node.ourPassword)
                     response = requests.post(url, json=obj, auth=auth, headers={
                         "origin": request.META["HTTP_HOST"]
                     })
-                    print(">>>>", response)
+                    print(">>>>", response.reason, response.status_code)
                     if response.status_code == 201:
                         return JsonResponse({"success": True}, status=201)
 

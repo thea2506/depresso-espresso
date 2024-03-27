@@ -189,7 +189,7 @@ const Profile = ({
         url: `${user?.url.replace(/\/+$/, "")}/inbox`,
 
         data: {
-          type: "follow",
+          type: "Follow",
           summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
           actor: curUser,
           object: user,
