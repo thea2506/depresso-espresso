@@ -518,8 +518,8 @@ def api_execute(request):
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
-    url = urlparse(url)
-    hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=url)
+    schema = urlparse(url)
+    hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
     print("HOSTNAME", hostname)
 
     if method == "GET":
@@ -564,11 +564,14 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
+
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
+
             print(">>>>>", response.request.body,
                   response.status_code, response.reason, response.text)
+
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
 
