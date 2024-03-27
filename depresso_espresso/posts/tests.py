@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from .models import Author, Post
+from .models import Author, LikePost, Post
 import json
 
 
@@ -107,3 +107,49 @@ class GetImageTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"message": "Post is not an image", "success": True})
+
+class ApiPostLikeTestCase(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(username="John", displayName="John Doe")
+        self.post = Post.objects.create(author=self.author, content="Test post")
+
+    def test_api_post_like_get(self):
+        url = reverse('api_post_like', args=[self.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['type'], 'Like')
+        self.assertEqual(len(response.json()['items']), 0)
+
+    def test_api_post_like_method_not_allowed(self):
+        url = reverse('api_post_like', args=[self.author.id, self.post.id])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'detail': 'Method "POST" not allowed.'})
+        
+        
+class ApiLikesTestCase(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(username="John", displayName="John Doe", url="http://localhost:8000/author/1", host="http://localhost:8000/")
+        self.post = Post.objects.create(author=self.author, content="image_base64_string", contenttype="image/png")
+
+    def test_api_likes(self):
+        url = reverse('api_likes', args=[self.author.id, self.post.id])
+        data = {
+            "author": {
+                "url": self.author.url,
+                "id": str(self.author.id),
+                "displayName": self.author.displayName
+            }
+        }
+        response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()['summary'],  'John Doe liked your post')
+
+        # Check if the like is created
+        self.assertTrue(LikePost.objects.filter(author=self.author, post=self.post).exists())
+
+    def test_api_likes_invalid_request(self):
+        url = reverse('api_likes', args=[self.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.json(),  {'detail': 'Method "GET" not allowed.'})
