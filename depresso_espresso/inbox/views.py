@@ -159,7 +159,7 @@ def handle_follow_response(request, author_id):
 
         if following_objects.exists():
             print("Already following")
-            return JsonResponse({'error': 'Already following'}, status=400)
+            return JsonResponse({'success': 'Followed'}, status=201)
 
         else:
             print("CREATE NEW")
