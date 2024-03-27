@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 from authentication.models import Node
 from requests.auth import HTTPBasicAuth
 import requests
+from django.contrib.contenttypes.models import ContentType
 
 
 class NotificationItemSerializer(serializers.ModelSerializer):
@@ -32,16 +33,19 @@ class NotificationItemSerializer(serializers.ModelSerializer):
             return LikeCommentSerializer(instance=instance.content_object, context=self.context).data
         if instance.object_url:
             nodes = Node.objects.all()
-            for node in nodes:
-                if node.baseUrl in instance.object_url:
+            if instance.content_type == ContentType.objects.get_for_model(Post):
+                for node in nodes:
 
-                    auth = HTTPBasicAuth(
-                        node.ourUsername, node.ourPassword)
-                    response = requests.get(instance.object_url, auth=auth, headers={
-                                            "origin": self.context["request"].META["HTTP_HOST"]})
+                    if node.baseUrl in instance.object_url:
 
-                    return response.json()
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        response = requests.get(instance.object_url, auth=auth, headers={
+                                                "origin": self.context["request"].META["HTTP_HOST"]})
 
+                        return response.json()
+            elif instance.content_type == ContentType.objects.get_for_model(LikeComment):
+                return LikeCommentSerializer(instance=instance.content_object, context=self.context).data
             return None
 
 

@@ -125,6 +125,8 @@ class LikeCommentSerializer(serializers.ModelSerializer):
         return "Like"
 
     def get_object(self, obj):
+        if obj.comment_url:
+            return obj.comment_url
         return build_default_comments_uri(obj=obj.comment, request=self.context["request"])
 
     def get_summary(self, obj):

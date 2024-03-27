@@ -83,14 +83,19 @@ def api_external_author(request, author_url):
         return JsonResponse(serialized_author.data)
     if request.method == 'GET':
         author_url = unquote(author_url)
+        author_url += "/"
         parsed_uri = urlparse(author_url)
+        print(parsed_uri)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        print(result)
         if Node.objects.filter(baseUrl=result).exists():
+            print("found")
             node_obj = Node.objects.get(baseUrl=result)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
             response = requests.get(author_url, auth=auth)
             return JsonResponse(response.json(), status=response.status_code)
+        print("not found")
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 

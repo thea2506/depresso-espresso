@@ -101,15 +101,30 @@ def handle_like(request, author_id):
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]
 
-        like_comment_object = LikeComment.objects.filter(
-            author=liking_author_object, comment=Comment.objects.get(id=comment_id))
+        comment = Comment.objects.filter(id=comment_id)
 
-        if like_comment_object.exists():
-            return JsonResponse({'error': 'Already liked'}, status=400)
+        if comment.exists():  # Local comment
+            like_comment_object = LikeComment.objects.filter(
+                author=liking_author_object, comment=comment)
 
-        else:
+            if like_comment_object.exists():
+                return JsonResponse({'error': 'Already liked'}, status=400)
+
+            else:
+                like_comment_object = LikeComment.objects.create(
+                    author=liking_author_object, comment=comment)
+
+                notification_object = Notification.objects.get_or_create(author=author_object)[
+                    0]
+
+                create_notification_item(
+                    notification_object, object_instance=like_comment_object)
+
+                return send_notification_item(request, notification_object)
+
+        else:  # External comment
             like_comment_object = LikeComment.objects.create(
-                author=liking_author_object, comment=Comment.objects.get(id=comment_id))
+                author=liking_author_object, comment_url=data.get('object'))
 
             notification_object = Notification.objects.get_or_create(author=author_object)[
                 0]

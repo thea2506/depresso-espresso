@@ -56,6 +56,16 @@ const CommentList = ({
         const response = await axios.get(`${post.id}/comments`);
         if (response.status === 200) {
           const comment_list = (response.data.items as CommentModel[]) || [];
+
+          comment_list.forEach(async (comment: CommentModel) => {
+            const response = await axios.get(`${comment.id}/likes`);
+            if (response.status === 200) {
+              comment.likecount = response.data.items.length;
+            } else {
+              console.error("Failed to fetch likes");
+            }
+          });
+
           setComments(comment_list);
         } else {
           console.error("Failed to fetch comments");
