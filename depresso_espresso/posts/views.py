@@ -172,13 +172,14 @@ def api_feed(request):
         feed = []
 
         public_posts = Post.objects.filter(
-            visibility="PUBLIC" )
+            visibility="PUBLIC")
         print("PUBLIC POSTS:", public_posts)
 
         for public_post in public_posts:
-            print("public_post.author.isExternalAuthor, ", public_post.author.isExternalAuthor)
+            print("public_post.author.isExternalAuthor, ",
+                  public_post.author.isExternalAuthor)
             if public_post.author.isExternalAuthor == True:
-                public_posts = public_posts.exclude(id =public_post.id)
+                public_posts = public_posts.exclude(id=public_post.id)
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
@@ -331,8 +332,6 @@ def api_comments(request, author_id, post_id):
 
             post_owner_host = post_owner.host
 
-
-
             # Local Author
             if post_owner.isExternalAuthor == False:
                 notification_object = Notification.objects.get_or_create(author=post_owner)[
@@ -342,13 +341,12 @@ def api_comments(request, author_id, post_id):
 
                 create_notification_item(
                     notification_object, comment_object, "comment")
-                
+
                 # if this post has been shared on external servers, update their comments too
 
                 # get all followers of the post author
                 following_objects = Following.objects.filter(
-                author=user)
-
+                    author=user)
 
                 for following_object in following_objects:
                     following_author = following_object.following_author
@@ -361,8 +359,7 @@ def api_comments(request, author_id, post_id):
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
                         requests.post(f"{author_url}/inbox",
-                                    json=returned_data, auth=auth)
-
+                                      json=returned_data, auth=auth)
 
             else:
                 nodes = Node.objects.all()
@@ -448,23 +445,23 @@ def api_comment_like(request, author_id, post_id, comment_id):
 @api_view(['POST'])
 def api_likes(request, author_id, post_id):
     if (request.method == 'POST'):
-          if not Post.objects.filter(id=post_id).exists():
+        if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
-          else:
+        else:
             liked_post = Post.objects.get(id=post_id)
             author = liked_post.author
 
             data = request.data
-            data["post_id"]= Post.objects.get(id=post_id)
+            data["post_id"] = Post.objects.get(id=post_id)
             serializer = LikePostSerializer(
                 data=data, context={"request": request})
-            
 
             if serializer.is_valid():
-                new_like = LikePost.objects.create(author = author, post = liked_post)
+                new_like = LikePost.objects.create(
+                    author=author, post=liked_post)
 
                 returned_data = LikePostSerializer(
-                instance=new_like, context={"request": request}).data
+                    instance=new_like, context={"request": request}).data
                 returned_data.pop("post", None)
 
                 if author.isExternalAuthor == False:
@@ -476,8 +473,6 @@ def api_likes(request, author_id, post_id):
                     create_notification_item(
                         notification_object, like_object, "like")
 
-
-
                 if author.isExternalAuthor == True:
                     nodes = Node.objects.all()
                     for node in nodes:
@@ -485,96 +480,11 @@ def api_likes(request, author_id, post_id):
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{author.url}/inbox",
-                                        json=returned_data, auth=auth)
-                            
-                        
+                                          json=returned_data, auth=auth)
+
                 return JsonResponse(
                     returned_data, status=201)
             else:
                 return JsonResponse(serializer.errors, status=501)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
-
-                  
-                  
-
-@api_view(['POST'])
-def api_likes(request, author_id, post_id):
-    if (request.method == 'POST'):
-          if not Post.objects.filter(id=post_id).exists():
-            return JsonResponse({"error": "Post not found", "success": False}, status=404)
-          else:
-            liked_post = Post.objects.get(id=post_id)
-            author = liked_post.author
-            liker = my_authenticate(request)
-
-
-            data = request.data
-            data["post_id"]= Post.objects.get(id=post_id)
-
-            serializer = LikePostSerializer(
-                data=data, context={"request": request})
-                  
-
-            if serializer.is_valid():
-                new_like = LikePost.objects.create(author = liker, post = liked_post)
-
-
-                returned_data = LikePostSerializer(
-                instance=new_like, context={"request": request}).data
-
-                if author.isExternalAuthor == False:
-                    notification_object = Notification.objects.get_or_create(author=author)[
-                        0]
-
-                    like_object = new_like
-
-                    create_notification_item(
-                        notification_object, like_object, "like")
-                    
-                    # get all followers of the post author
-                    following_objects = Following.objects.filter(
-                    author=author)
-
-
-                    for following_object in following_objects:
-                        following_author = following_object.following_author
-                        author_url = following_author.url
-                        author_host = following_author.host
-                        node = Node.objects.filter(baseUrl=author_host)
-                        # if they are external authors, send comment ob to them
-                        if node:
-                            node = node.first()
-                            auth = HTTPBasicAuth(
-                                node.ourUsername, node.ourPassword)
-                            requests.post(f"{author_url}/inbox",
-                                        json=returned_data, auth=auth)
-
-
-
-                if author.isExternalAuthor == True:
-                    nodes = Node.objects.all()
-                    for node in nodes:
-                        if node.baseUrl == author.host:
-                            auth = HTTPBasicAuth(
-                                node.ourUsername, node.ourPassword)
-                            requests.post(f"{author.url}/inbox",
-                                        json=returned_data, auth=auth)
-                            
-                     
-                            
-                        
-                return JsonResponse(
-                    returned_data, status=201)
-            else:
-                return JsonResponse(serializer.errors, status=501)
-
-    return JsonResponse({"error": "Invalid request", "success": False}, status=405)
-
-                  
-                  
-
-              
-
-
-
