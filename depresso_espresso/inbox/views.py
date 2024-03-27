@@ -176,7 +176,14 @@ def handle_comment(request, author_id):
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-        comment_object = Comment.objects.get(id=data.get('id').split('/')[-1])
+        if data.get('id'):
+
+            comment_object = Comment.objects.get(
+                id=data.get('id').split('/')[-1])
+
+        else:
+
+            comment_object = serializer.save()
 
         create_notification_item(
             notification_object, object_instance=comment_object)
