@@ -178,11 +178,6 @@ const PostView = ({
               user_img_url={post.author.profileImage}
               link={`authors/${post.author.url}`}
             />
-            {post.id.toString() !== post.origin?.toString() && (
-              <p className="text-sm font-semibold text-secondary-dark opacity-70">
-                (Shared)
-              </p>
-            )}
           </div>
 
           <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
