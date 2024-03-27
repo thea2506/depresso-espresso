@@ -529,7 +529,7 @@ def api_execute(request):
             if r.status_code == 200:
                 return JsonResponse(r.json(), status=200)
             else:
-                return JsonResponse(r.json(), safe=False, status=404)
+                return HttpResponse(r.text, status=r.status_code)
         else:
             auth = node_auth_helper(hostname)
             if not auth:
