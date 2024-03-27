@@ -72,13 +72,12 @@ class CurUserTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {
             'type': self.author.type,
-            'id': str(self.author.id),
-            'username': self.author.username,
+            'id': 'http://testserver/api/authors/' + str(self.author.id),
             'displayName': self.author.displayName,
-            'host': self.author.host,
-            'url': self.author.url,
             'github': self.author.github,
+            'host': self.author.host,
             'profileImage': self.author.profileImage,
+            'url': self.author.url,
             'success': True
         })
 
