@@ -240,9 +240,9 @@ def api_follower(request, author_id, author_url):
 
                 # No matter what, we send a follow response object
                 print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
-                response = requests.put(foreign_author_url.rstrip("/") + "/inbox",
-                                        auth=auth,
-                                        json=obj, headers={"origin": request.META["HTTP_HOST"]})
+                response = requests.post(foreign_author_url.rstrip("/") + "/inbox",
+                                         auth=auth,
+                                         json=obj, headers={"origin": request.META["HTTP_HOST"]})
                 print("WHAT WE RECEIVED:",
                       response.status_code, response.reason)
                 try:
