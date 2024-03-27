@@ -597,8 +597,9 @@ def api_execute(request):
             r = session.put(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
-            if r.status_code == 200:
-                return JsonResponse(r.json(), safe=False, status=200)
+            if r.status_code == 200 or r.status_code == 201:
+                print("SUCCESS RETURNING", r.json())
+                return JsonResponse(r.json(), safe=False, status=r.status_code)
         else:
             auth = node_auth_helper(url)
 
