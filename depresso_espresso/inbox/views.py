@@ -41,6 +41,8 @@ def api_inbox(request, author_id):
         type = request.data.get('type').lower()
         if type == 'follow':
             return handle_follow(request, author_id)
+        if type == 'followresponse':
+            return handle_follow_response(request, author_id)
         if type == 'like':
             return handle_like(request, author_id)
         if type == 'comment':
@@ -97,6 +99,28 @@ def handle_follow(request, author_id):
     create_notification_item(
         notification_object, object_instance=follow_request_object)
     return send_notification_item(request, notification_object)
+
+
+def handle_follow_response(request, author_id):
+    print("INBOX ITEM RECEIVED", request.data)
+
+    if not Author.objects.filter(id=author_id).exists():
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    author_object = Author.objects.get(id=author_id)
+
+    data = request.data
+
+    actor = request.data.get('actor')
+    object = request.data.get('object')
+    accepted = request.data.get('accepted')
+
+    if accepted == True:
+        # Handle Accept
+        pass
+    else:
+        # Handle Reject
+        pass
 
 
 def handle_like(request, author_id):
