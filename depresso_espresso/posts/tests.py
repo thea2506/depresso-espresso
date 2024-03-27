@@ -62,3 +62,48 @@ class PostsAPITestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.json()['success'], False)
         self.assertEqual(response.json()['error'], 'Author not found')
+        
+    def test_get_posts_no_posts(self):
+        id2 = uuid.uuid4()
+        author = Author.objects.create(id=id2, username="test2", displayName="test user 2", url=f"http://localhost:8000/author/{id2}", host="http://localhost:8000/",)
+        url = reverse('api_posts', args=[author.id])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['type'], 'posts')
+        self.assertEqual(len(response.json()['items']), 0)
+        
+      
+
+class GetImageTestCase(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(username="John", displayName="John Doe")
+        self.post = Post.objects.create(author=self.author, contenttype="image/png", content="base64_encoded_image,test")
+        self.client.force_login(self.author)
+
+    def test_get_image(self):
+        url = reverse('api_get_image', args=[self.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'image/png')
+        self.assertEqual(response.content, b'\xb5\xeb-')
+
+    def test_get_image_not_authenticated(self):
+        self.client.logout()
+        url = reverse('api_get_image', args=[self.author.id, self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {"message": "User not authenticated"})
+
+    def test_get_image_author_not_found(self):
+        url = reverse('api_get_image', args=[uuid.uuid4(), self.post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"message": "Author not found", "success": False})
+
+    def test_get_image_not_an_image(self):
+        non_image_post = Post.objects.create(author=self.author, contenttype="text/plain", content="Hello, world!")
+        url = reverse('api_get_image', args=[self.author.id, non_image_post.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"message": "Post is not an image", "success": True})
