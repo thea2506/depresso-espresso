@@ -79,11 +79,18 @@ const Profile = ({
   useEffect(() => {
     const getFollowStatus = async () => {
       try {
-        const response = await axios.get(
-          `${user.url}/followers/${encodeURIComponent(
-            encodeURIComponent(curUser?.id)
-          )}`
-        );
+        // const response = await axios.get(
+        //   `${user.url}/followers/${encodeURIComponent(
+        //     encodeURIComponent(curUser?.id)
+        //   )}`
+        // );
+
+        const response = await axios.post("/api/execute", {
+          method: "GET",
+          url: `${user.url}/followers/${encodeURIComponent(
+            encodeURIComponent(curUser?.url)
+          )}`,
+        });
 
         if (response.status === 200) {
           // further check if they are friends
