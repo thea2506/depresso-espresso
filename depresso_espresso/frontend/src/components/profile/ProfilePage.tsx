@@ -93,7 +93,7 @@ const ProfilePage = () => {
               headers: {
                 "Access-Control-Allow-Origin": "*",
               },
-              params: curUser,
+              // params: curUser,
             }
           );
           const posts = response.data;
