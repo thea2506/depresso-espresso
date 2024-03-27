@@ -151,7 +151,7 @@ def handle_follow_response(request, author_id):
         else:
             actor_object = actor_object.first()
 
-        print(actor_object)
+        print(actor_object.id)
         # Now we have actor
         following_objects = Following.objects.filter(
             author=actor_object, following_author=following_author_object)
