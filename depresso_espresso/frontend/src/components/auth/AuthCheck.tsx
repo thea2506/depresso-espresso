@@ -4,15 +4,13 @@ import { FC, useEffect, useContext } from "react";
 import AuthContext from "../../contexts/AuthContext";
 import { useNavigate } from "react-router";
 
-const backendURL = import.meta.env.VITE_BACKEND_URL;
-
 const AuthCheck: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const { curUser, setCurUser } = useContext(AuthContext);
 
   useEffect(() => {
     const getCurUser = async () => {
-      const res = await axios.get(`${backendURL}/api/auth/curUser`);
+      const res = await axios.get(`/api/auth/curUser`);
       const { success, ...data } = res.data;
       if (!success) navigate("/site/signin");
       setCurUser(data);

@@ -64,9 +64,7 @@ const ProfilePage = () => {
     const getData = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
-            authorId ? authorId + "/" : splat
-          }`,
+          `/api/authors/${authorId ? authorId + "/" : splat}`,
           {
             headers: {
               "Access-Control-Allow-Origin": "*",
