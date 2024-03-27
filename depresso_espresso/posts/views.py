@@ -564,6 +564,7 @@ def api_execute(request):
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in hostname):  # Same host
             session = requests.Session()
+            print("WE SENT THIS", url, obj)
             r = session.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
@@ -575,7 +576,7 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
-
+            print("WE SENT THIS TO FOREIGN", url, obj)
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })

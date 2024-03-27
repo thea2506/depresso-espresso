@@ -29,7 +29,7 @@ def check_basic(request):
     except Node.DoesNotExist:
         return None
 
-    return Author(id=uuid.uuid4(), username=node.baseUrl, isExternalAuthor=True)
+    return Author(id=uuid.uuid4(), username=uuid.uuid4(), isExternalAuthor=True)
 
 
 def my_authenticate(request):
