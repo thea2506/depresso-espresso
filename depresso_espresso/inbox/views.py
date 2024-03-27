@@ -166,7 +166,6 @@ def handle_follow_response(request, author_id):
             try:
                 reverse_following_object = Following.objects.get(
                     author=following_author_object, following_author=actor_object)
-                reverse_following_object = reverse_following_object.first()
                 reverse_following_object.areFriends = True
                 reverse_following_object.save()
                 following_object.areFriends = True
