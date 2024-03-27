@@ -15,6 +15,25 @@ import AuthContext from "../../contexts/AuthContext";
 import { getExternalNode } from "../../utils/externalAuth";
 //#endregion
 
+const checkSameOrigin = (url: string) => {
+  let windowOrigin = window.location.origin;
+  if (windowOrigin.includes("localhost")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("localhost", "127.0.0.1");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  if (windowOrigin.includes("127.0.0.1")) {
+    if (url.includes(windowOrigin)) return true;
+    windowOrigin = windowOrigin.replace("127.0.0.1", "localhost");
+    if (url.includes(windowOrigin)) return true;
+  }
+
+  if (url.includes(windowOrigin)) return true;
+
+  return false;
+};
+
 /**
  * Renders a profile page component.
  * @returns The rendered profile page component.
@@ -58,7 +77,7 @@ const ProfilePage = () => {
         const data = response.data;
         const authorUrl = data.url;
         const basicAuthInfo = getExternalNode(authorUrl);
-        console.log(`${authorUrl.replace(/\/+$/, "")}/posts/`);
+        const temporaryUser = data as AuthorModel;
         setThisProfileUser(data);
 
         try {
@@ -81,26 +100,17 @@ const ProfilePage = () => {
           /* empty */
         }
 
-        // posts
-        try {
-          const response = await axios.get(
-            `${authorUrl.replace(/\/+$/, "")}/posts/`,
-            {
-              // auth: {
-              //   username: basicAuthInfo.username,
-              //   password: basicAuthInfo.password,
-              // },
-              // headers: {
-              //   "Access-Control-Allow-Origin": "*",
-              // },
-              params: curUser,
-            }
-          );
-          const posts = response.data;
-          const postModels = (posts.items as PostModel[]) || [];
-          setPosts(postModels);
-        } catch (error) {
-          // empty
+        if (checkSameOrigin(authorUrl)) {
+          try {
+            const response = await axios.get(
+              `/api/authors/${temporaryUser!.id.split("/").pop()}/posts/`
+            );
+            const posts = response.data;
+            const postModels = (posts.items as PostModel[]) || [];
+            setPosts(postModels);
+          } catch (error) {
+            console.error("Failed to fetch posts", error);
+          }
         }
 
         if (state && state.reload) state.reload = false;

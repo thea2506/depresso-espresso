@@ -7,7 +7,7 @@ import { AuthorModel } from "../data/AuthorModel";
 import { useNavigate } from "react-router";
 import AuthContext from "../../contexts/AuthContext";
 
-function checkSameOrigin(url: string) {
+const checkSameOrigin = (url: string) => {
   let windowOrigin = window.location.origin;
   if (windowOrigin.includes("localhost")) {
     if (url.includes(windowOrigin)) return true;
@@ -22,7 +22,7 @@ function checkSameOrigin(url: string) {
   }
 
   return false;
-}
+};
 
 const Discover = () => {
   const [allAuthors, setAllAuthors] = useState<AuthorModel[]>([]);

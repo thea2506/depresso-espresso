@@ -21,6 +21,8 @@ def get_posts(current_user, author_object):
     '''
     This function returns the posts of an author based on the current user
     '''
+    if current_user is None:
+        return []
     if current_user.id == author_object.id:
         return Post.objects.filter(author=author_object).order_by('-published')
     else:
@@ -483,3 +485,17 @@ def api_likes(request, author_id, post_id):
                 return JsonResponse(serializer.errors, status=501)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+# FRONTEND URLS
+
+
+@api_view(['POST'])
+def api_execute(request):
+    url = request.data["url"]
+    method = request.data["method"]
+    auth = request.data["auth"]
+
+    if method == "GET":
+        auth = HTTPBasicAuth(auth["username"], auth["password"])
+        response = requests.get(url, auth=auth)
+    return JsonResponse(response.json(), status=200)
