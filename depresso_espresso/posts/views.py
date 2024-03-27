@@ -507,6 +507,12 @@ def api_execute(request):
                 })
                 if response.status_code == 200:
                     return JsonResponse(response.json(), status=200)
+                else:
+                    try:
+                        response_json = response.json()
+                        return JsonResponse(response_json, status=response.status_code)
+                    except:
+                        return JsonResponse(response.text, status=404)
 
     # Send follow request
     elif method == "POST":
