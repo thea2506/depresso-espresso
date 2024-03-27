@@ -109,7 +109,6 @@ def api_posts(request, author_id):
             data=data, context={"request": request})
 
         if serializer.is_valid():
-            print(serializer.validated_data)
             new_post = serializer.save()
 
             returned_data = PostSerializer(instance=new_post, context={
@@ -174,6 +173,13 @@ def api_feed(request):
 
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
+        print("PUBLIC POSTS:", public_posts)
+
+        for public_post in public_posts:
+            print("public_post.author.isExternalAuthor, ",
+                  public_post.author.isExternalAuthor)
+            if public_post.author.isExternalAuthor == True:
+                public_posts = public_posts.exclude(id=public_post.id)
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
@@ -321,14 +327,14 @@ def api_comments(request, author_id, post_id):
 
             returned_data.pop("post", None)
 
-            author_object = Author.objects.get(id=author_id)
-            author_url = author_object.url
+            post_owner = post.author
+            post_owner_url = post_owner.url
 
-            author_host = author_object.host
+            post_owner_host = post_owner.host
 
             # Local Author
-            if author_object.isExternalAuthor == False:
-                notification_object = Notification.objects.get_or_create(author=author_object)[
+            if post_owner.isExternalAuthor == False:
+                notification_object = Notification.objects.get_or_create(author=post_owner)[
                     0]
 
                 comment_object = new_comment
@@ -336,14 +342,32 @@ def api_comments(request, author_id, post_id):
                 create_notification_item(
                     notification_object, comment_object, "comment")
 
-            else:
+                # if this post has been shared on external servers, update their comments too
 
-                nodes = Node.objects.all()
-                for node in nodes:
-                    if node.baseUrl == author_host:
+                # get all followers of the post author
+                following_objects = Following.objects.filter(
+                    author=user)
+
+                for following_object in following_objects:
+                    following_author = following_object.following_author
+                    author_url = following_author.url
+                    author_host = following_author.host
+                    node = Node.objects.filter(baseUrl=author_host)
+                    # if they are external authors, send comment ob to them
+                    if node:
+                        node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
                         requests.post(f"{author_url}/inbox",
+                                      json=returned_data, auth=auth)
+
+            else:
+                nodes = Node.objects.all()
+                for node in nodes:
+                    if node.baseUrl == post_owner_host:
+                        auth = HTTPBasicAuth(
+                            node.ourUsername, node.ourPassword)
+                        requests.post(f"{post_owner_url}/inbox",
                                       json=returned_data, auth=auth)
 
             return JsonResponse(
@@ -416,3 +440,51 @@ def api_comment_like(request, author_id, post_id, comment_id):
         return JsonResponse({"type": "Like", "items": data}, safe=False)
     else:
         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
+
+
+@api_view(['POST'])
+def api_likes(request, author_id, post_id):
+    if (request.method == 'POST'):
+        if not Post.objects.filter(id=post_id).exists():
+            return JsonResponse({"error": "Post not found", "success": False}, status=404)
+        else:
+            liked_post = Post.objects.get(id=post_id)
+            author = liked_post.author
+
+            data = request.data
+            data["post_id"] = Post.objects.get(id=post_id)
+            serializer = LikePostSerializer(
+                data=data, context={"request": request})
+
+            if serializer.is_valid():
+                new_like = LikePost.objects.create(
+                    author=author, post=liked_post)
+
+                returned_data = LikePostSerializer(
+                    instance=new_like, context={"request": request}).data
+                returned_data.pop("post", None)
+
+                if author.isExternalAuthor == False:
+                    notification_object = Notification.objects.get_or_create(author=author)[
+                        0]
+
+                    like_object = new_like
+
+                    create_notification_item(
+                        notification_object, like_object, "like")
+
+                if author.isExternalAuthor == True:
+                    nodes = Node.objects.all()
+                    for node in nodes:
+                        if node.baseUrl == author.host:
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            requests.post(f"{author.url}/inbox",
+                                          json=returned_data, auth=auth)
+
+                return JsonResponse(
+                    returned_data, status=201)
+            else:
+                return JsonResponse(serializer.errors, status=501)
+
+    return JsonResponse({"error": "Invalid request", "success": False}, status=405)

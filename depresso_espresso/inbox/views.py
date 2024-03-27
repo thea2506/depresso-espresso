@@ -176,13 +176,10 @@ def handle_comment(request, author_id):
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-        if data.get('id'):
-
+        if Comment.objects.filter(id=data.get('id').split('/')[-1]).exists():
             comment_object = Comment.objects.get(
                 id=data.get('id').split('/')[-1])
-
         else:
-
             comment_object = serializer.save()
 
         create_notification_item(
@@ -200,12 +197,23 @@ def handle_post(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     data = request.data
+    if not Author.objects.filter(url=data.get("author").get("url")).exists():
+        Author.objects.create(isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                              url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
+        notification_object = Notification.objects.get_or_create(author=author_object)[
+            0]
 
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
 
     if serializer.is_valid():
+
+        new_post = serializer.save()
+        new_post.id = data.get('id').split('/')[-1]
+        new_post.save()
+
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
