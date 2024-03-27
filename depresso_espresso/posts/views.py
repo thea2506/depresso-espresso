@@ -206,7 +206,8 @@ def api_feed(request):
             following_author = following.following_author
             if following_author.isExternalAuthor:
                 author_url = following_author.url
-                node = Node.objects.get(baseUrl=following_author.host)
+                print("EXTERNAL AUTHOR", author_url)
+                node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.get(
                     f"{author_url}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
