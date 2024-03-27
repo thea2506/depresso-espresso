@@ -61,30 +61,9 @@ const ProfilePage = () => {
         console.log(`${authorUrl.replace(/\/+$/, "")}/posts/`);
         setThisProfileUser(data);
 
-        // try {
-        //   const response = await axios.get(
-        //     `${authorUrl.replace(/\/+$/, "")}/followers`,
-        //     {
-        //       auth: {
-        //         username: basicAuthInfo.username,
-        //         password: basicAuthInfo.password,
-        //       },
-        //       headers: {
-        //         "Access-Control-Allow-Origin": "*",
-        //       },
-        //     }
-        //   );
-        //   const data = response.data;
-        //   const followerModels = (data?.items as AuthorModel[]) || [];
-        //   if (followerModels) setFollowers(followerModels);
-        // } catch (error) {
-        //   /* empty */
-        // }
-
-        // posts
         try {
           const response = await axios.get(
-            `${authorUrl.replace(/\/+$/, "")}/posts/`,
+            `${authorUrl.replace(/\/+$/, "")}/followers`,
             {
               auth: {
                 username: basicAuthInfo.username,
@@ -93,7 +72,28 @@ const ProfilePage = () => {
               headers: {
                 "Access-Control-Allow-Origin": "*",
               },
-              // params: curUser,
+            }
+          );
+          const data = response.data;
+          const followerModels = (data?.items as AuthorModel[]) || [];
+          if (followerModels) setFollowers(followerModels);
+        } catch (error) {
+          /* empty */
+        }
+
+        // posts
+        try {
+          const response = await axios.get(
+            `${authorUrl.replace(/\/+$/, "")}/posts/`,
+            {
+              // auth: {
+              //   username: basicAuthInfo.username,
+              //   password: basicAuthInfo.password,
+              // },
+              // headers: {
+              //   "Access-Control-Allow-Origin": "*",
+              // },
+              params: curUser,
             }
           );
           const posts = response.data;
