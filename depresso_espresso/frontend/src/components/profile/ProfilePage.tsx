@@ -12,7 +12,6 @@ import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
-import { getExternalNode } from "../../utils/externalAuth";
 //#endregion
 
 const checkSameOrigin = (url: string) => {
@@ -76,23 +75,14 @@ const ProfilePage = () => {
         );
         const data = response.data;
         const authorUrl = data.url;
-        const basicAuthInfo = getExternalNode(authorUrl);
         const temporaryUser = data as AuthorModel;
         setThisProfileUser(data);
 
         try {
-          const response = await axios.get(
-            `${authorUrl.replace(/\/+$/, "")}/followers`,
-            {
-              auth: {
-                username: basicAuthInfo.username,
-                password: basicAuthInfo.password,
-              },
-              headers: {
-                "Access-Control-Allow-Origin": "*",
-              },
-            }
-          );
+          const response = await axios.post("/api/execute", {
+            method: "GET",
+            url: `${authorUrl.replace(/\/+$/, "")}/followers`,
+          });
           const data = response.data;
           const followerModels = (data?.items as AuthorModel[]) || [];
           if (followerModels) setFollowers(followerModels);

@@ -499,7 +499,14 @@ def api_execute(request):
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
     if method == "GET":
-        response = requests.get(url)
+        for node in Node.objects.all():
+            if node.baseUrl in url:
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(url, auth=auth, headers={
+                    "origin": request.META["HTTP_HOST"]
+                })
+                if response.status_code == 200:
+                    return JsonResponse(response.json(), status=200)
 
     # Send follow request
     elif method == "POST":
@@ -511,15 +518,11 @@ def api_execute(request):
             for node in Node.objects.all():
                 if node.baseUrl in url:
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    print(">>>>>", node.baseUrl,
-                          node.ourUsername, node.ourPassword)
                     response = requests.post(url, json=obj, auth=auth, headers={
                         "origin": request.META["HTTP_HOST"]
                     })
-                    print(response.request.body)
-                    print(">>>>", response.reason, response.status_code)
                     if response.status_code == 201:
-                        return JsonResponse({"success": True}, status=201)
+                        return JsonResponse(response.json(), status=201)
 
         # handle follow response
         else:
