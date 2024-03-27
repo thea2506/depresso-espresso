@@ -237,22 +237,23 @@ def api_follower(request, author_id, author_url):
                 node = node.first()
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.get(
-                    foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                    foreign_author_url.rstrip("/") + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
                 if response.status_code == 200:
                     following_object.areFriends = True
                     reverse_following_object = Following.objects.create(author=following_author_object,
                                                                         following_author=followed_author_object, areFriends=True)
                     following_object.save()
                     reverse_following_object.save()
-                    print(" >>>> ", obj)
+                    print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
                     response = requests.put(foreign_author_url.rstrip("/") + "/inbox",
                                             auth=auth,
                                             json=obj, headers={"origin": request.META["HTTP_HOST"]})
-                    print(response.status_code, response.reason)
+                    print("WHAT WE RECEIVED:",
+                          response.status_code, response.reason)
                     try:
-                        print(response.json())
+                        print("WHAT WE RECEIVED:", response.json())
                     except:
-                        print(response.text)
+                        print("WHAT WE RECEIVED:", response.text)
                         return HttpResponse(response.text, status=response.status_code)
             else:
                 return JsonResponse({"error": "Node not found", "success": False}, status=404)
