@@ -509,6 +509,7 @@ def api_execute(request):
         # handle follow request
         if user_response is None:
             response = requests.post(url, json=obj)
+            print(">>>>", response)
             if response.status_code == 201:
                 return JsonResponse({"success": True}, status=201)
 
@@ -517,4 +518,4 @@ def api_execute(request):
             obj = request.data["data"]
             response = requests.put(url, json=obj)
 
-    return JsonResponse({"success": True}, status=200)
+    return JsonResponse({"message": "If you see this message, it means something's wrong"}, status=200)
