@@ -48,7 +48,12 @@ const ProfilePage = () => {
         const response = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/api/authors/${
             authorId ? authorId + "/" : splat
-          }`
+          }`,
+          {
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+            },
+          }
         );
         const data = response.data;
         const authorUrl = data.url;
