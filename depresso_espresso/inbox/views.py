@@ -78,8 +78,8 @@ def handle_follow(request, author_id):
         actor = AuthorSerializer(data=actor_obj, context={"request": request})
         if actor.is_valid():
             print("Then why?")
-            actor.save()
-            print(actor.id)
+            actor = actor.save()
+            print(actor)
         else:
             return JsonResponse(actor.errors, status=400)
 
