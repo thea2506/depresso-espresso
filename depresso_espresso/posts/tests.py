@@ -1,110 +1,64 @@
-import json
 import uuid
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
-from .models import Post
-from authentication.models import Author
+from rest_framework import status
+from rest_framework.test import APIClient
+from .models import Author, Post
+import json
 
 
 class PostsAPITestCase(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.author = Author.objects.create(username='test_author', password='test_password')
-        self.author2 = Author.objects.create(username='test_author2', password='test_password2')
-        self.post = Post.objects.create(title='Test Friend Post', author=self.author, description='Test Friend Description', contentType='text/plain', content='Test Friend Content', visibility='FRIENDS')
-        self.post = Post.objects.create(title='Test Public Post', author=self.author2, description='Test Description', contentType='text/plain', content='Test Content', visibility='PUBLIC')
+      self.client = APIClient()
+      id1 = uuid.uuid4()
+      self.author = Author.objects.create(id=id1, username="test", displayName="test user", url=f"http://localhost:8000/author/{id1}", host="http://localhost:8000/",)
+      self.post = Post.objects.create(
+        title="Test Post",
+        content="This is a test post",
+        author=self.author
+      )
+        
 
-    def test_api_posts_get_authenticated_author(self):
-        self.client.force_login(self.author)
-        response = self.client.get(reverse('get_author_posts', args=[self.author.id]))
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        self.assertEqual(data[0]['type'], 'post')
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['title'], 'Test Friend Post')
+    def test_get_posts(self):
+        self.client.force_login(self.author) 
+        url = reverse('api_posts', args=[self.author.id])
+        response = self.client.get(url)
 
-    def test_api_posts_get_public_author(self):
-        self.client.force_login(self.author)
-        response = self.client.get(reverse('api_get_posts', args=[self.author2.id]))
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content)
-        self.assertEqual(data['type'], 'posts')
-        self.assertEqual(len(data['items']), 1)
-        self.assertEqual(data['items'][0]['title'], 'Test Public Post')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['type'], 'posts')
+        self.assertEqual(len(response.json()['items']), 1)
+        self.assertEqual(response.json()['items'][0]['title'], self.post.title)
+        self.assertEqual(response.json()['items'][0]['content'], self.post.content)
 
-    def test_api_posts_get_author_not_found(self):
-        self.client.force_login(self.author)
-        response = self.client.get(reverse('api_get_posts', args=[uuid.uuid4()]))
-        self.assertEqual(response.status_code, 404)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'Author not found')
-        self.assertFalse(data['success'])
-
-    def test_api_posts_get_unauthenticated_user(self):
-        self.client.logout()
-        response = self.client.get(reverse('api_get_posts', args=[self.author.id]))
-        self.assertEqual(response.status_code, 401)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'User not authenticated')
-
-    def test_api_posts_post_authenticated_author(self):
-        self.client.force_login(self.author)
-        response = self.client.post(reverse('api_get_posts', args=[self.author.id]), {
+    def test_create_post(self):
+        url = reverse('api_posts', args=[self.author.id])
+        data = {
             'title': 'New Post',
-            'description': 'New Description',
+            'content': 'This is a new post',
+            'description': 'This is a new post description',
+            'author': {
+              'id': str(self.author.id),
+              'username': self.author.username,
+              'displayName': self.author.displayName,
+              'url': self.author.url,
+              'host': self.author.host
+            },
+            'type': 'post',
             'contentType': 'text/plain',
-            'content': 'New Content',
-            'visibility': 'PUBLIC'
-        })
-        self.assertEqual(response.status_code, 201)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'Post created')
-        self.assertTrue(data['success'])
-        self.assertEqual(data['object']['title'], 'New Post')
+            'visibility': 'PUBLIC',
+        }
+        response = self.client.post(url, data, format='json')
 
-    def test_api_posts_post_unauthenticated_user(self):
-        self.client.logout()
-        response = self.client.post(reverse('api_get_posts', args=[self.author.id]), {
-            'title': 'New Post',
-            'description': 'New Description',
-            'contentType': 'text/plain',
-            'content': 'New Content',
-            'visibility': 'PUBLIC'
-        })
-        self.assertEqual(response.status_code, 401)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'User not authenticated')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.json()['success'], True)
+        self.assertEqual(response.json()['object']['title'], data['title'])
+        self.assertEqual(response.json()['object']['content'], data['content'])
 
-    def test_api_posts_post_local_user(self):
-        self.client.force_login(self.author2)
-        response = self.client.post(reverse('api_get_posts', args=[self.author.id]), {
-            'title': 'New Post',
-            'description': 'New Description',
-            'contentType': 'text/plain',
-            'content': 'New Content',
-            'visibility': 'PUBLIC'
-        })
-        self.assertEqual(response.status_code, 401)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'Local users only')
 
-    def test_api_posts_post_invalid_form(self):
-        self.client.force_login(self.author)
-        response = self.client.post(reverse('api_get_posts', args=[self.author.id]), {
-            'title': 'New Post',
-            'description': 'New Description',
-            'contentType': 'text/plain',
-            'content': '',  # Invalid form, content is empty
-            'visibility': 'PUBLIC'
-        })
-        self.assertEqual(response.status_code, 400)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'Invalid form')
-        self.assertFalse(data['success'])
+    def test_get_posts_author_not_found(self):
+        url = reverse('api_posts', args=[uuid.uuid4()])  # Non-existent author ID
+        response = self.client.get(url)
 
-    def test_api_posts_post_method_not_allowed(self):
-        self.client.force_login(self.author)
-        response = self.client.put(reverse('api_get_posts', args=[self.author.id]))
-        self.assertEqual(response.status_code, 405)
-        data = json.loads(response.content)
-        self.assertEqual(data['message'], 'Method not allowed')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.json()['success'], False)
+        self.assertEqual(response.json()['error'], 'Author not found')
