@@ -68,10 +68,16 @@ def handle_follow(request, author_id):
 
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
-        actor_obj.pop('id', None)
+        old_id = actor_obj.get('id')
+        old_id = old_id.rstrip("/").split("/")[-1]
+        actor_obj["id"] = old_id
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
-        actor = Author.objects.create(**actor_obj)
+        actor = AuthorSerializer(data=actor_obj, context={"request": request})
+        if actor.is_valid():
+            actor.save()
+        else:
+            return JsonResponse(actor.errors, status=400)
 
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)

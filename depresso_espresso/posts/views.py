@@ -513,7 +513,7 @@ def node_auth_helper(url):
 def api_execute(request):
     url = request.data["url"]
     method = request.data["method"]
-
+    print("url", url)
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
