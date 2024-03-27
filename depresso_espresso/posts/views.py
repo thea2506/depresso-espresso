@@ -547,7 +547,7 @@ def api_execute(request):
                     response_json = response.json()
                     return JsonResponse(response_json, status=response.status_code)
                 except:
-                    return JsonResponse(response.text, status=404)
+                    return HttpResponse(response.text, status=404)
 
     # POST external API
     elif method == "POST":
