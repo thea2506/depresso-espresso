@@ -209,7 +209,7 @@ const Profile = ({
   const handleUnffollowRequest = async () => {
     try {
       const response = await axios.delete(
-        `${user.url}/followers/${curUser?.url}`
+        `${user?.url.replace(/\/+$/, "")}/followers/${curUser?.url}`
       );
       if (response.data.success === true) {
         setStatus("stranger");
