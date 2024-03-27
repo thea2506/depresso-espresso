@@ -207,11 +207,14 @@ def api_feed(request):
             if following_author.isExternalAuthor:
                 author_url = following_author.url
                 print("EXTERNAL AUTHOR", author_url)
-                node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
-                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                response = requests.get(
-                    f"{author_url.rstrip("/")}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
-                feed = chain(feed, response.json()["items"])
+                friends_only_posts = Post.objects.filter(
+                    author=following_author, visibility="FRIENDS")
+                print("FRIENDS ONLY POSTS", friends_only_posts.exists())
+                # node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
+                # auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                # response = requests.get(
+                #     f"{author_url.rstrip("/")}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
+                # feed = chain(feed, response.json()["items"])
             else:
                 my_friend_posts = Post.objects.filter(
                     author=following_author, visibility="FRIENDS")
