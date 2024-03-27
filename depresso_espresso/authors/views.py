@@ -85,9 +85,7 @@ def api_external_author(request, author_url):
         author_url = unquote(author_url)
         author_url += "/"
         parsed_uri = urlparse(author_url)
-        print(parsed_uri)
         result = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        print(result)
         if Node.objects.filter(baseUrl=result).exists():
             print("found")
             node_obj = Node.objects.get(baseUrl=result)

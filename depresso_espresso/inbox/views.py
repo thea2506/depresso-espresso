@@ -104,6 +104,7 @@ def handle_like(request, author_id):
         comment = Comment.objects.filter(id=comment_id)
 
         if comment.exists():  # Local comment
+            comment = comment.first()
             like_comment_object = LikeComment.objects.filter(
                 author=liking_author_object, comment=comment)
 

@@ -71,7 +71,7 @@ const PostView = ({
 
   const handleLikeToggle = async () => {
     try {
-      await axios.post(`${post.id}/likes`, {
+      await axios.post(`${post.id}/like`, {
         summary: `${curUser.displayName} liked your post`,
         type: "Like",
         object: post.id,

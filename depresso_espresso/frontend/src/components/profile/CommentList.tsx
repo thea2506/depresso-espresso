@@ -97,41 +97,42 @@ const CommentList = ({
 
   const handleCommentSubmit = async () => {
     try {
-      if (checkSameOrigin(post.id)) {
-        const response = await axios.post(`${post.id}/comments`, {
-          type: "comment",
-          author: {
-            type: "author",
-            id: curUser!.id,
-            url: curUser!.url,
-            host: curUser!.host,
-            displayName: curUser!.displayName,
-            github: curUser!.github,
-            profileImage: curUser!.profileImage,
-          },
-          comment: comment,
-          contentType: "text/plain",
-        });
+      const response = await axios.post(`${post.id}/comments`, {
+        type: "comment",
+        author: {
+          type: "author",
+          id: curUser!.id,
+          url: curUser!.url,
+          host: curUser!.host,
+          displayName: curUser!.displayName,
+          github: curUser!.github,
+          profileImage: curUser!.profileImage,
+        },
+        comment: comment,
+        contentType: "text/plain",
+      });
 
-        if (response.status === 200 || response.status === 201) {
-          setRefresh(!refresh);
-          setComment("");
-        } else {
-          toast.error("Failed to create comment", myToast);
-        }
+      if (response.status === 200 || response.status === 201) {
+        setRefresh(!refresh);
+        setComment("");
       } else {
-        const response = await axios.post(`${post.author.url}/inbox`, {
-          type: "comment",
-          author: curUser,
-          comment: comment,
-          contentType: "text/plain",
-        });
-        if (response.status === 200 || response.status === 201) {
-          toast.success("Commented", myToast);
-          setComment("");
-          setRefresh(!refresh);
-        }
+        toast.error("Failed to create comment", myToast);
       }
+      // if (checkSameOrigin(post.id)) {
+
+      // } else {
+      //   const response = await axios.post(`${post.author.url}/inbox`, {
+      //     type: "comment",
+      //     author: curUser,
+      //     comment: comment,
+      //     contentType: "text/plain",
+      //   });
+      //   if (response.status === 200 || response.status === 201) {
+      //     toast.success("Commented", myToast);
+      //     setComment("");
+      //     setRefresh(!refresh);
+      //   }
+      // }
     } catch (error) {
       toast.error("An error occurred", myToast);
     }

@@ -18,6 +18,8 @@ urlpatterns = [
          views.api_post_like, name='api_post_like'),
     path('api/authors/<str:author_id>/posts/<str:post_id>/comments/<str:comment_id>/likes',
          views.api_comment_like, name='api_comment_like'),
+    path('api/authors/<str:author_id>/posts/<str:post_id>/like',
+         views.api_likes, name='api_likes'),
 ]
 
 
