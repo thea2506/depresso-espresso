@@ -71,14 +71,15 @@ def handle_follow(request, author_id):
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         print("The old id", old_id)
-        actor_obj["id"] = old_id
+        actor_obj["id"] = uuid.UUID(old_id)
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
         print("This shit runs")
         serializer = AuthorSerializer(
             data=actor_obj, context={"request": request})
         if serializer.is_valid():
-            actor = serializer.save(id=old_id)
+            print("Valid")
+            actor = serializer.save()
             print(actor)
         else:
             return JsonResponse(serializer.errors, status=500)
