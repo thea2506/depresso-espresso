@@ -120,7 +120,9 @@ def api_followers(request, author_id):
 @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', "DELETE"])
 def api_follower(request, author_id, author_url):
+
     following_author_object = get_author_object(author_url)
+
     if request.method == 'GET':
         if following_author_object is None:
 
@@ -160,6 +162,8 @@ def api_follower(request, author_id, author_url):
         data = request.data
 
         obj = request.data
+
+        print("SERVER RECEIVED", data)
 
         # The object
         followed_author_object = Author.objects.get(id=author_id)
@@ -202,6 +206,54 @@ def api_follower(request, author_id, author_url):
         following_object = Following.objects.create(author=followed_author_object,
                                                     following_author=following_author_object)
 
+        # LOCAL FOLLOW
+        reverse_following_object = Following.objects.filter(
+            author=following_author_object, following_author=followed_author_object).exists()
+
+        if reverse_following_object:
+            print("LOCAL FOLLOW")
+            reverse_following_object = Following.objects.get(
+                author=following_author_object, following_author=followed_author_object)
+            following_object.areFriends = True
+            reverse_following_object.areFriends = True
+            following_object.save()
+            reverse_following_object.save()
+
+        # REMOTE FOLLOW
+        if following_author_object.isExternalAuthor:
+            print("REMOTE FOLLOW")
+            foreign_author_url = following_author_object.url
+            node = Node.objects.filter(
+                baseUrl=following_author_object.host.rstrip("/")+"/")
+            if node.exists():
+                print("NODE FOUND")
+                node = node.first()
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(
+                    foreign_author_url.rstrip("/") + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                if response.status_code == 200:
+                    following_object.areFriends = True
+                    reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                        following_author=followed_author_object, areFriends=True)
+                    following_object.save()
+                    reverse_following_object.save()
+
+                # No matter what, we send a follow response object
+                print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
+                response = requests.put(foreign_author_url.rstrip("/") + "/inbox",
+                                        auth=auth,
+                                        json=obj, headers={"origin": request.META["HTTP_HOST"]})
+                print("WHAT WE RECEIVED:",
+                      response.status_code, response.reason)
+                try:
+                    print("WHAT WE RECEIVED:", response.json())
+                except:
+                    print("WHAT WE RECEIVED:", response.text)
+                    return HttpResponse(response.text, status=response.status_code)
+            else:
+                return JsonResponse({"error": "Node not found", "success": False}, status=404)
+
+        # Delete Notification
         follow_request_object = FollowRequest.objects.get(
             requester=following_author_object, receiver=followed_author_object)
 
@@ -215,48 +267,6 @@ def api_follower(request, author_id, author_url):
             notification_item.delete()
 
         follow_request_object.delete()
-
-        # LOCAL FOLLOW
-        reverse_following_object = Following.objects.filter(
-            author=following_author_object, following_author=followed_author_object).exists()
-
-        if reverse_following_object:
-            reverse_following_object = Following.objects.get(
-                author=following_author_object, following_author=followed_author_object)
-            following_object.areFriends = True
-            reverse_following_object.areFriends = True
-            following_object.save()
-            reverse_following_object.save()
-
-        # REMOTE FOLLOW
-        if following_author_object.isExternalAuthor:
-            foreign_author_url = following_author_object.url
-            node = Node.objects.filter(
-                baseUrl=following_author_object.host.rstrip("/")+"/")
-            if node.exists():
-                node = node.first()
-                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                response = requests.get(
-                    foreign_author_url.rstrip("/") + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-                if response.status_code == 200:
-                    following_object.areFriends = True
-                    reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                        following_author=followed_author_object, areFriends=True)
-                    following_object.save()
-                    reverse_following_object.save()
-                    print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
-                    response = requests.put(foreign_author_url.rstrip("/") + "/inbox",
-                                            auth=auth,
-                                            json=obj, headers={"origin": request.META["HTTP_HOST"]})
-                    print("WHAT WE RECEIVED:",
-                          response.status_code, response.reason)
-                    try:
-                        print("WHAT WE RECEIVED:", response.json())
-                    except:
-                        print("WHAT WE RECEIVED:", response.text)
-                        return HttpResponse(response.text, status=response.status_code)
-            else:
-                return JsonResponse({"error": "Node not found", "success": False}, status=404)
 
         return JsonResponse({"success": True}, status=200)
 
