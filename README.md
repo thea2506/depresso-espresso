@@ -4,6 +4,13 @@ CMPUT404-project-socialdistribution
 
 [Project Requirements](https://uofa-cmput404.github.io/general/project.html)
 
+# API stuff:
+- Service address: https://depresso-espresso-7e0a859d2d18.herokuapp.com
+- Port: 
+- Hostname: 
+- HTTPBasicAuth username: epresso
+- HTTPBasicAuth password: espresso
+
 ## Contributors
 
 - Thea Nguyen <thiminhh@ualberta.ca>

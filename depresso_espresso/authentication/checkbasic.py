@@ -22,27 +22,14 @@ def check_basic(request):
         return None
 
     try:
-        uri = request.headers['Origin'] + "/"
-        node = Node.objects.filter(baseUrl=uri,
-                                   theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
+        # uri = request.headers['Origin'] + "/"
+        node = Node.objects.filter(
+            theirUsername=decoded_credentials[0], theirPassword=decoded_credentials[1])
+
     except Node.DoesNotExist:
         return None
 
-    data = request.query_params
-    data_mutable = data.copy()
-    author_object = Author(
-        type="author",
-        id=uuid.uuid4(),
-        username=username,
-        url=data_mutable.get('url'),
-        host=data_mutable.get('host'),
-        displayName=data_mutable.get(
-            'displayName'),
-        github=data_mutable.get('github'),
-        profileImage=data_mutable.get('profileImage'),
-        isExternalAuthor=True)
-
-    return author_object
+    return Author(id=uuid.uuid4(), username=uuid.uuid4(), isExternalAuthor=True)
 
 
 def my_authenticate(request):

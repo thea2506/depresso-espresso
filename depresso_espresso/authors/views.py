@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
 from authentication.serializers import AuthorSerializer
@@ -20,7 +20,6 @@ from utils import Pagination
 
 def get_author_object(author_url):
     author_url = unquote(author_url)
-    print("???????", author_url)
     if "127.0.0.1" in author_url:
         normalized_author_url = author_url.replace("127.0.0.1", "localhost")
     elif "localhost" in author_url:
@@ -29,7 +28,6 @@ def get_author_object(author_url):
         normalized_author_url = author_url
     if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
             url=normalized_author_url).exists() and not Author.objects.filter(url=author_url + "/").exists() and not Author.objects.filter(url=normalized_author_url + "/").exists():
-        print("It breaks in checking")
         return None
     if Author.objects.filter(url=author_url).exists():
         return Author.objects.get(url=author_url)
@@ -122,7 +120,9 @@ def api_followers(request, author_id):
 @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', "DELETE"])
 def api_follower(request, author_id, author_url):
+
     following_author_object = get_author_object(author_url)
+
     if request.method == 'GET':
         if following_author_object is None:
 
@@ -160,6 +160,10 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
         data = request.data
+
+        obj = request.data
+
+        print("SERVER RECEIVED", data)
 
         # The object
         followed_author_object = Author.objects.get(id=author_id)
@@ -202,6 +206,56 @@ def api_follower(request, author_id, author_url):
         following_object = Following.objects.create(author=followed_author_object,
                                                     following_author=following_author_object)
 
+        # LOCAL FOLLOW
+        reverse_following_object = Following.objects.filter(
+            author=following_author_object, following_author=followed_author_object).exists()
+
+        if reverse_following_object:
+            print("LOCAL FOLLOW")
+            reverse_following_object = Following.objects.get(
+                author=following_author_object, following_author=followed_author_object)
+            following_object.areFriends = True
+            reverse_following_object.areFriends = True
+            following_object.save()
+            reverse_following_object.save()
+
+        # REMOTE FOLLOW
+        message = {}
+        if following_author_object.isExternalAuthor:
+            print("REMOTE FOLLOW")
+            foreign_author_url = following_author_object.url
+            node = Node.objects.filter(
+                baseUrl=following_author_object.host.rstrip("/")+"/")
+            if node.exists():
+                print("NODE FOUND")
+                node = node.first()
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(
+                    foreign_author_url.rstrip("/") + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                if response.status_code == 200:
+                    following_object.areFriends = True
+                    reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                        following_author=followed_author_object, areFriends=True)
+                    following_object.save()
+                    reverse_following_object.save()
+
+                # No matter what, we send a follow response object
+                print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
+                response = requests.post(foreign_author_url.rstrip("/") + "/inbox",
+                                         auth=auth,
+                                         json=obj, headers={"origin": request.META["HTTP_HOST"]})
+                print("WHAT WE RECEIVED:",
+                      response.status_code, response.reason)
+                try:
+                    print("JSON WE RECEIVED:", response.json())
+                    message = response.json()
+                except:
+                    print("MESSAGE WE RECEIVED:", response.text)
+                    return HttpResponse(response.text, status=response.status_code)
+            else:
+                return JsonResponse({"error": "Node not found", "success": False}, status=404)
+
+        # Delete Notification
         follow_request_object = FollowRequest.objects.get(
             requester=following_author_object, receiver=followed_author_object)
 
@@ -216,36 +270,10 @@ def api_follower(request, author_id, author_url):
 
         follow_request_object.delete()
 
-        # LOCAL FOLLOW
-        reverse_following_object = Following.objects.filter(
-            author=following_author_object, following_author=followed_author_object).exists()
+        print("FOLLOWING REQUEST OBJECT DELETED")
+        print("MESSAGE WE SENT BACK TO FRONTEND:", message)
 
-        if reverse_following_object:
-            reverse_following_object = Following.objects.get(
-                author=following_author_object, following_author=followed_author_object)
-            following_object.areFriends = True
-            reverse_following_object.areFriends = True
-            following_object.save()
-            reverse_following_object.save()
-
-        # REMOTE FOLLOW
-        if following_author_object.isExternalAuthor:
-            foreign_author_url = following_author_object.url
-            node = Node.objects.get(baseUrl=following_author_object.host)
-            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-            response = requests.get(
-                foreign_author_url + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-            if response.status_code == 200:
-                following_object.areFriends = True
-                reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                    following_author=followed_author_object, areFriends=True)
-                following_object.save()
-                reverse_following_object.save()
-                response = requests.put(foreign_author_url + "/followers/" + str(followed_author_object.url),
-                                        auth=auth,
-                                        data={"areFriends": True}, headers={"origin": request.META["HTTP_HOST"]})
-
-        return JsonResponse({"success": True}, status=200)
+        return JsonResponse(message, safe=False, status=200)
 
     elif request.method == 'DELETE':
 
@@ -335,12 +363,14 @@ def api_make_friends(request, author_id, author_url):
         following_objects = Following.objects.filter(
             author=followed_author_object, following_author=following_author_object)
         if following_objects.exists():
-            following_object = following_objects.first()
-            following_object.areFriends = True
-            reverse_following_object = Following.objects.create(author=following_author_object,
-                                                                following_author=followed_author_object, areFriends=True)
-            following_object.save()
-            reverse_following_object.save()
+            following_objects.update(areFriends=True)
+            reverse_following_object = Following.objects.filter(author=following_author_object,
+                                                                following_author=followed_author_object)
+            if reverse_following_object.exists():
+                reverse_following_object.update(areFriends=True)
+            else:
+                reverse_following_object = Following.objects.create(author=following_author_object,
+                                                                    following_author=followed_author_object, areFriends=True)
             return JsonResponse({"success": True}, status=200)
         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)

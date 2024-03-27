@@ -56,7 +56,7 @@ def api_posts(request, author_id):
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
-
+        print("RECEIVED DATA",  request.data)
         data = request.data
 
         if data.get("id") is not None:
@@ -121,18 +121,28 @@ def api_posts(request, author_id):
                 author=user)
 
             if new_post.visibility == "PUBLIC":
+                print("GET TO PUBLIC POST")
                 for following_object in following_objects:
                     following_author = following_object.following_author
+                    print("SENDING TO FOLLOWING AUTHOR", following_author.url)
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.filter(baseUrl=author_host)
+                    node = Node.objects.filter(
+                        baseUrl=author_host.rstrip("/") + "/")
                     if node:
+                        print("NODE FOUND", node.first().baseUrl)
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
-                                      json=returned_data, auth=auth)
+                        response = requests.post(f"{author_url.rstrip("/")}/inbox",
+                                                 json=returned_data, auth=auth)
+                        try:
+                            print("JSON RESPONSE", response.json())
+                        except:
+                            print("RESPONSE", response.text)
+                            return HttpResponse(response.text, status=response.status_code)
                     else:
+                        print("NODE NOT FOUND")
                         notification_object = Notification.objects.get_or_create(
                             author=following_author)[0]
                         create_notification_item(
@@ -196,7 +206,8 @@ def api_feed(request):
             following_author = following.following_author
             if following_author.isExternalAuthor:
                 author_url = following_author.url
-                node = Node.objects.get(baseUrl=following_author.host)
+                print("EXTERNAL AUTHOR", author_url)
+                node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.get(
                     f"{author_url}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
@@ -554,6 +565,7 @@ def api_execute(request):
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in hostname):  # Same host
             session = requests.Session()
+            print("WE SENT THIS", url, obj)
             r = session.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
@@ -565,7 +577,7 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
-
+            print("WE SENT THIS TO FOREIGN", url, obj)
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
@@ -586,7 +598,7 @@ def api_execute(request):
                 "origin": request.META["HTTP_HOST"]})
             print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
             if r.status_code == 200:
-                return JsonResponse(r.json(), status=200)
+                return JsonResponse(r.json(), safe=False, status=200)
         else:
             auth = node_auth_helper(url)
 
@@ -600,6 +612,6 @@ def api_execute(request):
             print(">>>>>", response.request.body,
                   response.status_code, response.reason, response.text)
             if response.status_code == 200:
-                return JsonResponse(response.json(), status=200)
+                return JsonResponse(response.json(), safe=False, status=200)
 
     return JsonResponse({"message": "If you see this message, it means something's wrong"}, status=404)

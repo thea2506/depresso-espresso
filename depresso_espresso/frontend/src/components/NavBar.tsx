@@ -16,8 +16,6 @@ import { LiaSignOutAltSolid } from "react-icons/lia";
 import AuthContext from "../contexts/AuthContext";
 //#endregion
 
-const backendURL = import.meta.env.VITE_BACKEND_URL;
-
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 1000,
@@ -71,7 +69,7 @@ const NavBar = () => {
    */
   const handleLogout = async () => {
     try {
-      const response = await axios.post(`${backendURL}/api/auth/logout`);
+      const response = await axios.post(`/api/auth/logout`);
 
       if (response.data.success) {
         toast.success("You have been logged out", myToast);

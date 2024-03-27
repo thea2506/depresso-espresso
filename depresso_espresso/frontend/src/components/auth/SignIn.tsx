@@ -14,8 +14,6 @@ import { animated, useSpring } from "@react-spring/web";
 import { Button } from "../Button";
 //#endregion
 
-const backendURL = import.meta.env.VITE_BACKEND_URL;
-
 const myToast: ToastOptions = {
   position: "top-center",
   autoClose: 1000,
@@ -58,10 +56,7 @@ const SignIn = () => {
       formField.append("username", username);
       formField.append("password", password);
 
-      const response = await axios.post(
-        `${backendURL}/api/auth/signin`,
-        formField
-      );
+      const response = await axios.post(`/api/auth/signin`, formField);
 
       if (response.data.success) {
         toast.success("Login Successful", myToast);
