@@ -493,9 +493,28 @@ def api_likes(request, author_id, post_id):
 def api_execute(request):
     url = request.data["url"]
     method = request.data["method"]
-    auth = request.data["auth"]
+
+    user = my_authenticate(request)
+    if user is None:
+        return JsonResponse({"message": "User not authenticated"}, status=401)
 
     if method == "GET":
-        auth = HTTPBasicAuth(auth["username"], auth["password"])
-        response = requests.get(url, auth=auth)
-    return JsonResponse(response.json(), status=200)
+        response = requests.get(url)
+
+    # Send follow request
+    elif method == "POST":
+        obj = request.data["data"]
+        user_response = obj.get("accepted")
+
+        # handle follow request
+        if user_response is None:
+            response = requests.post(url, json=obj)
+            if response.status_code == 201:
+                return JsonResponse({"success": True}, status=201)
+
+        # handle follow response
+        else:
+            obj = request.data["data"]
+            response = requests.put(url, json=obj)
+
+    return JsonResponse({"success": True}, status=200)
