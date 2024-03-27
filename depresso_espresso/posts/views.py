@@ -91,7 +91,7 @@ def api_posts(request, author_id):
                         node = Node.objects.get(baseUrl=author_host)
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
+                        requests.post(f"{author_url.rstrip("/")}/inbox",
                                       json=returned_data, auth=auth)
 
                     else:
@@ -161,7 +161,7 @@ def api_posts(request, author_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
+                        requests.post(f"{author_url.rstrip("/")}/inbox",
                                       json=returned_data, auth=auth)
                     else:
                         notification_object = Notification.objects.get_or_create(
@@ -210,7 +210,7 @@ def api_feed(request):
                 node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.get(
-                    f"{author_url}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
+                    f"{author_url.rstrip("/")}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
                 feed = chain(feed, response.json()["items"])
             else:
                 my_friend_posts = Post.objects.filter(
@@ -367,7 +367,7 @@ def api_comments(request, author_id, post_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url}/inbox",
+                        requests.post(f"{author_url.rstrip("/")}/inbox",
                                       json=returned_data, auth=auth)
 
             else:
