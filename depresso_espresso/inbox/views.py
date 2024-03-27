@@ -75,13 +75,9 @@ def handle_follow(request, author_id):
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
         print("This shit runs")
-        actor = AuthorSerializer(data=actor_obj, context={"request": request})
-        if actor.is_valid():
-            print("Then why?")
-            actor = actor.save()
-            print(actor)
-        else:
-            return JsonResponse(actor.errors, status=400)
+        actor = Author.objects.create(**actor_obj)
+
+        print(actor.id)
 
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)
