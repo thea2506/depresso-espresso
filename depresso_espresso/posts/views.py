@@ -134,7 +134,7 @@ def api_posts(request, author_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        response = requests.post(f"{author_url}/inbox",
+                        response = requests.post(f"{author_url.rstrip("/")}/inbox",
                                                  json=returned_data, auth=auth)
                         try:
                             print("JSON RESPONSE", response.json())
