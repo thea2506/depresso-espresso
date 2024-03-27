@@ -590,9 +590,10 @@ def api_execute(request):
 
     # PUT external API
     elif method == "PUT":
-
+        print(">>> PUTTING", url, request.data["data"])
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in url):  # Same host
+            print("SAME HOST")
             session = requests.Session()
             r = session.put(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
@@ -602,8 +603,9 @@ def api_execute(request):
                 return JsonResponse(r.json(), safe=False, status=r.status_code)
         else:
             auth = node_auth_helper(url)
-
+            print("TRY DIFFERENT HOST", auth, url, obj)
             if not auth:
+                print("NODE NOT FOUND")
                 return JsonResponse({"message": "Node not found"}, status=404)
 
             response = requests.put(url, json=obj, auth=auth, headers={
