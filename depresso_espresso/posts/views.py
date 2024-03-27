@@ -214,7 +214,8 @@ def api_feed(request):
                 # auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 # response = requests.get(
                 #     f"{author_url.rstrip("/")}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
-                # feed = chain(feed, response.json()["items"])
+                feed = chain(feed, PostSerializer(
+                    instance=friends_only_posts, many=True, context={"request": request}).data)
             else:
                 my_friend_posts = Post.objects.filter(
                     author=following_author, visibility="FRIENDS")
