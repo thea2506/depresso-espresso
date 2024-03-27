@@ -54,8 +54,12 @@ class FollowRequestSerializer(serializers.ModelSerializer):
                 baseUrl=actor_obj.host.rstrip("/") + "/")
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
-            response = requests.get(actor_obj.url + "/", auth=auth)
-            return response.json()
+            response = requests.get(actor_obj.url.rstrip("/") + "/", auth=auth)
+            print(">>>>>", response.text, response.status_code, response.reason)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"error": "Could not retrieve external author"}
 
         else:
             serializer = AuthorSerializer(
