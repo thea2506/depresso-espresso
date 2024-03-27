@@ -12,7 +12,7 @@ import FollowerList from "./FollowerList";
 import { PostModel } from "../data/PostModel";
 import { AuthorModel } from "../data/AuthorModel";
 import AuthContext from "../../contexts/AuthContext";
-// import defaultPic from "../../assets/images/default_profile.jpg";
+import { getExternalNode } from "../../utils/externalAuth";
 //#endregion
 
 /**
@@ -57,6 +57,7 @@ const ProfilePage = () => {
         );
         const data = response.data;
         const authorUrl = data.url;
+        const basicAuthInfo = getExternalNode(authorUrl);
         setThisProfileUser(data);
 
         // followers
@@ -65,8 +66,11 @@ const ProfilePage = () => {
             `${authorUrl.replace(/\/+$/, "")}/followers`,
             {
               auth: {
-                username: import.meta.env.VITE_USERNAME,
-                password: import.meta.env.VITE_PASSWORD,
+                username: basicAuthInfo.username,
+                password: basicAuthInfo.password,
+              },
+              headers: {
+                "Access-Control-Allow-Origin": "*",
               },
             }
           );
@@ -83,8 +87,11 @@ const ProfilePage = () => {
             `${authorUrl.replace(/\/+$/, "")}/posts/`,
             {
               auth: {
-                username: import.meta.env.VITE_USERNAME,
-                password: import.meta.env.VITE_PASSWORD,
+                username: basicAuthInfo.username,
+                password: basicAuthInfo.password,
+              },
+              headers: {
+                "Access-Control-Allow-Origin": "*",
               },
               params: curUser,
             }
@@ -92,6 +99,7 @@ const ProfilePage = () => {
           const posts = response.data;
           const postModels = (posts.items as PostModel[]) || [];
           setPosts(postModels);
+          console.log(`${authorUrl.replace(/\/+$/, "")}/posts/`);
         } catch (error) {
           // empty
         }
