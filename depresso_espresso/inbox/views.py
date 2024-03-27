@@ -151,27 +151,33 @@ def handle_follow_response(request, author_id):
         else:
             actor_object = actor_object.first()
 
+        print(actor_object)
         # Now we have actor
-        try:
-            following_object = Following.objects.get(
-                author=actor_object, following_author=following_author_object)
+        following_objects = Following.objects.filter(
+            author=actor_object, following_author=following_author_object)
+
+        if following_objects.exists():
             print("Already following")
             return JsonResponse({'error': 'Already following'}, status=400)
 
-        except:
+        else:
             print("CREATE NEW")
             following_object = Following.objects.create(
                 author=actor_object, following_author=following_author_object)
 
-            try:
-                reverse_following_object = Following.objects.get(
-                    author=following_author_object, following_author=actor_object)
+            reverse_following_objects = Following.objects.filter(
+                author=following_author_object, following_author=actor_object)
+
+            if reverse_following_objects.exists():
+                print("FRIEND")
+                reverse_following_object = reverse_following_objects.first()
                 reverse_following_object.areFriends = True
                 reverse_following_object.save()
                 following_object.areFriends = True
                 following_object.save()
-            except:
-                print("NO REVERSE FOLLOWING OBJECT")
+
+            else:
+                print("NOT FRIEND")
 
             return JsonResponse({'success': 'Followed'}, status=201)
 
