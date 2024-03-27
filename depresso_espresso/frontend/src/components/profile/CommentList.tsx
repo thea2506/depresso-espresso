@@ -3,7 +3,6 @@ import axios from "axios";
 import { ToastContainer, ToastOptions, toast } from "react-toastify";
 import { PostModel } from "../data/PostModel";
 import { FaPaperPlane } from "react-icons/fa6";
-import { GoHeart } from "react-icons/go";
 import { useEffect } from "react";
 import { CommentModel } from "../data/CommentModel";
 
@@ -22,23 +21,6 @@ const myToast: ToastOptions = {
   progress: undefined,
   closeButton: false,
 };
-
-function checkSameOrigin(url: string) {
-  let windowOrigin = window.location.origin;
-  if (windowOrigin.includes("localhost")) {
-    if (url.includes(windowOrigin)) return true;
-    windowOrigin = windowOrigin.replace("localhost", "127.0.0.1");
-    if (url.includes(windowOrigin)) return true;
-  }
-
-  if (windowOrigin.includes("127.0.0.1")) {
-    if (url.includes(windowOrigin)) return true;
-    windowOrigin = windowOrigin.replace("127.0.0.1", "localhost");
-    if (url.includes(windowOrigin)) return true;
-  }
-
-  return false;
-}
 
 const CommentList = ({
   post,
@@ -138,28 +120,6 @@ const CommentList = ({
     }
   };
 
-  const handleLikeComment = async (comment: CommentModel) => {
-    try {
-      await axios.post(`${comment.author.url}/inbox`, {
-        summary: `${curUser!.displayName} liked your comment`,
-        type: "Like",
-        object: comment.id,
-        author: {
-          type: "author",
-          id: curUser!.id,
-          host: curUser!.host,
-          displayName: curUser!.displayName,
-          url: curUser!.url,
-          github: curUser!.github,
-          profileImage: curUser!.profileImage,
-        },
-      });
-      setRefresh(!refresh);
-    } catch (error) {
-      // console.error("An error occurred", error);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-y-4 w-full rounded-[1.4rem] bg-accent-3 px-4 md:px-8">
       <ToastContainer />
@@ -199,13 +159,6 @@ const CommentList = ({
               <p className="flex-1 p-4 bg-white text-start rounded-xl">
                 {comment.comment}
               </p>
-              <button
-                onClick={() => handleLikeComment(comment)}
-                className={`flex items-center justify-center gap-x-1 text-primary`}
-              >
-                <GoHeart />
-                <p>{comment.likecount}</p>
-              </button>
             </div>
           </div>
         ))}
