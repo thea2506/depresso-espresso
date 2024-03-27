@@ -58,28 +58,28 @@ const ProfilePage = () => {
         const data = response.data;
         const authorUrl = data.url;
         const basicAuthInfo = getExternalNode(authorUrl);
+        console.log(`${authorUrl.replace(/\/+$/, "")}/posts/`);
         setThisProfileUser(data);
 
-        // followers
-        try {
-          const response = await axios.get(
-            `${authorUrl.replace(/\/+$/, "")}/followers`,
-            {
-              auth: {
-                username: basicAuthInfo.username,
-                password: basicAuthInfo.password,
-              },
-              headers: {
-                "Access-Control-Allow-Origin": "*",
-              },
-            }
-          );
-          const data = response.data;
-          const followerModels = (data?.items as AuthorModel[]) || [];
-          if (followerModels) setFollowers(followerModels);
-        } catch (error) {
-          /* empty */
-        }
+        // try {
+        //   const response = await axios.get(
+        //     `${authorUrl.replace(/\/+$/, "")}/followers`,
+        //     {
+        //       auth: {
+        //         username: basicAuthInfo.username,
+        //         password: basicAuthInfo.password,
+        //       },
+        //       headers: {
+        //         "Access-Control-Allow-Origin": "*",
+        //       },
+        //     }
+        //   );
+        //   const data = response.data;
+        //   const followerModels = (data?.items as AuthorModel[]) || [];
+        //   if (followerModels) setFollowers(followerModels);
+        // } catch (error) {
+        //   /* empty */
+        // }
 
         // posts
         try {
@@ -99,7 +99,6 @@ const ProfilePage = () => {
           const posts = response.data;
           const postModels = (posts.items as PostModel[]) || [];
           setPosts(postModels);
-          console.log(`${authorUrl.replace(/\/+$/, "")}/posts/`);
         } catch (error) {
           // empty
         }
@@ -113,7 +112,7 @@ const ProfilePage = () => {
     if (!thisProfileUser || state?.reload) {
       getData();
     }
-  }, [thisProfileUser, authorId, refresh, splat, state, curUser]);
+  }, [thisProfileUser, authorId, refresh, splat, state, curUser, followers]);
 
   //#endregion
 
