@@ -208,7 +208,7 @@ def api_feed(request):
                 author_url = following_author.url
                 print("EXTERNAL AUTHOR", author_url)
                 friends_only_posts = Post.objects.filter(
-                    author=following_author, visibility="FRIENDS")
+                    Q(author=following_author), Q(visibility="FRIENDS") | Q(visibility="PUBLIC"))
                 print("FRIENDS ONLY POSTS", friends_only_posts.exists())
                 # node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
                 # auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
