@@ -56,7 +56,6 @@ def api_posts(request, author_id):
         return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
     elif request.method == 'POST':
-        print("RECEIVED DATA",  request.data)
         data = request.data
 
         if data.get("id") is not None:
@@ -91,7 +90,7 @@ def api_posts(request, author_id):
                         node = Node.objects.get(baseUrl=author_host)
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip("/")}/inbox",
+                        requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
                     else:
@@ -121,28 +120,19 @@ def api_posts(request, author_id):
                 author=user)
 
             if new_post.visibility == "PUBLIC":
-                print("GET TO PUBLIC POST")
                 for following_object in following_objects:
                     following_author = following_object.following_author
-                    print("SENDING TO FOLLOWING AUTHOR", following_author.url)
                     author_url = following_author.url
                     author_host = following_author.host
                     node = Node.objects.filter(
                         baseUrl=author_host.rstrip("/") + "/")
                     if node:
-                        print("NODE FOUND", node.first().baseUrl)
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        response = requests.post(f"{author_url.rstrip("/")}/inbox",
+                        response = requests.post(f"{author_url.rstrip('/')}/inbox",
                                                  json=returned_data, auth=auth)
-                        try:
-                            print("JSON RESPONSE", response.json())
-                        except:
-                            print("RESPONSE", response.text)
-                            return HttpResponse(response.text, status=response.status_code)
                     else:
-                        print("NODE NOT FOUND")
                         notification_object = Notification.objects.get_or_create(
                             author=following_author)[0]
                         create_notification_item(
@@ -161,7 +151,7 @@ def api_posts(request, author_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip("/")}/inbox",
+                        requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
                     else:
                         notification_object = Notification.objects.get_or_create(
@@ -187,7 +177,8 @@ def api_feed(request):
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
         for public_post in public_posts:
-            if public_post.author.isExternalAuthor == True:
+            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
+                    author=public_post.author, following_author=user).exists():
                 public_posts = public_posts.exclude(id=public_post.id)
 
         public_posts = PostSerializer(
@@ -204,24 +195,10 @@ def api_feed(request):
 
         for following in following_objects:
             following_author = following.following_author
-            if following_author.isExternalAuthor:
-                author_url = following_author.url
-                print("EXTERNAL AUTHOR", author_url)
-                friends_only_posts = Post.objects.filter(
-                    Q(author=following_author), Q(visibility="FRIENDS") | Q(visibility="PUBLIC"))
-                print("FRIENDS ONLY POSTS", friends_only_posts.exists())
-                # node = Node.objects.get(baseUrl=following_author.host.rstrip("/") + "/")
-                # auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                # response = requests.get(
-                #     f"{author_url.rstrip("/")}/posts", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, params=AuthorSerializer(instance=user, context={"request": request}).data)
-                feed = chain(feed, PostSerializer(
-                    instance=friends_only_posts, many=True, context={"request": request}).data)
-            else:
-                my_friend_posts = Post.objects.filter(
-                    author=following_author, visibility="FRIENDS")
-                my_friend_posts = PostSerializer(
-                    instance=my_friend_posts, many=True, context={"request": request}).data
-                feed = chain(feed, my_friend_posts)
+            friends_only_posts = Post.objects.filter(
+                Q(author=following_author), Q(visibility="FRIENDS"))
+            feed = chain(feed, PostSerializer(
+                instance=friends_only_posts, many=True, context={"request": request}).data)
 
         feed = list(
             chain(feed, public_posts, friends_unlisted_posts))
@@ -371,7 +348,7 @@ def api_comments(request, author_id, post_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip("/")}/inbox",
+                        requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
             else:
@@ -528,14 +505,12 @@ def node_auth_helper(url):
 def api_execute(request):
     url = request.data["url"]
     method = request.data["method"]
-    print("url", url)
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
     schema = urlparse(url)
     hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
-    print("HOSTNAME", hostname)
 
     if method == "GET":
         if (request.META["HTTP_HOST"] in hostname):  # Same host
@@ -553,8 +528,6 @@ def api_execute(request):
                 "origin": request.META["HTTP_HOST"]
             })
 
-            print(">>>>>", response.request.body, response.text,
-                  response.status_code, response.reason)
             if response.status_code == 200:
                 return JsonResponse(response.json(), status=200)
             else:
@@ -569,10 +542,8 @@ def api_execute(request):
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in hostname):  # Same host
             session = requests.Session()
-            print("WE SENT THIS", url, obj)
             r = session.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
-            print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
             if r.status_code == 201:
                 return JsonResponse(r.json(), status=201)
             return r
@@ -581,43 +552,31 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
-            print("WE SENT THIS TO FOREIGN", url, obj)
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
-
-            print(">>>>>", response.request.body,
-                  response.status_code, response.reason, response.text)
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
 
     # PUT external API
     elif method == "PUT":
-        print(">>> PUTTING", url, request.data["data"])
+        print("PUT")
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in url):  # Same host
-            print("SAME HOST")
             session = requests.Session()
             r = session.put(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
-            print(">>>>>", r.request.body, r.text, r.status_code, r.reason)
             if r.status_code == 200 or r.status_code == 201:
-                print("SUCCESS RETURNING", r.json())
                 return JsonResponse(r.json(), safe=False, status=r.status_code)
         else:
             auth = node_auth_helper(url)
-            print("TRY DIFFERENT HOST", auth, url, obj)
             if not auth:
-                print("NODE NOT FOUND")
                 return JsonResponse({"message": "Node not found"}, status=404)
 
             response = requests.put(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
-
-            print(">>>>>", response.request.body,
-                  response.status_code, response.reason, response.text)
             if response.status_code == 200:
                 return JsonResponse(response.json(), safe=False, status=200)
 

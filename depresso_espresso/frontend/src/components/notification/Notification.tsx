@@ -68,7 +68,8 @@ const Notification = ({
         )}`,
         data: data,
       });
-      if (response.data.success) {
+      if (response.status === 200) {
+        console.log("Follow request accepted");
         setRefresh(!refresh);
       }
     } catch (error) {

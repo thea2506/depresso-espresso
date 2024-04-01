@@ -51,11 +51,10 @@ class FollowRequestSerializer(serializers.ModelSerializer):
         actor_obj = Author.objects.get(id=obj.requester.id)
         if actor_obj.isExternalAuthor:
             node_obj = Node.objects.get(
-                baseUrl=actor_obj.host.rstrip("/") + "/")
+                baseUrl=actor_obj.host.rstrip('/') + "/")
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
-            response = requests.get(actor_obj.url.rstrip("/") + "/", auth=auth)
-            print(">>>>>", response.text, response.status_code, response.reason)
+            response = requests.get(actor_obj.url.rstrip('/') + "/", auth=auth)
             if response.status_code == 200:
                 return response.json()
             else:

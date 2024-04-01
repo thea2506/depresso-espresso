@@ -18,7 +18,7 @@ const NotiPage = () => {
         const response = await axios.get(`${curUser?.url}/inbox`);
         if (response.status === 200) {
           const items = response.data.items.map((item: any) => {
-            if (item && item.type) return item;
+            if (item && item.type && item.actor.id != curUser.id) return item;
           });
 
           setNotifications(items);

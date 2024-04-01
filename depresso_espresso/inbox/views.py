@@ -72,18 +72,14 @@ def handle_follow(request, author_id):
             url=normalized_actor_url).exists():
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
-        print("The old id", old_id)
         actor_obj["id"] = old_id
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
-        print("This shit runs")
         serializer = AuthorSerializer(
             data=actor_obj, context={"request": request})
         if serializer.is_valid():
-            print("Valid")
             actor = serializer.save(id=uuid.UUID(
                 old_id), username=uuid.uuid4(), isExternalAuthor=True)
-            print(actor.id)
         else:
             return JsonResponse(serializer.errors, status=500)
 
@@ -102,7 +98,6 @@ def handle_follow(request, author_id):
 
 
 def handle_follow_response(request, author_id):
-    print("INBOX ITEM RECEIVED", request.data)
 
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({'error': 'Author not found'}, status=404)
@@ -117,7 +112,6 @@ def handle_follow_response(request, author_id):
 
     following_author_object = Author.objects.filter(id=author_id)
     if not following_author_object.exists():
-        print("AUTHOR LOCAL NOT EXISTS")
         return HttpResponse(status=404)
 
     if accepted == True:
@@ -130,18 +124,14 @@ def handle_follow_response(request, author_id):
             if not actor_object.exists():
                 old_id = actor.get('id')
                 old_id = old_id.rstrip("/").split("/")[-1]
-                print("The old id", old_id)
                 actor["id"] = old_id
                 actor["isExternalAuthor"] = True
                 actor["username"] = uuid.uuid4()
-                print("This shit runs")
                 serializer = AuthorSerializer(
                     data=actor, context={"request": request})
                 if serializer.is_valid():
-                    print("Valid")
                     actor_object = serializer.save(id=uuid.UUID(
                         old_id), username=uuid.uuid4(), isExternalAuthor=True)
-                    print("FOREIGN OBJECT CREATED", actor_object.id)
                 else:
                     return JsonResponse(serializer.errors, status=500)
 
@@ -151,18 +141,15 @@ def handle_follow_response(request, author_id):
         else:
             actor_object = actor_object.first()
 
-        print(actor_object.id)
         following_author_object = following_author_object.first()
         # Now we have actor
         following_objects = Following.objects.filter(
             author=actor_object, following_author=following_author_object)
 
         if following_objects.exists():
-            print("Already following")
             return JsonResponse({'success': 'Followed'}, status=201)
 
         else:
-            print("CREATE NEW")
             following_object = Following.objects.create(
                 author=actor_object, following_author=following_author_object)
 
@@ -170,28 +157,20 @@ def handle_follow_response(request, author_id):
                 author=following_author_object, following_author=actor_object)
 
             if reverse_following_objects.exists():
-                print("FRIEND")
                 reverse_following_object = reverse_following_objects.first()
                 reverse_following_object.areFriends = True
                 reverse_following_object.save()
                 following_object.areFriends = True
                 following_object.save()
 
-            else:
-                print("NOT FRIEND")
-
             return JsonResponse({'success': 'Followed'}, status=201)
 
     else:
-        # Handle Reject
-        print("REJECTION FROM THEIR END")
-
         # Delete Notification
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=actor_object)
 
         if follow_request_object.exists():
-            print("Follow Request Exists")
             follow_request_object = follow_request_object.first()
 
             follow_request_content_type = ContentType.objects.get_for_model(
@@ -204,7 +183,6 @@ def handle_follow_response(request, author_id):
                 notification_item.delete()
 
             follow_request_object.delete()
-        print("REACHING HERE")
         return JsonResponse({'success': 'Rejected'}, status=201)
 
 
@@ -331,7 +309,7 @@ def handle_post(request, author_id):
 
     if serializer.is_valid():
 
-        new_post = serializer.save()
+        new_post = serializer
         new_post.id = data.get('id').rstrip("/").split('/')[-1]
         new_post.save()
 
