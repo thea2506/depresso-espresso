@@ -110,7 +110,7 @@ class LikePostSerializer(serializers.ModelSerializer):
 
     def get_summary(self, obj):
         return f"{obj.author.displayName} liked your post"
-    
+
 
 class LikeCommentSerializer(serializers.ModelSerializer):
     author = AuthorField()

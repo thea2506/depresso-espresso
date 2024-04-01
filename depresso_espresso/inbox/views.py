@@ -297,16 +297,14 @@ def handle_post(request, author_id):
                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
-
+    if data.get('id') is not None:
+        data['id'] = data.get('id').rstrip("/").split('/')[-1]
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
 
     if serializer.is_valid():
-
-        new_post = serializer
-        new_post.id = data.get('id').rstrip("/").split('/')[-1]
-        new_post.save()
+        serializer.save(id=uuid.UUID(data.get('id')))
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]

@@ -112,7 +112,6 @@ def api_posts(request, author_id):
 
         if serializer.is_valid():
             new_post = serializer.save()
-
             returned_data = PostSerializer(instance=new_post, context={
                                            "request": request}).data
 
@@ -439,18 +438,20 @@ def api_likes(request, author_id, post_id):
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
         else:
             liked_post = Post.objects.get(id=post_id)
+            post_author = liked_post.author
 
-            author = request.data.get("author")
-            if not Author.objects.filter(url=author.get("url")).exists():
+            like_author = request.data.get("author")
+            if not Author.objects.filter(url=like_author.get("url")).exists():
 
                 serializer = AuthorSerializer(
-                    data=author, context={"request": request})
+                    data=like_author, context={"request": request})
                 if serializer.valid():
-                    author = serializer.save()
+                    like_author = serializer.save()
                 else:
                     return JsonResponse(serializer.errors, status=501)
             else:
-                author = Author.objects.get(url=author.get("url"))
+                like_author = Author.objects.get(
+                    url=like_author.get("url"))
 
             data = request.data
             data["post_id"] = Post.objects.get(id=post_id)
@@ -458,15 +459,16 @@ def api_likes(request, author_id, post_id):
                 data=data, context={"request": request})
 
             if serializer.is_valid():
+                print("SERIALIZER VALID")
                 new_like = LikePost.objects.create(
-                    author=author, post=liked_post)
+                    author=like_author, post=liked_post)
 
                 returned_data = LikePostSerializer(
                     instance=new_like, context={"request": request}).data
                 returned_data.pop("post", None)
 
-                if author.isExternalAuthor == False:
-                    notification_object = Notification.objects.get_or_create(author=author)[
+                if not post_author.isExternalAuthor:
+                    notification_object = Notification.objects.get_or_create(author=like_author)[
                         0]
 
                     like_object = new_like
@@ -474,14 +476,17 @@ def api_likes(request, author_id, post_id):
                     create_notification_item(
                         notification_object, like_object, "like")
 
-                if author.isExternalAuthor == True:
+                else:
+                    print("EXTERNAL AUTHOR")
                     nodes = Node.objects.all()
                     for node in nodes:
-                        if node.baseUrl == author.host:
+                        if node.baseUrl == post_author.host:
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-                            requests.post(f"{author.url}/inbox",
-                                          json=returned_data, auth=auth)
+                            response = requests.post(f"{post_author.url}/inbox",
+                                                     json=returned_data, auth=auth)
+                            print("I SEND A LIKE TO EXTERNAL AUTHOR")
+                            print(response.status_code)
 
                 return JsonResponse(
                     returned_data, status=201)
