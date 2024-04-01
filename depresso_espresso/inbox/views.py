@@ -102,12 +102,7 @@ def handle_follow_response(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({'error': 'Author not found'}, status=404)
 
-    author_object = Author.objects.get(id=author_id)
-
-    data = request.data
-
     actor = request.data.get('actor')
-    object = request.data.get('object')
     accepted = request.data.get('accepted')
 
     following_author_object = Author.objects.filter(id=author_id)
