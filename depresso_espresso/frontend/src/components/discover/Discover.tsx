@@ -50,7 +50,7 @@ const Discover = () => {
       <div className="flex flex-col w-4/5 gap-4">
         {loading ? (
           <div className="m-8 text-lg font-semibold text-primary opacity-70">
-            Loading... or there is no other servers yet
+            Loading... or there are no other servers connected to us yet
           </div>
         ) : (
           allAuthors.map((author, key: number) => {
