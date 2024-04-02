@@ -229,14 +229,14 @@ const Profile = ({
   const handleUnffollowRequest = async () => {
     try {
       const response = await axios.delete(
-        `${user?.url.replace(/\/+$/, "")}/followers/${curUser?.url}`
+        `/api/authors/${user?.id.split("/").pop()}/followers/${curUser?.url}`
       );
       if (response.data.success === true) {
         setStatus("stranger");
       }
       setRefresh(!refresh);
     } catch (error) {
-      toast.error("Failed to unfollow", myToast);
+      console.error("An error occurred", error);
     }
   };
   //#endregion

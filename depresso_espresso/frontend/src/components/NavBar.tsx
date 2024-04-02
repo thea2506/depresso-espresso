@@ -109,6 +109,12 @@ const NavBar = () => {
             onClick={() => changePage(item.link)}
           ></Button>
         ))}
+        <Button
+          buttonType="icon"
+          icon={<LiaSignOutAltSolid />}
+          className={twMerge(iconStyling, "flex lg:hidden")}
+          onClick={handleLogout}
+        />
       </ul>
       {/* Logout */}
       <Button

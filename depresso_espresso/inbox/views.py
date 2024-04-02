@@ -40,15 +40,17 @@ def api_inbox(request, author_id):
         type = request.data.get('type').lower()
         if type == 'follow':
             return handle_follow(request, author_id)
-        if type == 'followresponse':
+        elif type == 'unfollow':
+            return handle_unfollow(request, author_id)
+        elif type == 'followresponse':
             return handle_follow_response(request, author_id)
-        if type == 'like':
+        elif type == 'like':
             return handle_like(request, author_id)
-        if type == 'comment':
+        elif type == 'comment':
             return handle_comment(request, author_id)
-        if type == 'post':
+        elif type == 'post':
             return handle_post(request, author_id)
-        if type == 'share':
+        elif type == 'share':
             return handle_share(request, author_id)
 
     elif request.method == 'DELETE':
@@ -96,8 +98,39 @@ def handle_follow(request, author_id):
     return send_notification_item(request, notification_object)
 
 
+def handle_unfollow(request, author_id):
+
+    actor_object = get_author_object(request.data.get('actor')['url'])
+    object = get_author_object(request.data.get('object')['url'])
+
+    if not actor_object or not object:
+        return JsonResponse({'error': 'Author not found'}, status=404)
+
+    # Remove the following object
+    following_object = Following.objects.filter(
+        following_author=actor_object, author=object)
+    if following_object.exists():
+        following_object.delete()
+    else:
+        return JsonResponse({'error': 'Following relationship does not exist to delete'}, status=400)
+
+    print("I come here")
+    print(actor_object)
+    print(object)
+    print(Following.objects.filter(
+        following_author=object, author=actor_object).exists())
+    # Set are friends to false for the other author
+    reverse_following_object = Following.objects.filter(
+        following_author=object, author=actor_object)
+    if reverse_following_object.exists():
+        reverse_following_object = reverse_following_object.first()
+        reverse_following_object.areFriends = False
+        reverse_following_object.save()
+
+    return JsonResponse({'success': 'Unfollowed'}, status=200)
+
+
 def handle_follow_response(request, author_id):
-    print("YESSSS")
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({'error': 'Author not found'}, status=404)
 
