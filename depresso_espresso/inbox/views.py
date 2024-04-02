@@ -113,11 +113,6 @@ def handle_unfollow(request, author_id):
     else:
         return JsonResponse({'error': 'Following relationship does not exist to delete'}, status=400)
 
-    print("I come here")
-    print(actor_object)
-    print(object)
-    print(Following.objects.filter(
-        following_author=object, author=actor_object).exists())
     # Set are friends to false for the other author
     reverse_following_object = Following.objects.filter(
         following_author=object, author=actor_object)
@@ -195,9 +190,6 @@ def handle_follow_response(request, author_id):
 
     # Handle rejected follow request
     else:
-        print(following_author_object)
-        print(actor_object)
-
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=actor_object)
 
