@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import django_on_heroku
 from pathlib import Path
 import os
-import dj_database_url
 
 
 LOGIN_URL = "/signin"

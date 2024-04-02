@@ -4,12 +4,11 @@ from django.http import JsonResponse
 from django.test import TestCase
 from django.urls import reverse
 from .models import Author
-from django.contrib.sessions.models import Session
-from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 
+
 class RegisterTestCase(TestCase):
-  def test_register_success(self):
+    def test_register_success(self):
         response = self.client.post(reverse('signup'), {
             'username': 'testuser',
             'displayName': 'testuser',
@@ -22,26 +21,31 @@ class RegisterTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {'success': True})
 
-  def test_register_failure(self):
-      response = self.client.post(reverse('signup'), {
-          'password': 'testpassword',
-          'email': 'test@example.com'
-      })
+    def test_register_failure(self):
+        response = self.client.post(reverse('signup'), {
+            'password': 'testpassword',
+            'email': 'test@example.com'
+        })
 
-      self.assertIsInstance(response, JsonResponse)
-      self.assertEqual(response.status_code, 200)
-      self.assertEqual(response.json(), {'errors': [['This field is required.'], ['This field is required.'], ['This field is required.'], ['This field is required.']], 'success': False})
+        self.assertIsInstance(response, JsonResponse)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'errors': [['This field is required.'], ['This field is required.'], [
+                         'This field is required.'], ['This field is required.']], 'success': False})
+
 
 class LoginUserTestCase(TestCase):
     def test_login_success(self):
-        response = self.client.post(reverse('signin'), {'username': 'testuser', 'password': 'testpassword'})
+        response = self.client.post(
+            reverse('signin'), {'username': 'testuser', 'password': 'testpassword'})
         self.assertEqual(response.status_code, 200)
-    
+
     def test_login_failure(self):
-        response = self.client.post(reverse('signin'), {'username': 'testuser', 'password': 'wrongpassword'})
+        response = self.client.post(
+            reverse('signin'), {'username': 'testuser', 'password': 'wrongpassword'})
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertFalse(data['success'])
+
 
 class LogoutUserTestCase(TestCase):
     def test_logout(self):
@@ -49,26 +53,27 @@ class LogoutUserTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         self.assertTrue(data['success'])
-        
-        
+
+
 class CurUserTestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.author = Author.objects.create(
-          id=uuid.uuid4(),
-          type="author",
-          url="http://localhost:8000/author/1",
-          host="http://localhost:8000/",
-          displayName="Author 1",
-          username="author1",
-          github="author1",
-          profileImage="http://localhost:8000/media/profile.jpg"
+            id=uuid.uuid4(),
+            type="author",
+            url="http://localhost:8000/author/1",
+            host="http://localhost:8000/",
+            displayName="Author 1",
+            username="author1",
+            github="author1",
+            profileImage="http://localhost:8000/media/profile.jpg"
         )
-        
+
         self.client.force_login(user=self.author)
 
     def test_curUser_with_valid_session(self):
-        response = self.client.get(reverse('curUser'), session=self.client.session)
+        response = self.client.get(
+            reverse('curUser'), session=self.client.session)
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {
             'type': self.author.type,

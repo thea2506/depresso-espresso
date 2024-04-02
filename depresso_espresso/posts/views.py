@@ -1,6 +1,5 @@
 import base64
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
 from posts.models import *

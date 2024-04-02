@@ -5,7 +5,6 @@ from authentication.serializers import AuthorSerializer
 from inbox.models import Notification, NotificationItem
 from inbox.serializers import NotificationSerializer, NotificationItemSerializer
 from django.contrib.contenttypes.models import ContentType
-from urllib.parse import urlparse
 from posts.models import Post, Comment, LikeComment, LikePost
 from posts.serializers import PostSerializer, CommentSerializer
 from authors.views import get_author_object

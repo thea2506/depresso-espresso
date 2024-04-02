@@ -1,8 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
-from authentication.serializers import AuthorSerializer, FollowRequestSerializer
-from inbox.models import Notification, NotificationItem
+from authentication.serializers import AuthorSerializer
+from inbox.models import NotificationItem
 from posts.models import LikePost, LikeComment
 from posts.serializers import LikePostSerializer, LikeCommentSerializer
 from authentication.models import Node
