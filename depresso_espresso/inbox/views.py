@@ -323,8 +323,9 @@ def handle_post(request, author_id):
                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
-    if data.get('id') is not None:
-        data['id'] = data.get('id').rstrip("/").split('/')[-1]
+
+    url = data.get('id')
+    data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
     serializer = PostSerializer(
         data=data, context={"request": request}
@@ -337,7 +338,7 @@ def handle_post(request, author_id):
             0]
 
         create_notification_item(
-            notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
+            notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
 
         return send_notification_item(request, notification_object)
     else:

@@ -32,12 +32,14 @@ class NotificationItemSerializer(serializers.ModelSerializer):
         if isinstance(instance.content_object, LikeComment):
             return LikeCommentSerializer(instance=instance.content_object, context=self.context).data
         if instance.object_url:
+            print("Get into instance.object url")
             nodes = Node.objects.all()
             if instance.content_type == ContentType.objects.get_for_model(Post):
                 for node in nodes:
-
+                    print(node.baseUrl)
+                    print(instance.object_url)
                     if node.baseUrl in instance.object_url:
-
+                        print("Find the node")
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
                         response = requests.get(instance.object_url, auth=auth, headers={
