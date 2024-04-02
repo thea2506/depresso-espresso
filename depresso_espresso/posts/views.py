@@ -473,6 +473,19 @@ def api_likes(request, author_id, post_id):
                     create_notification_item(
                         notification_object, like_object, "like")
 
+                    followers = Following.objects.filter(author=post_author)
+
+                    for follower in followers:
+                        if follower.following_author.isExternalAuthor:
+                            node = Node.objects.get(
+                                baseUrl=follower.following_author.host)
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            response = requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
+                                                     json=returned_data, auth=auth)
+                            print("Sent to ", follower.following_author.url)
+                            print(response.status_code)
+
                 else:
                     nodes = Node.objects.all()
                     for node in nodes:
