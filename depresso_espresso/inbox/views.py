@@ -34,7 +34,6 @@ def api_inbox(request, author_id):
         page = paginator.paginate_queryset(notification_items, request)
         serializer = NotificationItemSerializer(
             page, context={'request': request}, many=True)
-
         return JsonResponse({'type': 'inbox', 'items': serializer.data}, status=200)
 
     elif request.method == 'POST':
@@ -299,6 +298,7 @@ def handle_post(request, author_id):
             0]
     if data.get('id') is not None:
         data['id'] = data.get('id').rstrip("/").split('/')[-1]
+
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
@@ -324,15 +324,16 @@ def handle_share(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     data = request.data
+    if data.get('id') is not None:
+        data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
     serializer = PostSerializer(
         data=data, context={"request": request}
     )
     if serializer.is_valid():
-        serializer.save()
+        serializer.save(id=uuid.UUID(data.get('id')))
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
-
         create_notification_item(
             notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
 

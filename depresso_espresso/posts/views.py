@@ -86,7 +86,6 @@ def api_posts(request, author_id):
                     author_host = following_author.host
 
                     if following_author.isExternalAuthor:
-
                         node = Node.objects.get(baseUrl=author_host)
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
@@ -129,8 +128,8 @@ def api_posts(request, author_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        response = requests.post(f"{author_url.rstrip('/')}/inbox",
-                                                 json=returned_data, auth=auth)
+                        requests.post(f"{author_url.rstrip('/')}/inbox",
+                                      json=returned_data, auth=auth)
                     else:
                         notification_object = Notification.objects.get_or_create(
                             author=following_author)[0]
@@ -483,6 +482,7 @@ def api_likes(request, author_id, post_id):
                         if node.baseUrl == post_author.host:
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
+                            print(returned_data)
                             response = requests.post(f"{post_author.url}/inbox",
                                                      json=returned_data, auth=auth)
                             print("I SEND A LIKE TO EXTERNAL AUTHOR")
