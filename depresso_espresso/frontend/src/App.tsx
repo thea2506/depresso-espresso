@@ -51,6 +51,10 @@ const router = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: "authors/:authorId/posts/:postId",
+        element: <SinglePostView />,
+      },
+      {
         path: "authors/*",
         element: <ProfilePage />,
       },
