@@ -17,5 +17,6 @@ urlpatterns = [
     path('api/authors/<str:author_id>/liked/',
          views.api_liked, name='authors'),
 
-
+    path('api/authors/<str:author_id>/decline',
+         views.api_handle_decline, name='handle_decline'),
 ]

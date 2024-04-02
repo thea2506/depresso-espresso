@@ -56,7 +56,7 @@ const Notification = ({
       actor: curUser,
       object: notificationObject.actor,
       type: "FollowResponse",
-      summary: `${notificationObject.actor.displayName} accepted your friend request`,
+      summary: `${notificationObject.actor.displayName} accepted ${curUser.displayName}'s follow request`,
       accepted: true,
     };
 
@@ -79,22 +79,18 @@ const Notification = ({
 
   const handleDecline = async () => {
     const data = {
-      actor: notificationObject.actor,
-      object: curUser,
+      actor: curUser,
+      object: notificationObject.actor,
       type: "FollowResponse",
-      summary: `${notificationObject.actor.displayName} wants to follow ${curUser.displayName}`,
+      summary: `${notificationObject.actor.displayName} declined ${curUser.displayName}'s follow request`,
       accepted: false,
     };
 
     try {
-      const response = await axios.post("/api/execute", {
-        method: "PUT",
-        url: `${curUser.id}/followers/${encodeURIComponent(
-          notificationObject.actor.id
-        )}`,
-
-        data: data,
-      });
+      const response = await axios.post(
+        `/api/authors/${curUser.id.split("/").pop()}/decline`,
+        data
+      );
       if (response.data.success) {
         setRefresh(!refresh);
       }

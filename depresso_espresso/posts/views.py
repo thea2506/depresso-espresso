@@ -566,12 +566,13 @@ def api_execute(request):
 
     # PUT external API
     elif method == "PUT":
-        print("PUT")
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in url):  # Same host
             session = requests.Session()
+
             r = session.put(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
+
             if r.status_code == 200 or r.status_code == 201:
                 return JsonResponse(r.json(), safe=False, status=r.status_code)
         else:

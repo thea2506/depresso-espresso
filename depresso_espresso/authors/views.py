@@ -162,7 +162,6 @@ def api_follower(request, author_id, author_url):
 
         # The object
         followed_author_object = Author.objects.get(id=author_id)
-
         if data.get("areFriends") is not None:
             following_objects = Following.objects.filter(
                 author=followed_author_object, following_author=following_author_object)
@@ -182,6 +181,7 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"error": "Already following", "success": False}, status=400)
 
         if request.data.get("accepted") == False:
+            print("REJECTED")
             follow_request_object = FollowRequest.objects.get(
                 requester=following_author_object, receiver=followed_author_object)
 
@@ -198,6 +198,7 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"success": True}, status=200)
 
         # accept
+        print("ACCEPTED")
         following_object = Following.objects.create(author=followed_author_object,
                                                     following_author=following_author_object)
 
@@ -206,6 +207,7 @@ def api_follower(request, author_id, author_url):
             author=following_author_object, following_author=followed_author_object).exists()
 
         if reverse_following_object:
+            print("LOCAL")
             print("reverse_following_object exists")
             reverse_following_object = Following.objects.get(
                 author=following_author_object, following_author=followed_author_object)
@@ -365,3 +367,33 @@ def api_make_friends(request, author_id, author_url):
             return JsonResponse({"success": True}, status=200)
         return JsonResponse({"error": "Follower not found", "success": False}, status=404)
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
+
+
+@api_view(['POST'])
+def api_handle_decline(request, author_id):
+    if request.method == 'POST':
+        data = request.data
+
+        receiver = get_author_object(data["actor"]["id"])
+        requester = get_author_object(data["object"]["id"])
+
+        if FollowRequest.objects.filter(requester=requester, receiver=receiver).exists():
+            FollowRequest.objects.filter(
+                requester=requester, receiver=receiver).delete()
+
+            if requester.isExternalAuthor:
+                node = Node.objects.filter(baseUrl=requester.host)
+                if node.exists():
+                    node = node.first()
+                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                    response = requests.post(
+                        requester.url + "/inbox", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, json=data)
+
+                    if response.status_code != 200 and response.status_code != 201:
+                        return JsonResponse({"error": "Failed to send follow response to external authors", "success": False}, status=500)
+
+            return JsonResponse({"success": True}, status=200)
+        else:
+            return JsonResponse({"error": "Follow request not found", "success": False}, status=404)
+    else:
+        return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
