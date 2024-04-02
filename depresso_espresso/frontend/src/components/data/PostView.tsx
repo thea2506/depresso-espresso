@@ -178,9 +178,12 @@ const PostView = ({
               user_img_url={post.author.profileImage}
               link={`authors/${post.author.url}`}
             />
+            <p className="text-sm font-semibold capitalize text-secondary-dark opacity-80">
+              ({post.visibility.toLowerCase()})
+            </p>
           </div>
 
-          <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-80">
+          <div className="items-center hidden md:flex md:justify-center gap-x-1 opacity-60">
             <MdOutlinePublic className="w-4 h-4" />
             <p className="text-sm">
               {formatDateString(post.published.substring(0, 16))}

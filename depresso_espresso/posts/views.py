@@ -72,7 +72,7 @@ def api_posts(request, author_id):
                                         "request": request})
 
             if serializer.is_valid():
-                new_shared_post = serializer.save()
+                new_shared_post = serializer.save(origin=old_id)
 
                 returned_data = PostSerializer(instance=new_shared_post, context={
                                                "request": request}).data
