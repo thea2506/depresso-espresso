@@ -479,7 +479,10 @@ def api_likes(request, author_id, post_id):
                         if node.baseUrl == post_author.host:
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-
+                            response = requests.post(f"{post_author.url}/inbox",
+                                                     json=returned_data, auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                            print("Sent to ", post_author.url)
+                            print(response.status_code)
                 return JsonResponse(
                     returned_data, status=201)
             else:
