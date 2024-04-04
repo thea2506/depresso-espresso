@@ -360,6 +360,8 @@ def api_discover(request):
                     if not flag:
                         author_dicts.append(item)
 
+        print("ITEMS:", items)
+
         return JsonResponse(
             {
                 "type": "authors",
