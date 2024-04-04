@@ -96,6 +96,8 @@ def api_external_author(request, author_url):
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
             response = requests.get(author_url, auth=auth)
+
+            print("Author url:", author_url)
             print("Response text:", response.text)
 
             
