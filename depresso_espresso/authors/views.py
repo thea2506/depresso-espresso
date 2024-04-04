@@ -98,8 +98,18 @@ def api_external_author(request, author_url):
             response = requests.get(author_url, auth=auth)
             print("Response text:", response.text)
 
-            print("Response:", response.json())
-            return JsonResponse(response.json(), status=response.status_code)
+            
+
+            try:
+                print("Response:", response.json())
+                return JsonResponse(response.json(), status=response.status_code)
+            except:
+                response = requests.get(author_url+'/', auth=auth)
+                print("Response text:", response.text)
+
+            
+            
+            
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
