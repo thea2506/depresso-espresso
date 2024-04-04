@@ -514,7 +514,7 @@ def node_auth_helper(url):
     return None
 
 
-@api_view(['POST'])
+@api_view(['POST', 'GET', 'PUT'])
 def api_execute(request):
     url = request.data["url"]
     method = request.data["method"]
@@ -565,6 +565,8 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
+            
+            print(f'sending {obj} to {url}')
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })

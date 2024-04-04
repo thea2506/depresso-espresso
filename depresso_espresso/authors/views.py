@@ -339,7 +339,7 @@ def api_discover(request):
         author_dicts = []
 
         local_author = Author.objects.filter(
-            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
 
         author_dicts = AuthorSerializer(
             instance=local_author, context={'request': request}, many=True).data
