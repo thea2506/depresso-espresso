@@ -345,6 +345,8 @@ def api_comments(request, author_id, post_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
+                        
+                        print("COMMENT JSON:", returned_data)
                         requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
@@ -354,8 +356,11 @@ def api_comments(request, author_id, post_id):
                     if node.baseUrl == post_owner_host:
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
+                        
+                        print("COMMENT JSON:", returned_data)
                         requests.post(f"{post_owner_url}/inbox",
                                       json=returned_data, auth=auth)
+                        
 
             return JsonResponse(
                 returned_data, status=201)
