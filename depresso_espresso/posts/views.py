@@ -569,7 +569,12 @@ def api_execute(request):
             print(f'ORIGINAL sending {obj} to {url}')
             
             if obj.get('object') != None:
-                obj['object']['id'] = obj['object']['url']
+                author_url = obj['object']['url']
+                if author_url[-1] == '/':
+                    author_url = author_url[:-1]
+
+                obj['object']['id'] = author_url
+
             
             print(f'sending {obj} to {url}')
             response = requests.post(url, json=obj, auth=auth, headers={
