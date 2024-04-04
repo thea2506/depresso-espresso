@@ -571,7 +571,7 @@ def api_execute(request):
             if obj.get('object') != None:
                 author_url = obj['object']['url']
                 if author_url[-1] == '/':
-                    author_url = author_url[:-1]
+                    author_url = author_url.rstrip('/')
 
                 obj['object']['id'] = author_url
 
