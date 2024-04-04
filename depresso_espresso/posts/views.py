@@ -334,7 +334,8 @@ def api_comments(request, author_id, post_id):
                 # get all followers of the post author
                 following_objects = Following.objects.filter(
                     author=user)
-
+                
+                print("Following obs:", following_objects)
                 for following_object in following_objects:
                     following_author = following_object.following_author
                     author_url = following_author.url
