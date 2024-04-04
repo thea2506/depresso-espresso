@@ -106,7 +106,7 @@ def api_external_author(request, author_url):
                 print("Response:", response.json())
                 return JsonResponse(response.json(), status=response.status_code)
             except:
-                response = requests.get(author_url+'/', auth=auth)
+                response = requests.get(author_url.rstrip('/'), auth=auth)
                 print("Response text:", response.text)
 
             
