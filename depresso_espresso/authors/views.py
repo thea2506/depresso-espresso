@@ -95,19 +95,21 @@ def api_external_author(request, author_url):
             node_obj = Node.objects.get(baseUrl=result)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
-            response = requests.get(author_url, auth=auth)
-
-            print("Author url:", author_url)
-            print("Response text:", response.text)
-
             
 
             try:
+                print("Author url:", author_url)
+                response = requests.get(author_url, auth=auth)
+                print("Response text:", response.text)
                 print("Response:", response.json())
                 return JsonResponse(response.json(), status=response.status_code)
+            
             except:
-                response = requests.get(author_url.rstrip('/'), auth=auth)
+                response = requests.get(author_url, auth=auth)
+                print("Author url:", author_url[:-1])
+                response = requests.get(author_url[:-1], auth=auth)
                 print("Response text:", response.text)
+                return JsonResponse(response.json(), status=response.status_code)
 
             
             
