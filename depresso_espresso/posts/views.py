@@ -566,6 +566,11 @@ def api_execute(request):
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
             
+            print(f'ORIGINAL sending {obj} to {url}')
+            
+            if obj.get('object') != None:
+                obj['object']['id'] = obj['object']['url']
+            
             print(f'sending {obj} to {url}')
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
