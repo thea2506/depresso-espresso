@@ -361,6 +361,7 @@ def api_comments(request, author_id, post_id):
                             node.ourUsername, node.ourPassword)
                         
                         print("COMMENT JSON:", returned_data)
+                        print("POST_OWNERURL:", post_owner_url)
                         response = requests.post(f"{post_owner_url}/inbox",
                                       json=returned_data, auth=auth)
                         
