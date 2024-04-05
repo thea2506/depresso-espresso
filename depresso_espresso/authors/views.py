@@ -368,6 +368,7 @@ def api_discover(request):
                 node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
             if response.status_code == 200:
                 items = response.json()["items"]
+                
                 for item in items:
                     flag = False
                     for dict in author_dicts:
@@ -377,8 +378,8 @@ def api_discover(request):
                     if not flag:
                         author_dicts.append(item)
 
-        print("ITEMS:", items)
-
+        
+        print("Author_dicts:", author_dicts)
         return JsonResponse(
             {
                 "type": "authors",

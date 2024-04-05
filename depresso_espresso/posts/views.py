@@ -1,4 +1,5 @@
 import base64
+import json
 from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
@@ -588,6 +589,10 @@ def api_execute(request):
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
+
+            print("\nRESPONSE:", response)
+            print("\nRESPONSE text:", response.text)
+            print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
