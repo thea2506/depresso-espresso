@@ -54,4 +54,5 @@ def my_authenticate(request):
         if not user:
             return None
 
+    print("returning user:", user)
     return user
