@@ -54,6 +54,8 @@ def api_get_public_posts(request):
                 print("excluding public post by:", public_post.author.displayName)
 
     public_posts = public_posts.exclude(author__in=banned_authors)
+    for post in public_posts:
+        print(post.author.isExternalAuthor)
 
     public_posts = PostSerializer(
         instance=public_posts, many=True, context={"request": request}).data
