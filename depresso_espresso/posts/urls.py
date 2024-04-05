@@ -18,6 +18,8 @@ urlpatterns = [
          views.api_comment_like, name='api_comment_like'),
     path('api/authors/<str:author_id>/posts/<str:post_id>/like',
          views.api_likes, name='api_likes'),
+     path('api/posts',
+          views.api_get_public_posts, name='api_get_public_posts'),
 
     # FRONTEND URLS
     path("api/execute", views.api_execute, name="api_execute"),

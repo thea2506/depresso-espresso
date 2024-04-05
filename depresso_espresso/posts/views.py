@@ -36,6 +36,27 @@ def get_posts(current_user, author_object):
             return Post.objects.filter(
                 Q(author=author_object) & Q(visibility="PUBLIC")).order_by('-published')
 
+@swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@api_view(['GET'])
+def api_get_public_posts(request):
+    user = my_authenticate(request)
+    if user:
+        public_posts = Post.objects.filter(
+            visibility="PUBLIC")
+        for public_post in public_posts:
+            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
+                    author=public_post.author, following_author=user).exists():
+                public_posts = public_posts.exclude(id=public_post.id)
+
+        public_posts = PostSerializer(
+            instance=public_posts, many=True, context={"request": request}).data
+        
+        print(public_posts)
+        
+        return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
+
+
+
 
 @swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
 @api_view(['GET', 'POST'])
@@ -171,6 +192,8 @@ def api_feed(request):
     if request.method == 'GET':
 
         feed = []
+
+        response = requests.get(user.host + '/api/posts')
 
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
