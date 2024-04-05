@@ -361,8 +361,12 @@ def api_comments(request, author_id, post_id):
                             node.ourUsername, node.ourPassword)
                         
                         print("COMMENT JSON:", returned_data)
-                        requests.post(f"{post_owner_url}/inbox",
+                        response = requests.post(f"{post_owner_url}/inbox",
                                       json=returned_data, auth=auth)
+                        
+                        print("\nRESPONSE:", response)
+                        print("\nRESPONSE text:", response.text)
+                        print("\nRESPONSE dict:", json.loads(response.text))
                         
 
             return JsonResponse(
