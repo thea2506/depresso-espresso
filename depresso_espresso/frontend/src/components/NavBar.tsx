@@ -96,7 +96,7 @@ const NavBar = () => {
         <span className="text-primary">E</span>spresso
       </a>
       {/* Nav Links */}
-      <ul className="flex items-center justify-center w-full gap-x-20 lg:gap-x-36">
+      <ul className="flex items-center justify-center w-full gap-x-12 md:gap-x-20 lg:gap-x-36">
         {navContents.map((item, index) => (
           <Button
             buttonType="icon"

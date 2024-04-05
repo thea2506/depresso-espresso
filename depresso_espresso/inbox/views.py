@@ -33,6 +33,7 @@ def api_inbox(request, author_id):
         page = paginator.paginate_queryset(notification_items, request)
         serializer = NotificationItemSerializer(
             page, context={'request': request}, many=True)
+
         return JsonResponse({'type': 'inbox', 'items': serializer.data}, status=200)
 
     elif request.method == 'POST':

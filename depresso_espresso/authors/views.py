@@ -303,7 +303,8 @@ def api_follower(request, author_id, author_url):
 
         # Remote unfollow notifcation
         if followed_author_object.isExternalAuthor:
-            node = Node.objects.filter(baseUrl=followed_author_object.host)
+            node = Node.objects.filter(
+                baseUrl=followed_author_object.host.rstrip('/')+"/")
             if node.exists():
                 node = node.first()
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
@@ -314,9 +315,9 @@ def api_follower(request, author_id, author_url):
                     "object": AuthorSerializer(instance=followed_author_object, context={'request': request}).data
                 }
                 response = requests.post(
-                    followed_author_object.url + "/inbox", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, json=data)
-                if response.status_code != 200 and response.status_code != 201:
-                    return JsonResponse({"error": "Successfully sent an unfollow request to the external authors", "success": False}, status=500)
+                    followed_author_object.url.rstrip("/") + "/inbox", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, json=data)
+                if response.status_code >= 400:
+                    return JsonResponse({"error": "Successfully sent an unfollow request to the external authors", "success": False}, status=response.status_code)
                 else:
                     return JsonResponse({"success": True}, status=200)
         else:
@@ -425,12 +426,14 @@ def api_handle_decline(request, author_id):
                 requester=requester, receiver=receiver).delete()
 
             if requester.isExternalAuthor:
-                node = Node.objects.filter(baseUrl=requester.host)
+                node = Node.objects.filter(
+                    baseUrl=requester.host.rstrip('/')+"/")
                 if node.exists():
                     node = node.first()
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+
                     response = requests.post(
-                        requester.url + "/inbox", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, json=data)
+                        requester.url.rstrip('/') + "/inbox", auth=auth, headers={"origin": request.META["HTTP_HOST"]}, json=data)
 
                     if response.status_code != 200 and response.status_code != 201:
                         return JsonResponse({"error": "Failed to send follow response to external authors", "success": False}, status=500)
