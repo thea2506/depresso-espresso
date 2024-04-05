@@ -43,14 +43,17 @@ def api_get_public_posts(request):
     print("user:", user)
     
     print("getting public posts...")
+    banned_authors = []
     public_posts = Post.objects.filter(
         visibility="PUBLIC")
     for public_post in public_posts:
-        if public_post.author.isExternalAuthor == True and not Following.objects.filter(
-                author=public_post.author, following_author=user).exists():
+        if public_post.author.isExternalAuthor == True:
             
-            print("excluding public post by:", public_post.author.displayName)
-            public_posts = public_posts.exclude(id=public_post.id)
+                banned_authors.append(public_post.author)
+            
+                print("excluding public post by:", public_post.author.displayName)
+
+    public_posts = public_posts.exclude(author__in=banned_authors)
 
     public_posts = PostSerializer(
         instance=public_posts, many=True, context={"request": request}).data
