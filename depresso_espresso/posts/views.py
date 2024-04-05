@@ -483,8 +483,8 @@ def api_likes(request, author_id, post_id):
                                 baseUrl=follower.following_author.host)
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-                            response = requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
-                                                     json=returned_data, auth=auth)
+                            requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
+                                          json=returned_data, auth=auth)
 
                 else:
                     nodes = Node.objects.all()
@@ -492,8 +492,8 @@ def api_likes(request, author_id, post_id):
                         if node.baseUrl == post_author.host.rstrip('/') + "/":
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-                            response = requests.post(f"{post_author.url.rstrip('/')}/inbox",
-                                                     json=returned_data, auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                            requests.post(f"{post_author.url.rstrip('/')}/inbox",
+                                          json=returned_data, auth=auth, headers={"origin": request.META["HTTP_HOST"]})
                 return JsonResponse(
                     returned_data, status=201)
             else:
