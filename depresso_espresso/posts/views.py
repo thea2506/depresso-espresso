@@ -41,30 +41,30 @@ def get_posts(current_user, author_object):
 def api_get_public_posts(request):
     user = my_authenticate(request)
     print("user:", user)
+    if user:
     
-    print("getting public posts...")
-    banned_authors = []
-    public_posts = Post.objects.filter(
-        visibility="PUBLIC")
-    for public_post in public_posts:
-        if public_post.author.isExternalAuthor == True:
-            
-                banned_authors.append(public_post.author)
-            
-                print("excluding public post by:", public_post.author.displayName)
+        banned_authors = []
+        public_posts = Post.objects.filter(
+            visibility="PUBLIC")
+        for public_post in public_posts:
+            if public_post.author.isExternalAuthor == True:
+                
+                    banned_authors.append(public_post.author)
+                
+                    print("excluding public post by:", public_post.author.displayName)
 
-    public_posts = public_posts.exclude(author__in=banned_authors)
-    for post in public_posts:
-        print(post.author.isExternalAuthor)
+        public_posts = public_posts.exclude(author__in=banned_authors)
+        for post in public_posts:
+            print(post.author.isExternalAuthor)
 
-    public_posts = PostSerializer(
-        instance=public_posts, many=True, context={"request": request}).data
+        public_posts = PostSerializer(
+            instance=public_posts, many=True, context={"request": request}).data
+        
+        
+        return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
     
-    
-    return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
-    
-    #else:
-     #   return JsonResponse({"error": "Invalid request"}, status=405)
+    else:
+       return JsonResponse({"error": "Invalid request"}, status=405)
 
 
 
@@ -211,17 +211,21 @@ def api_feed(request):
     if request.method == 'GET':
 
         feed = []
-
-        print("public posts url: ", user.host + 'api/posts')
-
-        response = requests.get(user.host + 'api/posts')
+        banned_authors = []
 
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
         for public_post in public_posts:
-            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
-                    author=public_post.author, following_author=user).exists():
-                public_posts = public_posts.exclude(id=public_post.id)
+            if public_post.author.isExternalAuthor == True:
+                
+                    banned_authors.append(public_post.author)
+                
+                    print("excluding public post by:", public_post.author.displayName)
+
+    public_posts = public_posts.exclude(author__in=banned_authors)
+
+    for post in public_posts:
+        print(post.author.isExternalAuthor)
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
