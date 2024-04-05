@@ -355,12 +355,13 @@ def api_discover(request):
     if request.method == 'GET':
         author_dicts = []
 
-        local_author = Author.objects.filter(
-            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
+        #local_author = Author.objects.filter(
+        #    Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
 
-        author_dicts = AuthorSerializer(
-            instance=local_author, context={'request': request}, many=True).data
+        #author_dicts = AuthorSerializer(
+        #    instance=local_author, context={'request': request}, many=True).data
 
+        author_dicts = []
         nodes = Node.objects.all()
         for node in nodes:
             if node.baseUrl == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/":
