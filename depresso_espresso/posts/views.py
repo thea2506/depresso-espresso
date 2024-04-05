@@ -362,7 +362,7 @@ def api_comments(request, author_id, post_id):
                         
                         print("COMMENT JSON:", returned_data)
                         print("POST_OWNERURL:", post_owner_url)
-                        response = requests.post(f"{post_owner_url}/inbox",
+                        response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
                         
                         print("\nRESPONSE:", response)
