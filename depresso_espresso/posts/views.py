@@ -1,4 +1,5 @@
 import base64
+import json
 from rest_framework.decorators import api_view
 from django.http import HttpResponse, JsonResponse
 from authentication.checkbasic import my_authenticate
@@ -337,6 +338,7 @@ def api_comments(request, author_id, post_id):
                 following_objects = Following.objects.filter(
                     author=user)
 
+                print("Following obs:", following_objects)
                 for following_object in following_objects:
                     following_author = following_object.following_author
                     author_url = following_author.url
@@ -347,6 +349,9 @@ def api_comments(request, author_id, post_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
+
+                        print("COMMENT JSON:", returned_data)
+                        print("author url:", author_url.rstrip('/'))
                         requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
@@ -356,8 +361,12 @@ def api_comments(request, author_id, post_id):
                     if node.baseUrl == post_owner_host.rstrip('/') + "/":
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{post_owner_url.rstrip('/')}/inbox",
-                                      json=returned_data, auth=auth)
+                        response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
+                                                 json=returned_data, auth=auth)
+
+                        print("\nRESPONSE:", response)
+                        print("\nRESPONSE text:", response.text)
+                        print("\nRESPONSE dict:", json.loads(response.text))
 
             return JsonResponse(
                 returned_data, status=201)
@@ -512,7 +521,7 @@ def node_auth_helper(url):
     return None
 
 
-@api_view(['POST'])
+@api_view(['POST', 'GET', 'PUT'])
 def api_execute(request):
     url = request.data["url"]
     method = request.data["method"]
@@ -563,9 +572,24 @@ def api_execute(request):
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
+
+            print(f'ORIGINAL sending {obj} to {url}')
+
+            if obj.get('object') != None:
+                author_url = obj['object']['url']
+                if author_url[-1] == '/':
+                    author_url = author_url.rstrip('/')
+
+                obj['object']['id'] = author_url
+
+            print(f'sending {obj} to {url}')
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
+
+            print("\nRESPONSE:", response)
+            print("\nRESPONSE text:", response.text)
+            print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)

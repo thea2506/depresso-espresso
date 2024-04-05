@@ -95,8 +95,25 @@ def api_external_author(request, author_url):
             node_obj = Node.objects.get(baseUrl=result)
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
-            response = requests.get(author_url, auth=auth)
-            return JsonResponse(response.json(), status=response.status_code)
+            
+
+            try:
+                print("Author url:", author_url)
+                response = requests.get(author_url, auth=auth)
+                print("Response text:", response.text)
+                print("Response:", response.json())
+                return JsonResponse(response.json(), status=response.status_code)
+            
+            except:
+                response = requests.get(author_url, auth=auth)
+                print("Author url:", author_url[:-1])
+                response = requests.get(author_url[:-1], auth=auth)
+                print("Response text:", response.text)
+                return JsonResponse(response.json(), status=response.status_code)
+
+            
+            
+            
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
@@ -340,7 +357,7 @@ def api_discover(request):
         author_dicts = []
 
         local_author = Author.objects.filter(
-            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
 
         author_dicts = AuthorSerializer(
             instance=local_author, context={'request': request}, many=True).data
@@ -352,6 +369,7 @@ def api_discover(request):
                 node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
             if response.status_code == 200:
                 items = response.json()["items"]
+                
                 for item in items:
                     flag = False
                     for dict in author_dicts:
@@ -361,6 +379,8 @@ def api_discover(request):
                     if not flag:
                         author_dicts.append(item)
 
+        
+        print("Author_dicts:", author_dicts)
         return JsonResponse(
             {
                 "type": "authors",
