@@ -41,6 +41,7 @@ def get_posts(current_user, author_object):
 def api_get_public_posts(request):
     user = my_authenticate(request)
     if user:
+        print("getting public posts...")
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
         for public_post in public_posts:
@@ -51,7 +52,7 @@ def api_get_public_posts(request):
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
         
-        print(public_posts)
+        print("\n PUBLIC POSTS:", public_posts)
         
         return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
 
@@ -200,7 +201,9 @@ def api_feed(request):
 
         feed = []
 
-        response = requests.get(user.host + '/api/posts')
+        print("public posts url: ", user.host + 'api/posts')
+
+        response = requests.get(user.host + 'api/posts')
 
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
