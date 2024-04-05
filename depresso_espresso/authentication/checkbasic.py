@@ -37,6 +37,7 @@ def my_authenticate(request):
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
+            print("SESSSSSSSION")
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
 
