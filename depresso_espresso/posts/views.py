@@ -216,7 +216,8 @@ def api_feed(request):
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
         for public_post in public_posts:
-            if public_post.author.isExternalAuthor == True:
+            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
+                    author=public_post.author, following_author=user).exists():
                 
                     banned_authors.append(public_post.author)
                 
