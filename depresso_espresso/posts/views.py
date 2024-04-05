@@ -41,24 +41,24 @@ def get_posts(current_user, author_object):
 def api_get_public_posts(request):
     user = my_authenticate(request)
     print("user:", user)
-    if user:
-        print("getting public posts...")
-        public_posts = Post.objects.filter(
-            visibility="PUBLIC")
-        for public_post in public_posts:
-            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
-                    author=public_post.author, following_author=user).exists():
-                public_posts = public_posts.exclude(id=public_post.id)
-
-        public_posts = PostSerializer(
-            instance=public_posts, many=True, context={"request": request}).data
-        
-        print("\n PUBLIC POSTS:", public_posts)
-        
-        return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
     
-    else:
-        return JsonResponse({"error": "Invalid request"}, status=405)
+    print("getting public posts...")
+    public_posts = Post.objects.filter(
+        visibility="PUBLIC")
+    for public_post in public_posts:
+        if public_post.author.isExternalAuthor == True and not Following.objects.filter(
+                author=public_post.author, following_author=user).exists():
+            public_posts = public_posts.exclude(id=public_post.id)
+
+    public_posts = PostSerializer(
+        instance=public_posts, many=True, context={"request": request}).data
+    
+    print("\n PUBLIC POSTS:", public_posts)
+    
+    return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
+    
+    #else:
+     #   return JsonResponse({"error": "Invalid request"}, status=405)
 
 
 
