@@ -40,6 +40,7 @@ def get_posts(current_user, author_object):
 @api_view(['GET'])
 def api_get_public_posts(request):
     user = my_authenticate(request)
+    print("user:", user)
     if user:
         print("getting public posts...")
         public_posts = Post.objects.filter(
@@ -55,6 +56,10 @@ def api_get_public_posts(request):
         print("\n PUBLIC POSTS:", public_posts)
         
         return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
+    
+    else:
+        return JsonResponse({"error": "Invalid request"}, status=405)
+
 
 
 
