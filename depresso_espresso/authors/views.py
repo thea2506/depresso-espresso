@@ -363,20 +363,21 @@ def api_discover(request):
 
         nodes = Node.objects.all()
         for node in nodes:
-            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-            response = requests.get(
-                node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-            if response.status_code == 200:
-                items = response.json()["items"]
-                
-                for item in items:
-                    flag = False
-                    for dict in author_dicts:
-                        if dict["url"] == item["url"]:
-                            flag = True
-                            break
-                    if not flag:
-                        author_dicts.append(item)
+            if node.baseUrl == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/":
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.get(
+                    node.baseUrl + node.service + "/authors/", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                if response.status_code == 200:
+                    items = response.json()["items"]
+                    
+                    for item in items:
+                        flag = False
+                        for dict in author_dicts:
+                            if dict["url"] == item["url"]:
+                                flag = True
+                                break
+                        if not flag:
+                            author_dicts.append(item)
 
         
         print("Author_dicts:", author_dicts)
