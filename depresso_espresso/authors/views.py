@@ -361,7 +361,6 @@ def api_discover(request):
         #author_dicts = AuthorSerializer(
         #    instance=local_author, context={'request': request}, many=True).data
 
-        author_dicts = []
         nodes = Node.objects.all()
         for node in nodes:
             if node.baseUrl == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/":
