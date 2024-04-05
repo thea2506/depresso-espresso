@@ -71,11 +71,16 @@ def api_posts(request, author_id):
             serializer = PostSerializer(data=shared_post, context={
                                         "request": request})
 
+            # Remote share
+            shared_post["type"] = "post"
+
             if serializer.is_valid():
                 new_shared_post = serializer.save(origin=old_id)
 
                 returned_data = PostSerializer(instance=new_shared_post, context={
                                                "request": request}).data
+
+                returned_data["type"] = "post"
 
                 following_objects = Following.objects.filter(
                     author=user)
