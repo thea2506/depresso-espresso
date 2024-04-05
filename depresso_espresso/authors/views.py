@@ -374,7 +374,8 @@ def api_discover(request):
                     for item in items:
                         flag = False
                         for dict in author_dicts:
-                            if dict["url"] == item["url"] and (dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/" or dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com")                               flag = True
+                            if dict["url"] == item["url"] or dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/" or dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com":                              
+                                flag = True
                                 break
                         if not flag:
                             author_dicts.append(item)
