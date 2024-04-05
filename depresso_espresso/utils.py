@@ -36,7 +36,7 @@ def customize_like_representation(serializer_instance, instance):
 
 
 class Pagination(PageNumberPagination):
-    page_size = 10
+    page_size = 50
     page_size_query_param = 'size'
     max_page_size = 100
 

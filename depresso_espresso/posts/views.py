@@ -85,7 +85,8 @@ def api_posts(request, author_id):
                     author_host = following_author.host
 
                     if following_author.isExternalAuthor:
-                        node = Node.objects.get(baseUrl=author_host)
+                        node = Node.objects.get(
+                            baseUrl=author_host.rstrip('/') + "/")
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
                         requests.post(f"{author_url.rstrip('/')}/inbox",
@@ -143,7 +144,8 @@ def api_posts(request, author_id):
                     following_author = following_object.following_author
                     author_url = following_author.url
                     author_host = following_author.host
-                    node = Node.objects.filter(baseUrl=author_host)
+                    node = Node.objects.filter(
+                        baseUrl=author_host.rstrip("/") + "/")
                     if node:
                         node = node.first()
                         auth = HTTPBasicAuth(
@@ -351,10 +353,10 @@ def api_comments(request, author_id, post_id):
             else:
                 nodes = Node.objects.all()
                 for node in nodes:
-                    if node.baseUrl == post_owner_host:
+                    if node.baseUrl == post_owner_host.rstrip('/') + "/":
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        requests.post(f"{post_owner_url}/inbox",
+                        requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
             return JsonResponse(
@@ -483,19 +485,15 @@ def api_likes(request, author_id, post_id):
                                 node.ourUsername, node.ourPassword)
                             response = requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
                                                      json=returned_data, auth=auth)
-                            print("Sent to ", follower.following_author.url)
-                            print(response.status_code)
 
                 else:
                     nodes = Node.objects.all()
                     for node in nodes:
-                        if node.baseUrl == post_author.host:
+                        if node.baseUrl == post_author.host.rstrip('/') + "/":
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
-                            response = requests.post(f"{post_author.url}/inbox",
+                            response = requests.post(f"{post_author.url.rstrip('/')}/inbox",
                                                      json=returned_data, auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-                            print("Sent to ", post_author.url)
-                            print(response.status_code)
                 return JsonResponse(
                     returned_data, status=201)
             else:
