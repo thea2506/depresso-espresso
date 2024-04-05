@@ -48,12 +48,13 @@ def api_get_public_posts(request):
     for public_post in public_posts:
         if public_post.author.isExternalAuthor == True and not Following.objects.filter(
                 author=public_post.author, following_author=user).exists():
+            
+            print("excluding public post by:", public_post.author.displayName)
             public_posts = public_posts.exclude(id=public_post.id)
 
     public_posts = PostSerializer(
         instance=public_posts, many=True, context={"request": request}).data
     
-    print("\n PUBLIC POSTS:", public_posts)
     
     return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
     
