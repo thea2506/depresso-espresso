@@ -74,134 +74,139 @@ def api_posts(request, author_id):
 
     user = my_authenticate(request)
 
-    if request.method == 'GET':
-        if not Author.objects.filter(id=author_id).exists():
-            return JsonResponse({"error": "Author not found", "success": False}, status=404)
-        author = Author.objects.get(id=author_id)
-        posts = get_posts(user, author)
+    if user:
 
-        paginator = Pagination("posts")
-        page = paginator.paginate_queryset(posts, request)
-        serializer = PostSerializer(
-            page, context={"request": request}, many=True)
-        return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
+        if request.method == 'GET':
+            if not Author.objects.filter(id=author_id).exists():
+                return JsonResponse({"error": "Author not found", "success": False}, status=404)
+            author = Author.objects.get(id=author_id)
+            posts = get_posts(user, author)
 
-    elif request.method == 'POST':
-        data = request.data
+            paginator = Pagination("posts")
+            page = paginator.paginate_queryset(posts, request)
+            serializer = PostSerializer(
+                page, context={"request": request}, many=True)
+            return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
-        if data.get("id") is not None:
-            old_id = data.get("id")
-            # Share
-            shared_post = data
-            shared_post.pop("id", None)
-            shared_post["type"] = "share"
-            shared_post["author"] = AuthorSerializer(
-                instance=user, context={"request": request}).data
-            shared_post["source"] = old_id
+        elif request.method == 'POST':
+            data = request.data
 
-            serializer = PostSerializer(data=shared_post, context={
-                                        "request": request})
+            if data.get("id") is not None:
+                old_id = data.get("id")
+                # Share
+                shared_post = data
+                shared_post.pop("id", None)
+                shared_post["type"] = "share"
+                shared_post["author"] = AuthorSerializer(
+                    instance=user, context={"request": request}).data
+                shared_post["source"] = old_id
 
-            # Remote share
-            shared_post["type"] = "post"
+                serializer = PostSerializer(data=shared_post, context={
+                                            "request": request})
+
+                # Remote share
+                shared_post["type"] = "post"
+
+                if serializer.is_valid():
+                    new_shared_post = serializer.save(origin=old_id)
+
+                    returned_data = PostSerializer(instance=new_shared_post, context={
+                                                "request": request}).data
+
+                    returned_data["type"] = "post"
+
+                    following_objects = Following.objects.filter(
+                        author=user)
+
+                    for following_object in following_objects:
+                        following_author = following_object.following_author
+                        author_url = following_author.url
+                        author_host = following_author.host
+
+                        if following_author.isExternalAuthor:
+                            node = Node.objects.get(
+                                baseUrl=author_host.rstrip('/') + "/")
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            requests.post(f"{author_url.rstrip('/')}/inbox",
+                                        json=returned_data, auth=auth)
+
+                        else:
+                            notification_object = Notification.objects.get_or_create(
+                                author=following_author)[0]
+                            create_notification_item(
+                                notification_object, new_shared_post, "share")
+
+                    return JsonResponse(
+                        returned_data, status=201)
+
+                return JsonResponse(serializer.errors, status=405)
+
+            else:
+                data["type"] = "post"
+
+            serializer = PostSerializer(
+                data=data, context={"request": request})
 
             if serializer.is_valid():
-                new_shared_post = serializer.save(origin=old_id)
-
-                returned_data = PostSerializer(instance=new_shared_post, context={
-                                               "request": request}).data
-
-                returned_data["type"] = "post"
+                new_post = serializer.save()
+                returned_data = PostSerializer(instance=new_post, context={
+                                            "request": request}).data
 
                 following_objects = Following.objects.filter(
                     author=user)
 
-                for following_object in following_objects:
-                    following_author = following_object.following_author
-                    author_url = following_author.url
-                    author_host = following_author.host
+                if new_post.visibility == "PUBLIC":
+                    for following_object in following_objects:
+                        following_author = following_object.following_author
+                        author_url = following_author.url
+                        author_host = following_author.host
+                        node = Node.objects.filter(
+                            baseUrl=author_host.rstrip("/") + "/")
+                        if node:
+                            node = node.first()
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            requests.post(f"{author_url.rstrip('/')}/inbox",
+                                        json=returned_data, auth=auth)
+                        else:
+                            notification_object = Notification.objects.get_or_create(
+                                author=following_author)[0]
+                            create_notification_item(
+                                notification_object, new_post, "post")
 
-                    if following_author.isExternalAuthor:
-                        node = Node.objects.get(
-                            baseUrl=author_host.rstrip('/') + "/")
-                        auth = HTTPBasicAuth(
-                            node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip('/')}/inbox",
-                                      json=returned_data, auth=auth)
+                elif new_post.visibility == "FRIENDS":
 
-                    else:
-                        notification_object = Notification.objects.get_or_create(
-                            author=following_author)[0]
-                        create_notification_item(
-                            notification_object, new_shared_post, "share")
+                    friends_following_objects = following_objects.filter(
+                        areFriends=True)
+                    for following_object in friends_following_objects:
+                        following_author = following_object.following_author
+                        author_url = following_author.url
+                        author_host = following_author.host
+                        node = Node.objects.filter(
+                            baseUrl=author_host.rstrip("/") + "/")
+                        if node:
+                            node = node.first()
+                            auth = HTTPBasicAuth(
+                                node.ourUsername, node.ourPassword)
+                            requests.post(f"{author_url.rstrip('/')}/inbox",
+                                        json=returned_data, auth=auth)
+                        else:
+                            notification_object = Notification.objects.get_or_create(
+                                author=following_author)[0]
+                            create_notification_item(
+                                notification_object, new_post, "post")
 
                 return JsonResponse(
-                    returned_data, status=201)
+                    {
+                        "success": True,
+                        "object": returned_data
+                    }, status=201)
+            else:
+                return JsonResponse(serializer.errors, status=501)
+    else:
+        return JsonResponse({"error": "Invalid Auth"}, status=401)
 
-            return JsonResponse(serializer.errors, status=405)
-
-        else:
-            data["type"] = "post"
-
-        serializer = PostSerializer(
-            data=data, context={"request": request})
-
-        if serializer.is_valid():
-            new_post = serializer.save()
-            returned_data = PostSerializer(instance=new_post, context={
-                                           "request": request}).data
-
-            following_objects = Following.objects.filter(
-                author=user)
-
-            if new_post.visibility == "PUBLIC":
-                for following_object in following_objects:
-                    following_author = following_object.following_author
-                    author_url = following_author.url
-                    author_host = following_author.host
-                    node = Node.objects.filter(
-                        baseUrl=author_host.rstrip("/") + "/")
-                    if node:
-                        node = node.first()
-                        auth = HTTPBasicAuth(
-                            node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip('/')}/inbox",
-                                      json=returned_data, auth=auth)
-                    else:
-                        notification_object = Notification.objects.get_or_create(
-                            author=following_author)[0]
-                        create_notification_item(
-                            notification_object, new_post, "post")
-
-            elif new_post.visibility == "FRIENDS":
-
-                friends_following_objects = following_objects.filter(
-                    areFriends=True)
-                for following_object in friends_following_objects:
-                    following_author = following_object.following_author
-                    author_url = following_author.url
-                    author_host = following_author.host
-                    node = Node.objects.filter(
-                        baseUrl=author_host.rstrip("/") + "/")
-                    if node:
-                        node = node.first()
-                        auth = HTTPBasicAuth(
-                            node.ourUsername, node.ourPassword)
-                        requests.post(f"{author_url.rstrip('/')}/inbox",
-                                      json=returned_data, auth=auth)
-                    else:
-                        notification_object = Notification.objects.get_or_create(
-                            author=following_author)[0]
-                        create_notification_item(
-                            notification_object, new_post, "post")
-
-            return JsonResponse(
-                {
-                    "success": True,
-                    "object": returned_data
-                }, status=201)
-        else:
-            return JsonResponse(serializer.errors, status=501)
 
 
 def api_feed(request):
