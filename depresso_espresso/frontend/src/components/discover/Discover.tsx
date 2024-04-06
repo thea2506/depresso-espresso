@@ -50,7 +50,8 @@ const Discover = () => {
       <div className="flex flex-col w-4/5 gap-4">
         {loading ? (
           <div className="m-8 text-lg font-semibold text-primary opacity-70">
-            Loading... or there are no other servers connected to us yet
+            Loading... or there are no other servers connected to us
+            yet
           </div>
         ) : (
           allAuthors.map((author, key: number) => {
@@ -58,7 +59,7 @@ const Discover = () => {
             return (
               <div
                 key={key}
-                className="flex items-center justify-start w-full gap-4 p-4 rounded-xl bg-accent-3"
+                className="flex items-center justify-start w-full gap-4 p-4 rounded-xl bg-accent-3 hover:cursor-pointer"
                 onClick={() => {
                   navigate(`../authors/${author.url}`, {
                     state: { reload: true },
@@ -71,6 +72,7 @@ const Discover = () => {
                 <span className="px-4 py-2 text-white rounded-xl bg-secondary-dark">
                   {checkSameOrigin(author.url) ? "Local" : "Remote"}
                 </span>
+                <span className="ml-auto">{author.host}</span>
               </div>
             );
           })

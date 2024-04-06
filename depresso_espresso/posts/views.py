@@ -36,22 +36,24 @@ def get_posts(current_user, author_object):
             return Post.objects.filter(
                 Q(author=author_object) & Q(visibility="PUBLIC")).order_by('-published')
 
+
 @swagger_auto_schema(tags=['Posts'], methods=["GET"])
 @api_view(['GET'])
 def api_get_public_posts(request):
     user = my_authenticate(request)
     print("user:", user)
     if user:
-    
+
         banned_authors = []
         public_posts = Post.objects.filter(
             visibility="PUBLIC")
         for public_post in public_posts:
             if public_post.author.isExternalAuthor == True:
-                
-                    banned_authors.append(public_post.author)
-                
-                    print("excluding public post by:", public_post.author.displayName)
+
+                banned_authors.append(public_post.author)
+
+                print("excluding public post by:",
+                      public_post.author.displayName)
 
         public_posts = public_posts.exclude(author__in=banned_authors)
         for post in public_posts:
@@ -59,15 +61,11 @@ def api_get_public_posts(request):
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
-        
-        
+
         return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
-    
+
     else:
-       return JsonResponse({"error": "Invalid request"}, status=405)
-
-
-
+        return JsonResponse({"error": "Invalid request"}, status=405)
 
 
 @swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
@@ -218,24 +216,25 @@ def api_feed(request):
         for public_post in public_posts:
             if public_post.author.isExternalAuthor == True and not Following.objects.filter(
                     author=public_post.author, following_author=user).exists():
-                
-                    banned_authors.append(public_post.author)
-                
-                    print("excluding public post by:", public_post.author.displayName)
 
-    public_posts = public_posts.exclude(author__in=banned_authors)
+                banned_authors.append(public_post.author)
 
-    for post in public_posts:
-        print(post.author.isExternalAuthor)
+                print("excluding public post by:",
+                      public_post.author.displayName)
+
+        public_posts = public_posts.exclude(author__in=banned_authors)
+
+        # for post in public_posts:
+        #     print(post.author.isExternalAuthor)
 
         public_posts = PostSerializer(
             instance=public_posts, many=True, context={"request": request}).data
 
-        friends_unlisted_posts = Post.objects.filter(
+        own_friends_unlisted_posts = Post.objects.filter(
             Q(visibility="FRIENDS") | Q(visibility="UNLISTED"), Q(author=user))
 
-        friends_unlisted_posts = PostSerializer(
-            instance=friends_unlisted_posts, many=True, context={"request": request}).data
+        own_friends_unlisted_posts = PostSerializer(
+            instance=own_friends_unlisted_posts, many=True, context={"request": request}).data
 
         following_objects = Following.objects.filter(
             author=user, areFriends=True)
@@ -248,7 +247,7 @@ def api_feed(request):
                 instance=friends_only_posts, many=True, context={"request": request}).data)
 
         feed = list(
-            chain(feed, public_posts, friends_unlisted_posts))
+            chain(feed, public_posts, own_friends_unlisted_posts))
 
         feed = sorted(feed, key=lambda x: x["published"], reverse=True)
         return JsonResponse({"type": "posts", "items": feed}, safe=False)
@@ -397,7 +396,7 @@ def api_comments(request, author_id, post_id):
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
 
-                        #print("COMMENT JSON:", returned_data)
+                        # print("COMMENT JSON:", returned_data)
                         print("author url:", author_url.rstrip('/'))
                         requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
@@ -408,15 +407,15 @@ def api_comments(request, author_id, post_id):
                     if node.baseUrl == post_owner_host.rstrip('/') + "/":
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        
-                        #print("COMMENT JSON:", returned_data)
+
+                        # print("COMMENT JSON:", returned_data)
                         print("POST_OWNERURL:", post_owner_url)
                         response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
-                                      json=returned_data, auth=auth)
-                        
+                                                 json=returned_data, auth=auth)
+
                         print("\nRESPONSE:", response)
-                        #print("\nRESPONSE text:", response.text)
-                        #print("\nRESPONSE dict:", json.loads(response.text))
+                        # print("\nRESPONSE text:", response.text)
+                        # print("\nRESPONSE dict:", json.loads(response.text))
 
             return JsonResponse(
                 returned_data, status=201)
@@ -539,7 +538,7 @@ def api_likes(request, author_id, post_id):
                     for follower in followers:
                         if follower.following_author.isExternalAuthor:
                             node = Node.objects.get(
-                                baseUrl=follower.following_author.host)
+                                baseUrl=follower.following_author.host.rstrip("/") + "/")
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
@@ -636,13 +635,12 @@ def api_execute(request):
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
-
-            print("\nRESPONSE:", response)
-            print("\nRESPONSE text:", response.text)
-            print("\nRESPONSE dict:", json.loads(response.text))
+            # print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
+            else:
+                return HttpResponse(content=response.content, status=response.status_code, content_type=response.headers['Content-Type'])
 
     # PUT external API
     elif method == "PUT":

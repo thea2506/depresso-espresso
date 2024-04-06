@@ -37,15 +37,12 @@ def my_authenticate(request):
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
         if session:
-            print("SESSSSSSSION")
             session_data = session.get_decoded()
             uid = session_data.get('_auth_user_id')
-            print("uid:", uid)
 
             if not Author.objects.filter(id=uid).exists():
                 user = check_basic(request)
                 if not user:
-                    print("RETURN NONE")
                     return None
             else:
                 user = Author.objects.get(id=uid)
@@ -54,5 +51,4 @@ def my_authenticate(request):
         if not user:
             return None
 
-    print("returning user:", user)
     return user
