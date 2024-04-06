@@ -538,7 +538,7 @@ def api_likes(request, author_id, post_id):
                     for follower in followers:
                         if follower.following_author.isExternalAuthor:
                             node = Node.objects.get(
-                                baseUrl=follower.following_author.host)
+                                baseUrl=follower.following_author.host.rstrip("/") + "/")
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{follower.following_author.url.rstrip('/')}/inbox",
