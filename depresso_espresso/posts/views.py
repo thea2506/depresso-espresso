@@ -211,53 +211,56 @@ def api_posts(request, author_id):
 
 def api_feed(request):
     user = my_authenticate(request)
-    if request.method == 'GET':
+    if user:
+        if request.method == 'GET':
 
-        feed = []
-        banned_authors = []
+            feed = []
+            banned_authors = []
 
-        public_posts = Post.objects.filter(
-            visibility="PUBLIC")
-        for public_post in public_posts:
-            if public_post.author.isExternalAuthor == True and not Following.objects.filter(
-                    author=public_post.author, following_author=user).exists():
+            public_posts = Post.objects.filter(
+                visibility="PUBLIC")
+            for public_post in public_posts:
+                if public_post.author.isExternalAuthor == True and not Following.objects.filter(
+                        author=public_post.author, following_author=user).exists():
 
-                banned_authors.append(public_post.author)
+                    banned_authors.append(public_post.author)
 
-                print("excluding public post by:",
-                      public_post.author.displayName)
+                    print("excluding public post by:",
+                        public_post.author.displayName)
 
-        public_posts = public_posts.exclude(author__in=banned_authors)
+            public_posts = public_posts.exclude(author__in=banned_authors)
 
-        # for post in public_posts:
-        #     print(post.author.isExternalAuthor)
+            # for post in public_posts:
+            #     print(post.author.isExternalAuthor)
 
-        public_posts = PostSerializer(
-            instance=public_posts, many=True, context={"request": request}).data
+            public_posts = PostSerializer(
+                instance=public_posts, many=True, context={"request": request}).data
 
-        own_friends_unlisted_posts = Post.objects.filter(
-            Q(visibility="FRIENDS") | Q(visibility="UNLISTED"), Q(author=user))
+            own_friends_unlisted_posts = Post.objects.filter(
+                Q(visibility="FRIENDS") | Q(visibility="UNLISTED"), Q(author=user))
 
-        own_friends_unlisted_posts = PostSerializer(
-            instance=own_friends_unlisted_posts, many=True, context={"request": request}).data
+            own_friends_unlisted_posts = PostSerializer(
+                instance=own_friends_unlisted_posts, many=True, context={"request": request}).data
 
-        following_objects = Following.objects.filter(
-            author=user, areFriends=True)
+            following_objects = Following.objects.filter(
+                author=user, areFriends=True)
 
-        for following in following_objects:
-            following_author = following.following_author
-            friends_only_posts = Post.objects.filter(
-                Q(author=following_author), Q(visibility="FRIENDS"))
-            feed = chain(feed, PostSerializer(
-                instance=friends_only_posts, many=True, context={"request": request}).data)
+            for following in following_objects:
+                following_author = following.following_author
+                friends_only_posts = Post.objects.filter(
+                    Q(author=following_author), Q(visibility="FRIENDS"))
+                feed = chain(feed, PostSerializer(
+                    instance=friends_only_posts, many=True, context={"request": request}).data)
 
-        feed = list(
-            chain(feed, public_posts, own_friends_unlisted_posts))
+            feed = list(
+                chain(feed, public_posts, own_friends_unlisted_posts))
 
-        feed = sorted(feed, key=lambda x: x["published"], reverse=True)
-        return JsonResponse({"type": "posts", "items": feed}, safe=False)
+            feed = sorted(feed, key=lambda x: x["published"], reverse=True)
+            return JsonResponse({"type": "posts", "items": feed}, safe=False)
+        else:
+            return JsonResponse({"error": "Invalid request"}, status=405)
     else:
-        return JsonResponse({"error": "Invalid request"}, status=405)
+        return JsonResponse({"error": "Invalid Auth"}, status=401)
 
 
 @swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
