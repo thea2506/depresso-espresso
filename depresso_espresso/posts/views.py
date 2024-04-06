@@ -635,9 +635,6 @@ def api_execute(request):
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
-
-            print("\nRESPONSE:", response)
-            print("\nRESPONSE text:", response.text)
             # print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
