@@ -45,7 +45,7 @@ def get_author_object(author_url):
 def api_authors(request):
     if request.method == 'GET':
         authors = Author.objects.filter(
-            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None))
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) & Q(allowRegister=True))
 
         # Pagination
         paginator = Pagination("authors")
