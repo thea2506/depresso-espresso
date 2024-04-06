@@ -122,15 +122,14 @@ WSGI_APPLICATION = 'depresso_espresso.wsgi.application'
 
 # commented out to work with heroku-postgres
 
-DATABASES = {'default': dj_database_url.config()}
+IS_HEROKU = 'DYNO' in os.environ and 'CI' not in os.environ
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {'default': dj_database_url.config()} if IS_HEROKU else {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 # Password validation
