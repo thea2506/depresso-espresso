@@ -356,6 +356,8 @@ def api_discover(request):
     if request.method == 'GET':
         author_dicts = []
 
+        # THIS FUNCTION IS TEMPORARILY CHANGED TO TEST DEADLYBIRD
+
         #local_author = Author.objects.filter(
         #    Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
 
