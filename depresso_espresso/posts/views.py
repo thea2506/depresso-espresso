@@ -638,10 +638,12 @@ def api_execute(request):
 
             print("\nRESPONSE:", response)
             print("\nRESPONSE text:", response.text)
-            print("\nRESPONSE dict:", json.loads(response.text))
+            # print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
+            else:
+                return HttpResponse(content=response.content, status=response.status_code, content_type=response.headers['Content-Type'])
 
     # PUT external API
     elif method == "PUT":
