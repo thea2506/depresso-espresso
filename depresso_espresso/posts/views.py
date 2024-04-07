@@ -41,7 +41,7 @@ def get_posts(current_user, author_object):
 @api_view(['GET'])
 def api_get_public_posts(request):
     user = my_authenticate(request)
-    print("user:", user)
+    
     if user:
 
         banned_authors = []
