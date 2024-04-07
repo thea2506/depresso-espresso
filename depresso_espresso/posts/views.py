@@ -628,9 +628,18 @@ def api_execute(request):
             print("same host")
             session = requests.Session()
 
-            print("posting to session:")
-            r = session.post(url, json=obj, headers={
+            short_url = schema.path
+            print("short url:", short_url)
+
+            print("normal post:")
+            r = requests.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
+
+            print("posting to session:")
+            r = session.post(short_url, json=obj, headers={
+                "origin": request.META["HTTP_HOST"]})
+            
+
             if r.status_code == 201:
                 return JsonResponse(r.json(), status=201)
             return r
@@ -654,7 +663,6 @@ def api_execute(request):
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })
-            # print("\nRESPONSE dict:", json.loads(response.text))
 
             if response.status_code == 201:
                 return JsonResponse(response.json(), status=201)
