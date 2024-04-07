@@ -79,7 +79,7 @@ const Profile = ({
   useEffect(() => {
     const getFollowStatus = async () => {
       try {
-        const user_id = user.url.split("/").pop();
+        const user_id = user.url.replace(/\/+$/, "").split("/").pop();
         const response = await axios.get(
           `${
             curUser.host
