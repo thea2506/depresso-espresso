@@ -61,13 +61,24 @@ const Notification = ({
     };
 
     try {
-      const response = await axios.post("/api/execute", {
-        method: "PUT",
-        url: `${curUser.id}/followers/${encodeURIComponent(
-          notificationObject.actor.id
-        )}`,
-        data: data,
-      });
+      let response;
+      if (notificationObject.actor.isExternalAuthor) {
+        response = await axios.post("/api/execute", {
+          method: "PUT",
+          url: `${curUser.id}/followers/${encodeURIComponent(
+            notificationObject.actor.id
+          )}`,
+          data: data,
+        });
+      } else {
+        response = await axios.put(
+          `${curUser.id}/followers/${encodeURIComponent(
+            notificationObject.actor.id
+          )}`,
+          data
+        );
+      }
+
       if (response.status === 200) {
         setRefresh(!refresh);
       }

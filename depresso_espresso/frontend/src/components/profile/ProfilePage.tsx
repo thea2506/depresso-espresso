@@ -77,10 +77,18 @@ const ProfilePage = () => {
         setThisProfileUser(data);
 
         try {
-          const response = await axios.post("/api/execute", {
-            method: "GET",
-            url: `${authorUrl.replace(/\/+$/, "")}/followers`,
-          });
+          let response;
+          if (curUser.isExternalAuthor) {
+            response = await axios.post("/api/execute", {
+              method: "GET",
+              url: `${authorUrl.replace(/\/+$/, "")}/followers`,
+            });
+          } else {
+            response = await axios.get(
+              `${authorUrl.replace(/\/+$/, "")}/followers`
+            );
+          }
+
           const data = response.data;
           const followerModels = (data?.items as AuthorModel[]) || [];
           if (followerModels) setFollowers(followerModels);
