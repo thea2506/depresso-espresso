@@ -227,23 +227,6 @@ def handle_like(request, author_id):
                             profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
 
-    if not liking_author_object:
-        liking_author_object = {}
-
-        old_id = data.get('object')
-        old_id = old_id.rstrip("/").split("/")[-1]
-        liking_author_object["id"] = old_id
-        liking_author_object["isExternalAuthor"] = True
-        liking_author_object["username"] = uuid.uuid4()
-        serializer = AuthorSerializer(
-            data=liking_author_object, context={"request": request})
-        if serializer.is_valid():
-            liking_author = serializer.save(id=uuid.UUID(
-                old_id), username=uuid.uuid4(), isExternalAuthor=True)
-        else:
-            return JsonResponse(serializer.errors, status=500)
-
-
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]
 

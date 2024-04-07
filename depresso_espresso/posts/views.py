@@ -580,6 +580,7 @@ def node_auth_helper(url):
 @api_view(['POST', 'GET', 'PUT'])
 def api_execute(request):
     url = request.data["url"]
+    print("execute this url pls:", url)
     method = request.data["method"]
     user = my_authenticate(request)
     if user is None:
