@@ -554,7 +554,9 @@ def api_likes(request, author_id, post_id):
                 else:
                     nodes = Node.objects.all()
                     for node in nodes:
+                        print("TRY", post_author.host)
                         if node.baseUrl == post_author.host.rstrip('/') + "/":
+                            print("SEND", post_author.host)
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{post_author.url.rstrip('/')}/inbox",
