@@ -65,7 +65,7 @@ def api_get_public_posts(request):
         return JsonResponse({"type": "posts", "items": public_posts}, safe=False)
 
     else:
-        return JsonResponse({"error": "Invalid request"}, status=405)
+        return JsonResponse({"error": ""}, status=405)
 
 
 @swagger_auto_schema(tags=['Posts'], methods=["GET", "POST"])
@@ -582,14 +582,17 @@ def node_auth_helper(url):
 @api_view(['POST', 'GET', 'PUT'])
 def api_execute(request):
     url = request.data["url"]
-    print("execute this url pls:", url)
+    
     method = request.data["method"]
+
+    print("execute this url pls:", url, "method", method)
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
     schema = urlparse(url)
     hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
+    print("hostname:", hostname)
 
     if method == "GET":
         if (request.META["HTTP_HOST"] in hostname):  # Same host
