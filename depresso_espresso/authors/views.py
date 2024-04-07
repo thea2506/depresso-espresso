@@ -466,15 +466,15 @@ def send_follow_request(request, author_id, author_url):
             user_to_follow_serialized = AuthorSerializer(
             data=user_to_follow, context={"request": request})
 
-            obj = {
-                        "type": "Follow",      
-                        "summary":  cur_user.displayName + " wants to follow " + user_to_follow.displayName,
-                        "actor": cur_user_serialized.data,
-                        "object": user_to_follow_serialized.data
+           # obj = {
+           ##             "type": "Follow",      
+            #            "summary":  cur_user.displayName + " wants to follow " + user_to_follow.displayName,
+            #            "actor": cur_user_serialized.data,
+            #            "object": user_to_follow_serialized.data
                         
-                    }
+            #        }
             
-            print("FOLLOW REQUEST OBJ: ", obj)
+           # print("FOLLOW REQUEST OBJ: ", obj)
 
             obj2 = request.data
 
@@ -491,7 +491,7 @@ def send_follow_request(request, author_id, author_url):
                     node = node.first()
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                     response = requests.post(foreign_author_url.rstrip("/") + "/inbox", auth=auth, json=json.dumps(obj), headers={"origin": request.META["HTTP_HOST"]})
-                    print(" FOLLOW RESPONSE OBJECT SENT: ", obj)
+                    print(" FOLLOW RESPONSE OBJECT SENT: ", obj2)
                     print("WHAT WE RECEIVED:",
                         response.status_code, response.reason)
                     try:
@@ -506,7 +506,7 @@ def send_follow_request(request, author_id, author_url):
             
             # Send request to local author's inbox
             else:
-                 response = requests.post(foreign_author_url.rstrip("/") + "/inbox", json=json.dumps(obj), headers={"origin": request.META["HTTP_HOST"]})
+                 response = requests.post(foreign_author_url.rstrip("/") + "/inbox", json=json.dumps(obj2), headers={"origin": request.META["HTTP_HOST"]})
                  message = response.json()
             
             return JsonResponse(message, safe=False, status=200)
