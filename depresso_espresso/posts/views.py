@@ -633,12 +633,13 @@ def api_execute(request):
             print("short url:", short_url)
 
             print("normal post:")
+            print("obj:", obj)
             r = requests.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
 
-            print("posting to session:")
-            r = session.post(short_url, json=obj, headers={
-                "origin": request.META["HTTP_HOST"]})
+            #print("posting to session:")
+            #r = session.post(short_url, json=obj, headers={
+            #    "origin": request.META["HTTP_HOST"]})
             
 
             if r.status_code == 201:

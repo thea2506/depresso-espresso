@@ -90,8 +90,17 @@ def handle_follow(request, author_id):
         actor = Author.objects.get(url=normalized_actor_url)
 
     author = Author.objects.get(id=author_id)
-    follow_request_object = FollowRequest.objects.create(
-        requester=actor, receiver=author)
+
+    print("inbox author:", author)
+    print("inbox actor:", actor)
+    if not FollowRequest.objects.filter(requester=actor, receiver=author).exists():
+        follow_request_object = FollowRequest.objects.create(
+            requester=actor, receiver=author)
+    else:
+        follow_request_object = FollowRequest.objects.get(requester=actor, receiver=author)
+
+    print("follow_req_ob:", follow_request_object)
+
     notification_object = Notification.objects.get_or_create(author=author)[0]
     create_notification_item(
         notification_object, object_instance=follow_request_object)

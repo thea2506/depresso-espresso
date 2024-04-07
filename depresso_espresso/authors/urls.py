@@ -20,6 +20,6 @@ urlpatterns = [
     path('api/authors/<str:author_id>/decline',
          views.api_handle_decline, name='handle_decline'),
 
-    path('api/authors/<str:author_id>/send_follow_request/<path:author_url>',
+    path('api/authors/<str:author_id>/send_follow_request',
           views.send_follow_request, name='send_follow_request'),
 ]

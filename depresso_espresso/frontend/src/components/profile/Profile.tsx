@@ -197,7 +197,8 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post("/api/execute", {
+      console.log("my url to post:" + `/api/authors/${user?.id.split("/").pop()}/send_follow_request` )
+      const response = await axios.post(`/api/authors/${user?.id.split("/").pop()}/send_follow_request`, {
         method: "POST",
         url: `${curUser?.host}/api/authors/${user?.id.split("/").pop()}/send_follow_request/${encodeURIComponent(
           encodeURIComponent(curUser?.url))}`,
