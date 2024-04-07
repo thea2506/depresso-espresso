@@ -633,6 +633,7 @@ def api_execute(request):
             return r
         else:
             auth = node_auth_helper(hostname)
+            print("auth:", auth)
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
