@@ -132,10 +132,9 @@ def api_followers(request, author_id):
 @swagger_auto_schema(tags=['Authors'], methods=["GET", "PUT", "DELETE"])
 @api_view(['GET', 'PUT', "DELETE"])
 def api_follower(request, author_id, author_url):
-    following_author_object = get_author_object(author_url) 
+    following_author_object = get_author_object(author_url)
 
     print("following author ob:", following_author_object)
-
 
     if request.method == 'GET':
         if following_author_object is None:
@@ -283,10 +282,9 @@ def api_follower(request, author_id, author_url):
 
     elif request.method == 'DELETE':
 
-        
         if following_author_object is None:
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
-        
+
         print("deleting...")
 
         followed_author_object = Author.objects.get(id=author_id)
@@ -361,29 +359,21 @@ def api_discover(request):
     if request.method == 'GET':
         author_dicts = []
 
-        #local_author = Author.objects.filter(
-        #    Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) &Q(allowRegister=True))
+        local_author = Author.objects.filter(
+            Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) & Q(allowRegister=True))
 
-        # author_dicts = AuthorSerializer(
-        #    instance=local_author, context={'request': request}, many=True).data
+        author_dicts = AuthorSerializer(
+            instance=local_author, context={'request': request}, many=True).data
 
         nodes = Node.objects.all()
+
         for node in nodes:
-            if node.baseUrl == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/":
-                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                response = requests.get(
-                    node.baseUrl + node.service + "/authors/?size=100", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
-                if response.status_code == 200:
-                    items = response.json()["items"]
-                    author_dicts += items
-                    # for item in items:
-                    #     flag = False
-                    #     for dict in author_dicts:
-                    #         if dict["url"] == item["url"] or dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com/" or dict["host"] == "https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com":
-                    #             flag = True
-                    #             break
-                    #     if not flag:
-                    #         author_dicts.append(item)
+            auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+            response = requests.get(
+                node.baseUrl + node.service + "/authors/?size=100", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+            if response.status_code == 200:
+                items = response.json()["items"]
+                author_dicts += items
 
         return JsonResponse(
             {
