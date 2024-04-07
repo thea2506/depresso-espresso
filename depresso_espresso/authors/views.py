@@ -9,7 +9,7 @@ from authentication.models import Node
 from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
 from requests.auth import HTTPBasicAuth
-import requests
+import requests, json
 from urllib.parse import unquote
 from urllib.parse import urlparse
 from itertools import chain
