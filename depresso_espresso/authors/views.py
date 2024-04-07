@@ -439,9 +439,8 @@ def api_handle_decline(request, author_id):
 @swagger_auto_schema(tags=['Authors'], methods=["POST"])
 @api_view(['POST'])
 def send_follow_request(request, author_id, author_url):
-        user = my_authenticate(request)
-        
-        if request.method == 'POST' and user:
+
+        if request.method == 'POST':
     
             # retrieve the follower and following authors from the db:
             if not Author.objects.filter(id=author_id).exists():
@@ -511,3 +510,4 @@ def send_follow_request(request, author_id, author_url):
                  message = response.json()
             
             return JsonResponse(message, safe=False, status=200)
+        
