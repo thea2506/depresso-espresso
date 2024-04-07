@@ -55,7 +55,7 @@ def my_authenticate(request):
                 
     else:
         user = check_basic(request)
-        print("got a user but no session? ", user)
+        print("got a user but no session? ")
         if not user:
             print("No valid auths ", user)
             return None
