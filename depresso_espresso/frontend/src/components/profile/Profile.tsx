@@ -79,8 +79,11 @@ const Profile = ({
   useEffect(() => {
     const getFollowStatus = async () => {
       try {
+        const user_id = user.url.replace(/\/+$/, "").split("/").pop();
         const response = await axios.get(
-          `${user.url.replace(/\/+$/, "")}/followers/${encodeURIComponent(
+          `${
+            curUser.host
+          }/api/authors/${user_id}/followers/${encodeURIComponent(
             curUser?.url
           )}`
         );
@@ -203,8 +206,8 @@ const Profile = ({
           summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
           actor: curUser,
           object: user,
-        }
-      );
+        },
+      });
 
       if (response.status === 201) {
         setStatus("pending");
