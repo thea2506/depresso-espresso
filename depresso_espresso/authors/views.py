@@ -9,7 +9,7 @@ from authentication.models import Node
 from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
 from requests.auth import HTTPBasicAuth
-import requests, json
+import requests, json, uuid
 from urllib.parse import unquote
 from urllib.parse import urlparse
 from itertools import chain
@@ -17,6 +17,7 @@ from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
 from authentication.checkbasic import my_authenticate
+
 
 
 def get_author_object(author_url):
@@ -67,6 +68,7 @@ def api_author(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
     if request.method == 'GET':
+
         author_object = Author.objects.get(id=author_id)
         serialized_author = AuthorSerializer(
             instance=author_object, context={'request': request})
@@ -445,15 +447,13 @@ def api_handle_decline(request, author_id):
 def send_follow_request(request, author_id):
 
         if request.method == 'POST':
-    
-            # retrieve the follower and following authors from the db:
-            if not Author.objects.filter(id=author_id).exists():
-                return JsonResponse({"error": "Author not found", "success": False}, status=404)
-
-            
 
             print("data:", request.data)
             print("url:",request.data["data"]["object"]["url"] )
+
+            # retrieve the follower and following authors from the db:
+
+            
 
             cur_user = get_author_object(request.data["data"]["actor"]["url"]) # This is the user that sent the request
             user_to_follow = get_author_object(request.data["data"]["object"]["url"]) 
@@ -462,17 +462,19 @@ def send_follow_request(request, author_id):
             print("user to follow:", user_to_follow)
 
             if not user_to_follow:
+                data = request.data["data"]["object"]
                 print("here")
-                return JsonResponse({"error": "Author not found", "success": False}, status=404)
+                old_id = data.get("id")
+                old_id = old_id.rstrip("/").split("/")[-1]
+                Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName= data.get("displayName"),
+                              url=data.get("url").rstrip("/"), type="author", host=data.get('host'), github=data.get("Github"),
+                              profileImage=data.get("profileImage"), allowRegister=False)
 
-            print("create ob")
-            # create FollowRequest object
+            
             if FollowRequest.objects.filter(requester=cur_user, receiver=user_to_follow).exists():
-                print("already exists")
-                return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
-
-            follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
-            print("follow req ob:", follow_request_object)
+                    print("already exists")
+                    return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
+            
 
             # Unnecessary?
             #cur_user_serialized = AuthorSerializer(
@@ -496,17 +498,18 @@ def send_follow_request(request, author_id):
                     print("NODE FOUND")
                     node = node.first()
                     auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    response = requests.post(foreign_author_url.rstrip("/") + "/inbox", auth=auth, json=json.dumps(obj), headers={"origin": request.META["HTTP_HOST"]})
+                    response = requests.post(foreign_author_url.rstrip("/") + "/inbox", auth=auth, json=obj2, headers={"origin": request.META["HTTP_HOST"]})
                     print(" FOLLOW RESPONSE OBJECT SENT: ", obj2)
                     print("WHAT WE RECEIVED:",
                         response.status_code, response.reason)
-                    try:
-                        print("JSON WE RECEIVED:", response.json())
-                        message = response.json()
-                        print(message)
-                    except:
-                        print("MESSAGE WE RECEIVED:", response.text)
-                        return HttpResponse(response.text, status=response.status_code)
+                    
+                    if response.status_code != 200 and response.status_code != 201:
+                        # create FollowRequest object
+                        print(response.status_code)
+                        return JsonResponse({"error": "Inbox error", "success": False}, status=500)       
+                    else:   
+                        follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
+                        print("follow req ob:", follow_request_object) 
                 else:
                     return JsonResponse({"error": "Node not found", "success": False}, status=404)
             
@@ -516,6 +519,9 @@ def send_follow_request(request, author_id):
                 if response.status_code != 200 and response.status_code != 201:
                     print("response.status_code", response.status_code)
                     return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
+                else:
+                    follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
+                    print("follow req ob:", follow_request_object) 
 
             
             return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
