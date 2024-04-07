@@ -77,17 +77,9 @@ const ProfilePage = () => {
         setThisProfileUser(data);
 
         try {
-          let response;
-          if (curUser.isExternalAuthor) {
-            response = await axios.post("/api/execute", {
-              method: "GET",
-              url: `${authorUrl.replace(/\/+$/, "")}/followers`,
-            });
-          } else {
-            response = await axios.get(
-              `${authorUrl.replace(/\/+$/, "")}/followers`
-            );
-          }
+          const response = await axios.get(
+            `${authorUrl.replace(/\/+$/, "")}/followers`
+          );
 
           const data = response.data;
           const followerModels = (data?.items as AuthorModel[]) || [];
