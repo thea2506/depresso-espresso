@@ -81,9 +81,10 @@ const Profile = ({
       try {
         const user_id = user.url.replace(/\/+$/, "").split("/").pop();
         const response = await axios.get(
-          `${
-            curUser.host
-          }/api/authors/${user_id}/followers/${encodeURIComponent(
+          `${curUser.host.replace(
+            /\/+$/,
+            ""
+          )}/api/authors/${user_id}/followers/${encodeURIComponent(
             curUser?.url
           )}`
         );

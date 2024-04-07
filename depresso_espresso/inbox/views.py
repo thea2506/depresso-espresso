@@ -214,18 +214,20 @@ def handle_like(request, author_id):
 
     author_object = Author.objects.get(id=author_id)
 
-
     data = request.data
 
-    liking_author_object = get_author_object(data.get('object'))
+    print("Incoming like to inbox: ", data)
+
+    liking_author_object = get_author_object(data.get('author').get('url'))
+
+    old_id = data.get('author').get('id')
 
     if not liking_author_object:
         old_id = old_id.rstrip("/").split("/")[-1]
 
         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
-
+                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]
@@ -305,8 +307,8 @@ def handle_comment(request, author_id):
     if not commenting_author_object:
         old_id = old_id.rstrip("/").split("/")[-1]
         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
+                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
     serializer = CommentSerializer(
         data=data, context={"request": request}
@@ -377,8 +379,8 @@ def handle_share(request, author_id):
     if not sharing_author_object:
         old_id = old_id.rstrip("/").split("/")[-1]
         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
+                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
     data = request.data
     if data.get('id') is not None:
