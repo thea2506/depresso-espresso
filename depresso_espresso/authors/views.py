@@ -460,6 +460,7 @@ def send_follow_request(request, author_id, author_url):
 
             follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
 
+            # Unnecessary?
             cur_user_serialized = AuthorSerializer(
             data=cur_user, context={"request": request})
 
@@ -475,6 +476,11 @@ def send_follow_request(request, author_id, author_url):
                     }
             
             print("FOLLOW REQUEST OBJ: ", obj)
+
+            obj2 = request.data
+
+            print("FOLLOW REQUEST DATA: ", obj2)
+
 
             # if the requested author is remote:
             if user_to_follow.isExternalAuthor == True:

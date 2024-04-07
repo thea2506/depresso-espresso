@@ -206,7 +206,7 @@ const Profile = ({
     try {
       const response = await axios.post("/api/execute", {
         method: "POST",
-        url: `${user?.url.replace(/\/+$/, "")}/inbox`,
+        url: `/api/authors/${user?.id.split("/").pop()}/send_follow_request/${curUser?.url}`,
 
         data: {
           type: "Follow",
