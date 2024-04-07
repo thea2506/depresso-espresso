@@ -11,7 +11,7 @@ from django.db.models import Q
 from itertools import chain
 from requests.auth import HTTPBasicAuth
 import requests
-from inbox.views import create_notification_item
+from inbox.views import create_notification_item, handle_follow
 from inbox.models import Notification, NotificationItem
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
@@ -111,7 +111,7 @@ def api_posts(request, author_id):
                     new_shared_post = serializer.save(origin=old_id)
 
                     returned_data = PostSerializer(instance=new_shared_post, context={
-                                                "request": request}).data
+                        "request": request}).data
 
                     returned_data["type"] = "post"
 
@@ -129,7 +129,7 @@ def api_posts(request, author_id):
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{author_url.rstrip('/')}/inbox",
-                                        json=returned_data, auth=auth)
+                                          json=returned_data, auth=auth)
 
                         else:
                             notification_object = Notification.objects.get_or_create(
@@ -151,7 +151,7 @@ def api_posts(request, author_id):
             if serializer.is_valid():
                 new_post = serializer.save()
                 returned_data = PostSerializer(instance=new_post, context={
-                                            "request": request}).data
+                    "request": request}).data
 
                 following_objects = Following.objects.filter(
                     author=user)
@@ -168,7 +168,7 @@ def api_posts(request, author_id):
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{author_url.rstrip('/')}/inbox",
-                                        json=returned_data, auth=auth)
+                                          json=returned_data, auth=auth)
                         else:
                             notification_object = Notification.objects.get_or_create(
                                 author=following_author)[0]
@@ -190,7 +190,7 @@ def api_posts(request, author_id):
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{author_url.rstrip('/')}/inbox",
-                                        json=returned_data, auth=auth)
+                                          json=returned_data, auth=auth)
                         else:
                             notification_object = Notification.objects.get_or_create(
                                 author=following_author)[0]
@@ -206,7 +206,6 @@ def api_posts(request, author_id):
                 return JsonResponse(serializer.errors, status=501)
     else:
         return JsonResponse({"error": "Invalid Auth"}, status=401)
-
 
 
 def api_feed(request):
@@ -226,7 +225,7 @@ def api_feed(request):
                     banned_authors.append(public_post.author)
 
                     print("excluding public post by:",
-                        public_post.author.displayName)
+                          public_post.author.displayName)
 
             public_posts = public_posts.exclude(author__in=banned_authors)
 
@@ -654,10 +653,13 @@ def api_execute(request):
     elif method == "PUT":
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in url):  # Same host
-            session = requests.Session()
+            object_id = obj.get("object").get("id")
+            # session = requests.Session()
 
-            r = session.put(url, json=obj, headers={
-                "origin": request.META["HTTP_HOST"]})
+            # r = session.put(url, json=obj, headers={
+            #     "origin": request.META["HTTP_HOST"]})
+
+            handle_follow(request, object_id)
 
             if r.status_code == 200 or r.status_code == 201:
                 return JsonResponse(r.json(), safe=False, status=r.status_code)
