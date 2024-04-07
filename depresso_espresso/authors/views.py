@@ -432,3 +432,6 @@ def api_handle_decline(request, author_id):
             return JsonResponse({"error": "Follow request not found", "success": False}, status=404)
     else:
         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
+    
+
+
