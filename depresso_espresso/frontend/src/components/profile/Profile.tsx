@@ -204,17 +204,27 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      const response = await axios.post("/api/execute", {
-        method: "POST",
-        url: `${user?.url.replace(/\/+$/, "")}/inbox`,
+      let response;
+      const data = {
+        type: "Follow",
+        summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
+        actor: curUser,
+        object: user,
+      };
 
-        data: {
-          type: "Follow",
-          summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
-          actor: curUser,
-          object: user,
-        },
-      });
+      if (curUser.isExternalAuthor) {
+        response = await axios.post("/api/execute", {
+          method: "POST",
+          url: `${user?.url.replace(/\/+$/, "")}/inbox`,
+
+          data: data,
+        });
+      } else {
+        response = await axios.post(
+          `${user?.url.replace(/\/+$/, "")}/inbox`,
+          data
+        );
+      }
 
       if (response.status === 201) {
         setStatus("pending");
