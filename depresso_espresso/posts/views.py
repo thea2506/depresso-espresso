@@ -583,7 +583,7 @@ def api_execute(request):
     
     method = request.data["method"]
 
-    print("execute this url pls:", url, "method", method)
+    
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
@@ -593,6 +593,7 @@ def api_execute(request):
     print("schema:", schema)
     hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
     print("hostname:", hostname)
+    print("execute this url pls:", url, "method", method)
 
     if method == "GET":
         if (request.META["HTTP_HOST"] in hostname):  # Same host
@@ -625,7 +626,7 @@ def api_execute(request):
         print("execute a post method")
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in hostname):  # Same host
-            print("same host")
+            print("same host: request.META:", request.META["HTTP_HOST"])
             session = requests.Session()
 
             short_url = schema.path
