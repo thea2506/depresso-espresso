@@ -134,8 +134,6 @@ def api_followers(request, author_id):
 def api_follower(request, author_id, author_url):
     following_author_object = get_author_object(author_url)
 
-    print("following author ob:", following_author_object)
-
     if request.method == 'GET':
         if following_author_object is None:
 
@@ -173,8 +171,6 @@ def api_follower(request, author_id, author_url):
         data = request.data
 
         obj = request.data
-
-        print("data:", data, "obj:", obj)
 
         # The object
         followed_author_object = Author.objects.get(id=author_id)

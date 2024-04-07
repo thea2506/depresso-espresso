@@ -7,4 +7,5 @@ export interface AuthorModel {
   username: string;
   github: string;
   profileImage: string;
+  isExternalAuthor: boolean;
 }
