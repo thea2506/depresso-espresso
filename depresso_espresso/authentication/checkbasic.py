@@ -18,6 +18,7 @@ def check_basic(request):
         encoded_credentials).decode("utf-8").split(':')
     username = decoded_credentials[0]
     password = decoded_credentials[1]
+    print("username:", username, "password", password)
     if not username or not password:
         return None
 
@@ -36,19 +37,27 @@ def my_authenticate(request):
 
     if request.session.session_key is not None:
         session = Session.objects.get(session_key=request.session.session_key)
+        
         if session:
+            
             session_data = session.get_decoded()
+            print("got a session: ", session_data)
             uid = session_data.get('_auth_user_id')
 
             if not Author.objects.filter(id=uid).exists():
                 user = check_basic(request)
+                print("got a user: ", user)
                 if not user:
-                    return None
+                    print("no user: :(")
             else:
                 user = Author.objects.get(id=uid)
+                print("got a user: ", user)
+                
     else:
         user = check_basic(request)
+        print("got a user but no session? ", user)
         if not user:
+            print("No valid auths ", user)
             return None
 
     return user
