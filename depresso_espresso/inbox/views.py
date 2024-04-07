@@ -214,9 +214,35 @@ def handle_like(request, author_id):
 
     author_object = Author.objects.get(id=author_id)
 
+
     data = request.data
 
-    liking_author_object = get_author_object(data.get('author')['url'])
+    liking_author_object = get_author_object(data.get('object'))
+
+    if not liking_author_object:
+        old_id = old_id.rstrip("/").split("/")[-1]
+
+        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
+
+
+    if not liking_author_object:
+        liking_author_object = {}
+
+        old_id = data.get('object')
+        old_id = old_id.rstrip("/").split("/")[-1]
+        liking_author_object["id"] = old_id
+        liking_author_object["isExternalAuthor"] = True
+        liking_author_object["username"] = uuid.uuid4()
+        serializer = AuthorSerializer(
+            data=liking_author_object, context={"request": request})
+        if serializer.is_valid():
+            liking_author = serializer.save(id=uuid.UUID(
+                old_id), username=uuid.uuid4(), isExternalAuthor=True)
+        else:
+            return JsonResponse(serializer.errors, status=500)
+
 
     if "comments" in data.get('object'):
         comment_id = data.get('object').split('/')[-1]
@@ -285,9 +311,19 @@ def handle_comment(request, author_id):
 
     data = request.data
 
+    print("Incoming comment to inbox: ", data)
+
     post_id = data.get('id').split('/')[-3]
 
     data['post'] = Post.objects.get(id=post_id).id
+
+    commenting_author_object = get_author_object(data.get('author')['url'])
+
+    if not commenting_author_object:
+        old_id = old_id.rstrip("/").split("/")[-1]
+        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
     serializer = CommentSerializer(
         data=data, context={"request": request}
@@ -319,8 +355,9 @@ def handle_post(request, author_id):
 
     data = request.data
     if not Author.objects.filter(url=data.get("author").get("url")).exists():
-        Author.objects.create(isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                              url=data.get("author").get("url"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+        old_id = old_id.rstrip("/").split("/")[-1]
+        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
@@ -351,6 +388,14 @@ def handle_share(request, author_id):
         return JsonResponse({'error': 'Author not found'}, status=404)
 
     author_object = Author.objects.get(id=author_id)
+
+    sharing_author_object = get_author_object(data.get('author')['url'])
+
+    if not sharing_author_object:
+        old_id = old_id.rstrip("/").split("/")[-1]
+        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                            url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                            profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
     data = request.data
     if data.get('id') is not None:
