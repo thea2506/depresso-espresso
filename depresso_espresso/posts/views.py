@@ -11,7 +11,7 @@ from django.db.models import Q
 from itertools import chain
 from requests.auth import HTTPBasicAuth
 import requests
-from inbox.views import create_notification_item, handle_follow
+from inbox.views import create_notification_item,  api_inbox
 from inbox.models import Notification, NotificationItem
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
@@ -654,13 +654,10 @@ def api_execute(request):
     elif method == "PUT":
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in url):  # Same host
-            object_id = obj.get("object").get("id")
-            # session = requests.Session()
+            session = requests.Session()
 
-            # r = session.put(url, json=obj, headers={
-            #     "origin": request.META["HTTP_HOST"]})
-
-            handle_follow(request, object_id)
+            r = session.put(url, json=obj, headers={
+                "origin": request.META["HTTP_HOST"]})
 
             if r.status_code == 200 or r.status_code == 201:
                 return JsonResponse(r.json(), safe=False, status=r.status_code)

@@ -78,23 +78,12 @@ const Profile = ({
 
   useEffect(() => {
     const getFollowStatus = async () => {
-      let response;
       try {
-        if (curUser.isExternalAuthor) {
-          response = await axios.post("/api/execute", {
-            method: "GET",
-            url: `${user.url.replace(
-              /\/+$/,
-              ""
-            )}/followers/${encodeURIComponent(curUser?.url)}`,
-          });
-        } else {
-          response = await axios.get(
-            `${user.url}/followers/${encodeURIComponent(
-              encodeURIComponent(curUser?.id)
-            )}`
-          );
-        }
+        const response = await axios.get(
+          `${user.url.replace(/\/+$/, "")}/followers/${encodeURIComponent(
+            curUser?.url
+          )}`
+        );
 
         if (response.status === 200) {
           // further check if they are friends
@@ -214,8 +203,8 @@ const Profile = ({
           summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
           actor: curUser,
           object: user,
-        },
-      });
+        }
+      );
 
       if (response.status === 201) {
         setStatus("pending");
