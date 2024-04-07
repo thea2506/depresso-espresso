@@ -218,7 +218,7 @@ def handle_like(request, author_id):
 
     print("Incoming like to inbox: ", data)
 
-    liking_author_object = get_author_object(data.get('author'))
+    liking_author_object = get_author_object(data.get('author').get('url'))
 
     old_id = data.get('author').get('id')
 
