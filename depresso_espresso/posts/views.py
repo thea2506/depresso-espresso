@@ -590,7 +590,9 @@ def api_execute(request):
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
+    
     schema = urlparse(url)
+    print("schema:", schema)
     hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
     print("hostname:", hostname)
 
