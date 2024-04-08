@@ -145,28 +145,23 @@ def handle_follow_response(request, author_id):
         following_author_object = following_author_object.first()
 
     # Actor Object
-    actor_object = Author.objects.filter(url=actor['url'].rstrip("/") + '/')
+    print(actor["url"])
+    actor_object = Author.objects.filter(url=actor['url'].rstrip("/"))
 
     if not actor_object.exists():
-        actor_object = Author.objects.filter(
-            url=actor['url'].rstrip("/") + "/")
 
-        if not actor_object.exists():
-            old_id = actor.get('id')
-            old_id = old_id.rstrip("/").split("/")[-1]
-            actor["id"] = old_id
-            actor["isExternalAuthor"] = True
-            actor["username"] = uuid.uuid4()
-            serializer = AuthorSerializer(
-                data=actor, context={"request": request})
-            if serializer.is_valid():
-                actor_object = serializer.save(id=uuid.UUID(
-                    old_id), username=uuid.uuid4(), isExternalAuthor=True)
-            else:
-                return JsonResponse(serializer.errors, status=500)
-
+        old_id = actor.get('id')
+        old_id = old_id.rstrip("/").split("/")[-1]
+        actor["id"] = old_id
+        actor["isExternalAuthor"] = True
+        actor["username"] = uuid.uuid4()
+        serializer = AuthorSerializer(
+            data=actor, context={"request": request})
+        if serializer.is_valid():
+            actor_object = serializer.save(id=uuid.UUID(
+                old_id), username=uuid.uuid4(), isExternalAuthor=True)
         else:
-            actor_object = actor_object.first()
+            return JsonResponse(serializer.errors, status=500)
 
     else:
         actor_object = actor_object.first()
@@ -203,12 +198,16 @@ def handle_follow_response(request, author_id):
 
     # Handle rejected follow request
     else:
+        print("Rejected")
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=actor_object)
+        print(follow_request_object)
+        print(follow_request_object.exists())
 
         if follow_request_object.exists():
+            follow_request_object = follow_request_object.first()
             follow_request_content_type = ContentType.objects.get_for_model(
-                follow_request_object)
+                FollowRequest)
 
             notification_item = NotificationItem.objects.filter(
                 content_type=follow_request_content_type, object_id=follow_request_object.id).first()

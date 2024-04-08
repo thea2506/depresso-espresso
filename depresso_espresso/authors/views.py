@@ -140,7 +140,12 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"status": "stranger", "success": False}, status=404)
 
         # The object
-        followed_author_object = Author.objects.get(id=author_id)
+        followed_author_object = Author.objects.filter(id=author_id)
+
+        if not followed_author_object.exists():
+            return JsonResponse({"error": "Author not found", "status": "stranger", "success": False}, status=404)
+
+        followed_author_object = followed_author_object.first()
 
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=followed_author_object)
@@ -445,12 +450,13 @@ def send_follow_request(request, author_id):
             request.data["data"]["object"]["url"])
 
         if not user_to_follow:
+            print("NEW USER")
             data = request.data["data"]["object"]
             old_id = data.get("id")
             old_id = old_id.rstrip("/").split("/")[-1]
-            Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("displayName"),
-                                  url=data.get("url").rstrip("/"), type="author", host=data.get('host'), github=data.get("Github"),
-                                  profileImage=data.get("profileImage"), allowRegister=False)
+            user_to_follow = Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("displayName"),
+                                                   url=data.get("url").rstrip("/"), type="author", host=data.get('host'), github=data.get("Github"),
+                                                   profileImage=data.get("profileImage"), allowRegister=False)
 
         if FollowRequest.objects.filter(requester=cur_user, receiver=user_to_follow).exists():
             return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
@@ -467,11 +473,12 @@ def send_follow_request(request, author_id):
 
         # if the requested author is remote:
         if user_to_follow.isExternalAuthor == True:
-
+            print("External author")
             node = Node.objects.filter(
                 baseUrl=user_to_follow.host.rstrip("/")+"/")
             if node.exists():
                 node = node.first()
+                print("node found")
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.post(foreign_author_url.rstrip(
                     "/") + "/inbox", auth=auth, json=obj2, headers={"origin": request.META["HTTP_HOST"]})
@@ -480,19 +487,21 @@ def send_follow_request(request, author_id):
                     # create FollowRequest object
                     return JsonResponse({"error": "Inbox error", "success": False}, status=500)
                 else:
+                    print("Follow request sent")
                     follow_request_object = FollowRequest.objects.create(
                         requester=cur_user, receiver=user_to_follow)
+                    print("done")
             else:
                 return JsonResponse({"error": "Node not found", "success": False}, status=404)
 
         # Send request to local author's inbox
         else:
-            response = requests.post(foreign_author_url.rstrip(
-                "/") + "/inbox", json=obj2, headers={"origin": request.META["HTTP_HOST"]})
-            if response.status_code != 200 and response.status_code != 201:
-                return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
-            else:
-                follow_request_object = FollowRequest.objects.create(
-                    requester=cur_user, receiver=user_to_follow)
+            # response = requests.post(foreign_author_url.rstrip(
+            #     "/") + "/inbox", json=obj2, headers={"origin": request.META["HTTP_HOST"]})
+            # if response.status_code != 200 and response.status_code != 201:
+            #     return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
+            # else:
+            follow_request_object = FollowRequest.objects.create(
+                requester=cur_user, receiver=user_to_follow)
 
         return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
