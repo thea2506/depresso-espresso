@@ -7,10 +7,33 @@ from inbox.serializers import NotificationSerializer, NotificationItemSerializer
 from django.contrib.contenttypes.models import ContentType
 from posts.models import Post, Comment, LikeComment, LikePost
 from posts.serializers import PostSerializer, CommentSerializer
-from authors.views import get_author_object
+from urllib.parse import unquote
+from urllib.parse import urlparse
 import uuid
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
+
+
+def get_author_object(author_url):
+    author_url = unquote(author_url)
+    if "127.0.0.1" in author_url:
+        normalized_author_url = author_url.replace("127.0.0.1", "localhost")
+    elif "localhost" in author_url:
+        normalized_author_url = author_url.replace("localhost", "127.0.0.1")
+    else:
+        normalized_author_url = author_url
+    if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
+            url=normalized_author_url).exists() and not Author.objects.filter(url=author_url + "/").exists() and not Author.objects.filter(url=normalized_author_url + "/").exists():
+        return None
+    if Author.objects.filter(url=author_url).exists():
+        return Author.objects.get(url=author_url)
+    if Author.objects.filter(url=author_url + "/").exists():
+        return Author.objects.get(url=author_url + "/")
+    if Author.objects.filter(url=normalized_author_url).exists():
+        return Author.objects.get(url=normalized_author_url)
+    if Author.objects.filter(url=normalized_author_url + "/").exists():
+        return Author.objects.get(url=normalized_author_url + "/")
+    return None
 
 
 @swagger_auto_schema(tags=['Inbox'], methods=["GET", "POST", "DELETE"])
@@ -145,7 +168,6 @@ def handle_follow_response(request, author_id):
         following_author_object = following_author_object.first()
 
     # Actor Object
-    print(actor["url"])
     actor_object_1 = Author.objects.filter(url=actor['url'].rstrip("/"))
     actor_object_2 = Author.objects.filter(
         url=(actor['url'].rstrip("/") + "/"))
@@ -203,11 +225,8 @@ def handle_follow_response(request, author_id):
 
     # Handle rejected follow request
     else:
-        print("REJECTED")
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=actor_object)
-        print(follow_request_object)
-        print(follow_request_object.exists())
 
         if follow_request_object.exists():
             follow_request_object = follow_request_object.first()

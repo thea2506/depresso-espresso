@@ -2,7 +2,8 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from authentication.models import Author, Following, FollowRequest
 from authentication.serializers import AuthorSerializer
-from inbox.models import NotificationItem
+from inbox.models import NotificationItem, Notification
+from inbox.views import create_notification_item, send_notification_item
 from posts.models import LikePost, LikeComment
 from posts.serializers import LikePostSerializer, LikeCommentSerializer
 from authentication.models import Node
@@ -10,7 +11,6 @@ from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
 from requests.auth import HTTPBasicAuth
 import requests
-import json
 import uuid
 from urllib.parse import unquote
 from urllib.parse import urlparse
@@ -18,7 +18,6 @@ from itertools import chain
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
-from authentication.checkbasic import my_authenticate
 
 
 def get_author_object(author_url):
@@ -104,7 +103,6 @@ def api_external_author(request, author_url):
             if response.status_code == 200:
                 return JsonResponse(response.json(), status=response.status_code)
             else:
-                print("GET EXTERNAL AUTHOR FAILED", response.status_code)
                 return HttpResponse(content=response.content, status=response.status_code)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
@@ -448,7 +446,6 @@ def send_follow_request(request, author_id):
             request.data["data"]["object"]["url"])
 
         if not user_to_follow:
-            print("NEW USER")
             data = request.data["data"]["object"]
             old_id = data.get("id")
             old_id = old_id.rstrip("/").split("/")[-1]
@@ -459,47 +456,35 @@ def send_follow_request(request, author_id):
         if FollowRequest.objects.filter(requester=cur_user, receiver=user_to_follow).exists():
             return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
 
-        # Unnecessary?
-        # cur_user_serialized = AuthorSerializer(
-        # data=cur_user, context={"request": request})
-
-        # user_to_follow_serialized = AuthorSerializer(
-        # data=user_to_follow, context={"request": request})
-
         obj2 = request.data["data"]
         foreign_author_url = user_to_follow.url
 
         # if the requested author is remote:
         if user_to_follow.isExternalAuthor == True:
-            print("External author")
             node = Node.objects.filter(
                 baseUrl=user_to_follow.host.rstrip("/")+"/")
             if node.exists():
                 node = node.first()
-                print("node found")
                 auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
                 response = requests.post(foreign_author_url.rstrip(
                     "/") + "/inbox", auth=auth, json=obj2, headers={"origin": request.META["HTTP_HOST"]})
 
                 if response.status_code != 200 and response.status_code != 201:
-                    # create FollowRequest object
                     return JsonResponse({"error": "Inbox error", "success": False}, status=500)
                 else:
-                    print("Follow request sent")
                     follow_request_object = FollowRequest.objects.create(
                         requester=cur_user, receiver=user_to_follow)
-                    print("done")
             else:
                 return JsonResponse({"error": "Node not found", "success": False}, status=404)
 
-        # Send request to local author's inbox
         else:
-            # response = requests.post(foreign_author_url.rstrip(
-            #     "/") + "/inbox", json=obj2, headers={"origin": request.META["HTTP_HOST"]})
-            # if response.status_code != 200 and response.status_code != 201:
-            #     return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
-            # else:
             follow_request_object = FollowRequest.objects.create(
                 requester=cur_user, receiver=user_to_follow)
 
-        return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
+        notification_object = Notification.objects.get_or_create(author=user_to_follow)[
+            0]
+        create_notification_item(
+            notification_object, object_instance=follow_request_object)
+        send_notification_item(request, notification_object)
+
+    return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
