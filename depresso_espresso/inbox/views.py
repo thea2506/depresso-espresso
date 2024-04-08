@@ -145,7 +145,8 @@ def handle_follow_response(request, author_id):
         following_author_object = following_author_object.first()
 
     # Actor Object
-    actor_object = Author.objects.filter(url=actor['url'].rstrip("/"))
+    actor_object = Author.objects.filter(url=actor['url'].rstrip("/") + '/')
+
     if not actor_object.exists():
         actor_object = Author.objects.filter(
             url=actor['url'].rstrip("/") + "/")
