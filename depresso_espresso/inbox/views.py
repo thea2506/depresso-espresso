@@ -198,7 +198,7 @@ def handle_follow_response(request, author_id):
 
     # Handle rejected follow request
     else:
-        print("Rejected")
+        print("REJECTED")
         follow_request_object = FollowRequest.objects.filter(
             requester=following_author_object, receiver=actor_object)
         print(follow_request_object)

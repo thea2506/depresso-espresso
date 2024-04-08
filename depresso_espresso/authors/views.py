@@ -100,14 +100,12 @@ def api_external_author(request, author_url):
             auth = HTTPBasicAuth(node_obj.ourUsername,
                                  node_obj.ourPassword)
 
-            try:
-                response = requests.get(author_url, auth=auth)
+            response = requests.get(author_url, auth=auth)
+            if response.status_code == 200:
                 return JsonResponse(response.json(), status=response.status_code)
-
-            except:
-                response = requests.get(author_url, auth=auth)
-                response = requests.get(author_url[:-1], auth=auth)
-                return JsonResponse(response.json(), status=response.status_code)
+            else:
+                print("GET EXTERNAL AUTHOR FAILED", response.status_code)
+                return HttpResponse(content=response.content, status=response.status_code)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
