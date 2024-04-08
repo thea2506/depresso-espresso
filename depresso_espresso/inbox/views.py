@@ -185,6 +185,11 @@ def handle_follow_response(request, author_id):
         else:
             following_object = Following.objects.create(
                 author=actor_object, following_author=following_author_object)
+            
+            follow_request = FollowRequest.objects.filter(receiver=actor_object, requester=following_author_object)
+
+            if follow_request:
+                follow_request.delete()
 
             reverse_following_objects = Following.objects.filter(
                 author=following_author_object, following_author=actor_object)
