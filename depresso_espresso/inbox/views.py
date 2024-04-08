@@ -61,6 +61,9 @@ def api_inbox(request, author_id):
 
     elif request.method == 'POST':
         type = request.data.get('type').lower()
+        post_id = request.data.get('id').split('/')[-1]
+        post = Post.objects.filter(id=post_id)
+
         if type == 'follow':
             return handle_follow(request, author_id)
         elif type == 'unfollow':
@@ -71,10 +74,10 @@ def api_inbox(request, author_id):
             return handle_like(request, author_id)
         elif type == 'comment':
             return handle_comment(request, author_id)
+        elif type == 'share' or post.exists():
+            return handle_share(request, author_id)
         elif type == 'post':
             return handle_post(request, author_id)
-        elif type == 'share':
-            return handle_share(request, author_id)
 
     elif request.method == 'DELETE':
         author_object = Author.objects.get(id=author_id)
