@@ -405,6 +405,7 @@ def handle_post(request, author_id):
 def handle_share(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({'error': 'Author not found'}, status=404)
+    data = request.data
 
     author_object = Author.objects.get(id=author_id)
 
@@ -416,7 +417,6 @@ def handle_share(request, author_id):
                               url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
-    data = request.data
     if data.get('id') is not None:
         data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
