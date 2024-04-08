@@ -11,7 +11,7 @@ from depresso_espresso.constants import *
 
 
 class AuthorSerializer(serializers.ModelSerializer):
-    # host = SerializerMethodField("get_host_url")
+    host = SerializerMethodField("get_host_url")
     id = SerializerMethodField("get_id_url")
     # url = SerializerMethodField("get_id_url")
 
@@ -21,7 +21,7 @@ class AuthorSerializer(serializers.ModelSerializer):
                   "host", "profileImage", "url")
 
     def get_host_url(self, _):
-        return f"{self.context['request'].build_absolute_uri('/')}"
+        return f"{self.context['request'].build_absolute_uri('/')}".rstrip('/') + "/"
 
     def get_id_url(self, obj):
         return build_default_author_uri(obj=obj, request=self.context["request"], source="author")

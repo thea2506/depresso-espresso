@@ -33,7 +33,7 @@ class Register(UserCreationForm):
 
         user.username = self.cleaned_data["username"]
         user.displayName = self.cleaned_data["displayName"]
-        user.host = f"{uri}"
+        user.host = f"{uri}/"
         user.set_password(self.cleaned_data["password1"])
         user.url = f"{uri}/{SERVICE}authors/{user.id}"
 
