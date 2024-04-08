@@ -61,8 +61,6 @@ def api_inbox(request, author_id):
 
     elif request.method == 'POST':
         type = request.data.get('type').lower()
-        post_id = request.data.get('id').split('/')[-1]
-        post = Post.objects.filter(id=post_id)
 
         if type == 'follow':
             return handle_follow(request, author_id)
@@ -74,8 +72,6 @@ def api_inbox(request, author_id):
             return handle_like(request, author_id)
         elif type == 'comment':
             return handle_comment(request, author_id)
-        elif type == 'share' or post.exists():
-            return handle_share(request, author_id)
         elif type == 'post':
             return handle_post(request, author_id)
 
@@ -389,8 +385,11 @@ def handle_post(request, author_id):
     )
 
     if serializer.is_valid():
-        serializer.save(id=uuid.UUID(data.get('id')))
-
+        post = Post.objects.filter(id=uuid.UUID(data.get('id')))
+        if post.exists():
+            serializer.save(id=uuid.UUID(data.get('id')))
+        else:
+            serializer.save()
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
@@ -424,7 +423,7 @@ def handle_share(request, author_id):
         data=data, context={"request": request}
     )
     if serializer.is_valid():
-        serializer.save(id=uuid.UUID(data.get('id')))
+        serializer.save()
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
         create_notification_item(
