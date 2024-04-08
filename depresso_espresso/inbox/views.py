@@ -146,9 +146,11 @@ def handle_follow_response(request, author_id):
 
     # Actor Object
     print(actor["url"])
-    actor_object = Author.objects.filter(url=actor['url'].rstrip("/"))
+    actor_object_1 = Author.objects.filter(url=actor['url'].rstrip("/"))
+    actor_object_2 = Author.objects.filter(
+        url=(actor['url'].rstrip("/") + "/"))
 
-    if not actor_object.exists():
+    if not actor_object_1.exists() and not actor_object_2.exists():
 
         old_id = actor.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
@@ -164,7 +166,10 @@ def handle_follow_response(request, author_id):
             return JsonResponse(serializer.errors, status=500)
 
     else:
-        actor_object = actor_object.first()
+        if actor_object_1.exists():
+            actor_object = actor_object_1.first()
+        else:
+            actor_object = actor_object_2.first()
 
     # Handle accepted follow request
     if accepted == True:
