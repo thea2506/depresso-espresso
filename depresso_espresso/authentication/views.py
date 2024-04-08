@@ -24,7 +24,6 @@ def register(request):
 
         if form.is_valid():
             uri = request.build_absolute_uri("/")
-            print("uri:", uri)
             form.save(uri.rstrip('/'))
             data['success'] = True
             return JsonResponse(data)

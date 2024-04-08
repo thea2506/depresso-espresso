@@ -197,19 +197,24 @@ const Profile = ({
    */
   const handleFollowRequest = async () => {
     try {
-      console.log("my url to post:" + `/api/authors/${user?.id.split("/").pop()}/send_follow_request` )
-      const response = await axios.post(`/api/authors/${user?.id.split("/").pop()}/send_follow_request`, {
-        method: "POST",
-        url: `${curUser?.host}/api/authors/${user?.id.split("/").pop()}/send_follow_request/${encodeURIComponent(
-          encodeURIComponent(curUser?.url))}`,
+      const response = await axios.post(
+        `/api/authors/${user?.id.split("/").pop()}/send_follow_request`,
+        {
+          method: "POST",
+          url: `${curUser?.host}/api/authors/${user?.id
+            .split("/")
+            .pop()}/send_follow_request/${encodeURIComponent(
+            encodeURIComponent(curUser?.url)
+          )}`,
 
-        data: {
-          type: "Follow",
-          summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
-          actor: curUser,
-          object: user,
-        },
-      });
+          data: {
+            type: "Follow",
+            summary: `${curUser?.displayName} wants to follow ${user?.displayName}`,
+            actor: curUser,
+            object: user,
+          },
+        }
+      );
 
       if (response.status === 201) {
         setStatus("pending");
@@ -226,8 +231,11 @@ const Profile = ({
   const handleUnffollowRequest = async () => {
     try {
       const response = await axios.delete(
-        `/api/authors/${user?.id.split("/").pop()}/followers/${encodeURIComponent(
-          encodeURIComponent(curUser?.url))}`
+        `/api/authors/${user?.id
+          .split("/")
+          .pop()}/followers/${encodeURIComponent(
+          encodeURIComponent(curUser?.url)
+        )}`
       );
       if (response.data.success === true) {
         setStatus("stranger");

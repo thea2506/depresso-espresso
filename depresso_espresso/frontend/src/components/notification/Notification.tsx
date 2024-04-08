@@ -61,7 +61,6 @@ const Notification = ({
     };
 
     try {
-      console.log("curuserid:"+ curUser.id)
       const response = await axios.put(
         `${curUser.id}/followers/${encodeURIComponent(
           notificationObject.actor.id

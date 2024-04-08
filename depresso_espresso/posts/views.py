@@ -41,7 +41,7 @@ def get_posts(current_user, author_object):
 @api_view(['GET'])
 def api_get_public_posts(request):
     user = my_authenticate(request)
-    
+
     if user:
 
         banned_authors = []
@@ -51,9 +51,6 @@ def api_get_public_posts(request):
             if public_post.author.isExternalAuthor == True:
 
                 banned_authors.append(public_post.author)
-
-                #print("excluding public post by:",
-                #      public_post.author.displayName)
 
         public_posts = public_posts.exclude(author__in=banned_authors)
 
@@ -222,13 +219,7 @@ def api_feed(request):
 
                     banned_authors.append(public_post.author)
 
-                    print("excluding public post by:",
-                          public_post.author.displayName)
-
             public_posts = public_posts.exclude(author__in=banned_authors)
-
-            # for post in public_posts:
-            #     print(post.author.isExternalAuthor)
 
             public_posts = PostSerializer(
                 instance=public_posts, many=True, context={"request": request}).data
@@ -260,8 +251,8 @@ def api_feed(request):
         return JsonResponse({"error": "Invalid Auth"}, status=401)
 
 
-@swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
-@api_view(['GET', 'PUT', 'DELETE'])
+@ swagger_auto_schema(tags=['Posts'], methods=["GET", "PUT", "DELETE"])
+@ api_view(['GET', 'PUT', 'DELETE'])
 def api_post(request, author_id, post_id):
 
     user = my_authenticate(request)
@@ -304,7 +295,7 @@ def api_post(request, author_id, post_id):
             new_post = serializer.save()
 
             returned_data = PostSerializer(instance=new_post, context={
-                                           "request": request}).data
+                "request": request}).data
             return JsonResponse(
                 returned_data, status=200)
         else:
@@ -333,8 +324,8 @@ def api_post(request, author_id, post_id):
         return JsonResponse({"error": "Invalid request"}, status=405)
 
 
-@swagger_auto_schema(tags=['Comments'], methods=["GET", "POST"])
-@api_view(['GET', 'POST'])
+@ swagger_auto_schema(tags=['Comments'], methods=["GET", "POST"])
+@ api_view(['GET', 'POST'])
 def api_comments(request, author_id, post_id):
     user = my_authenticate(request)
     if request.method == 'GET':
@@ -389,7 +380,6 @@ def api_comments(request, author_id, post_id):
                 following_objects = Following.objects.filter(
                     author=user)
 
-                print("Following obs:", following_objects)
                 for following_object in following_objects:
                     following_author = following_object.following_author
                     author_url = following_author.url
@@ -400,9 +390,6 @@ def api_comments(request, author_id, post_id):
                         node = node.first()
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-
-                        # print("COMMENT JSON:", returned_data)
-                        print("author url:", author_url.rstrip('/'))
                         requests.post(f"{author_url.rstrip('/')}/inbox",
                                       json=returned_data, auth=auth)
 
@@ -413,14 +400,8 @@ def api_comments(request, author_id, post_id):
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
 
-                        # print("COMMENT JSON:", returned_data)
-                        print("POST_OWNERURL:", post_owner_url)
                         response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                                  json=returned_data, auth=auth)
-
-                        print("\nRESPONSE:", response)
-                        # print("\nRESPONSE text:", response.text)
-                        # print("\nRESPONSE dict:", json.loads(response.text))
 
             return JsonResponse(
                 returned_data, status=201)
@@ -430,8 +411,8 @@ def api_comments(request, author_id, post_id):
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
 
 
-@swagger_auto_schema(tags=['Posts'], methods=["GET"])
-@api_view(['GET'])
+@ swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@ api_view(['GET'])
 def api_get_image(request, author_id, post_id):
     user = my_authenticate(request)
 
@@ -456,8 +437,8 @@ def api_get_image(request, author_id, post_id):
         return JsonResponse({"message": "Method not Allowed", "success": False}, status=405)
 
 
-@swagger_auto_schema(tags=['Posts'], methods=["GET"])
-@api_view(['GET'])
+@ swagger_auto_schema(tags=['Posts'], methods=["GET"])
+@ api_view(['GET'])
 def api_post_like(request, author_id, post_id):
     if request.method == 'GET':
         user = my_authenticate(request)
@@ -474,8 +455,8 @@ def api_post_like(request, author_id, post_id):
         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
 
 
-@swagger_auto_schema(tags=['Comments'], methods=["GET"])
-@api_view(['GET'])
+@ swagger_auto_schema(tags=['Comments'], methods=["GET"])
+@ api_view(['GET'])
 def api_comment_like(request, author_id, post_id, comment_id):
     if request.method == 'GET':
         user = my_authenticate(request)
@@ -494,7 +475,7 @@ def api_comment_like(request, author_id, post_id, comment_id):
         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
 
 
-@api_view(['POST'])
+@ api_view(['POST'])
 def api_likes(request, author_id, post_id):
     if (request.method == 'POST'):
         if not Post.objects.filter(id=post_id).exists():
@@ -552,9 +533,7 @@ def api_likes(request, author_id, post_id):
                 else:
                     nodes = Node.objects.all()
                     for node in nodes:
-                        print("TRY", post_author.host)
                         if node.baseUrl == post_author.host.rstrip('/') + "/":
-                            print("SEND", post_author.host)
                             auth = HTTPBasicAuth(
                                 node.ourUsername, node.ourPassword)
                             requests.post(f"{post_author.url.rstrip('/')}/inbox",
@@ -577,23 +556,18 @@ def node_auth_helper(url):
     return None
 
 
-@api_view(['POST', 'GET', 'PUT'])
+@ api_view(['POST', 'GET', 'PUT'])
 def api_execute(request):
     url = request.data["url"]
-    
+
     method = request.data["method"]
 
-    
     user = my_authenticate(request)
     if user is None:
         return JsonResponse({"message": "User not authenticated"}, status=401)
 
-    
     schema = urlparse(url)
-    print("schema:", schema)
     hostname = '{uri.scheme}://{uri.netloc}/'.format(uri=schema)
-    print("hostname:", hostname)
-    print("execute this url pls:", url, "method", method)
 
     if method == "GET":
         if (request.META["HTTP_HOST"] in hostname):  # Same host
@@ -622,37 +596,20 @@ def api_execute(request):
 
     # POST external API
     elif method == "POST":
-
-        print("execute a post method")
         obj = request.data["data"]
         if (request.META["HTTP_HOST"] in hostname):  # Same host
-            print("same host: request.META:", request.META["HTTP_HOST"])
             session = requests.Session()
-
-            short_url = schema.path
-            print("short url:", short_url)
-
-            print("normal post:")
-            print("obj:", obj)
             r = requests.post(url, json=obj, headers={
                 "origin": request.META["HTTP_HOST"]})
-
-            #print("posting to session:")
-            #r = session.post(short_url, json=obj, headers={
-            #    "origin": request.META["HTTP_HOST"]})
-            
 
             if r.status_code == 201:
                 return JsonResponse(r.json(), status=201)
             return r
         else:
             auth = node_auth_helper(hostname)
-            print("auth:", auth)
 
             if not auth:
                 return JsonResponse({"message": "Node not found"}, status=404)
-
-            print(f'ORIGINAL sending {obj} to {url}')
 
             if obj.get('object') != None:
                 author_url = obj['object']['url']
@@ -661,7 +618,6 @@ def api_execute(request):
 
                 obj['object']['id'] = author_url
 
-            print(f'sending {obj} to {url}')
             response = requests.post(url, json=obj, auth=auth, headers={
                 "origin": request.META["HTTP_HOST"]
             })

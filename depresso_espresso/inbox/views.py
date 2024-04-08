@@ -90,16 +90,12 @@ def handle_follow(request, author_id):
         actor = Author.objects.get(url=normalized_actor_url)
 
     author = Author.objects.get(id=author_id)
-
-    print("inbox author:", author)
-    print("inbox actor:", actor)
     if not FollowRequest.objects.filter(requester=actor, receiver=author).exists():
         follow_request_object = FollowRequest.objects.create(
             requester=actor, receiver=author)
     else:
-        follow_request_object = FollowRequest.objects.get(requester=actor, receiver=author)
-
-    print("follow_req_ob:", follow_request_object)
+        follow_request_object = FollowRequest.objects.get(
+            requester=actor, receiver=author)
 
     notification_object = Notification.objects.get_or_create(author=author)[0]
     create_notification_item(
@@ -185,8 +181,9 @@ def handle_follow_response(request, author_id):
         else:
             following_object = Following.objects.create(
                 author=actor_object, following_author=following_author_object)
-            
-            follow_request = FollowRequest.objects.filter(receiver=actor_object, requester=following_author_object)
+
+            follow_request = FollowRequest.objects.filter(
+                receiver=actor_object, requester=following_author_object)
 
             if follow_request:
                 follow_request.delete()
@@ -229,8 +226,6 @@ def handle_like(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     data = request.data
-
-    print("Incoming like to inbox: ", data)
 
     liking_author_object = get_author_object(data.get('author').get('url'))
 
@@ -309,8 +304,6 @@ def handle_comment(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     data = request.data
-
-    print("Incoming comment to inbox: ", data)
 
     post_id = data.get('id').split('/')[-3]
 

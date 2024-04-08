@@ -9,7 +9,9 @@ from authentication.models import Node
 from django.contrib.contenttypes.models import ContentType
 from depresso_espresso.constants import *
 from requests.auth import HTTPBasicAuth
-import requests, json, uuid
+import requests
+import json
+import uuid
 from urllib.parse import unquote
 from urllib.parse import urlparse
 from itertools import chain
@@ -19,10 +21,8 @@ from utils import Pagination
 from authentication.checkbasic import my_authenticate
 
 
-
 def get_author_object(author_url):
     author_url = unquote(author_url)
-    print("author url2:", author_url)
     if "127.0.0.1" in author_url:
         normalized_author_url = author_url.replace("127.0.0.1", "localhost")
     elif "localhost" in author_url:
@@ -101,17 +101,12 @@ def api_external_author(request, author_url):
                                  node_obj.ourPassword)
 
             try:
-                print("Author url:", author_url)
                 response = requests.get(author_url, auth=auth)
-                print("Response text:", response.text)
-                print("Response:", response.json())
                 return JsonResponse(response.json(), status=response.status_code)
 
             except:
                 response = requests.get(author_url, auth=auth)
-                print("Author url:", author_url[:-1])
                 response = requests.get(author_url[:-1], auth=auth)
-                print("Response text:", response.text)
                 return JsonResponse(response.json(), status=response.status_code)
 
     return JsonResponse({"error": "Invalid request", "success": False}, status=405)
@@ -137,7 +132,6 @@ def api_followers(request, author_id):
 @api_view(['GET', 'PUT', "DELETE"])
 def api_follower(request, author_id, author_url):
 
-    print("author url:", author_url)
     following_author_object = get_author_object(author_url)
 
     if request.method == 'GET':
@@ -173,7 +167,6 @@ def api_follower(request, author_id, author_url):
 
     elif request.method == 'PUT':
         if following_author_object is None:
-            print("no following author :()")
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
         data = request.data
 
@@ -287,8 +280,6 @@ def api_follower(request, author_id, author_url):
 
         if following_author_object is None:
             return JsonResponse({"error": "Author not found", "success": False}, status=404)
-
-        print("deleting...")
 
         followed_author_object = Author.objects.get(id=author_id)
 
@@ -439,90 +430,69 @@ def api_handle_decline(request, author_id):
             return JsonResponse({"error": "Follow request not found", "success": False}, status=404)
     else:
         return JsonResponse({"error": "Method not Allowed", "success": False}, status=405)
-    
 
 
 @swagger_auto_schema(tags=['Authors'], methods=["POST"])
 @api_view(['POST'])
 def send_follow_request(request, author_id):
 
-        if request.method == 'POST':
+    if request.method == 'POST':
+        # retrieve the follower and following authors from the db:
 
-            print("data:", request.data)
-            print("url:",request.data["data"]["object"]["url"] )
+        # This is the user that sent the request
+        cur_user = get_author_object(request.data["data"]["actor"]["url"])
+        user_to_follow = get_author_object(
+            request.data["data"]["object"]["url"])
 
-            # retrieve the follower and following authors from the db:
+        if not user_to_follow:
+            data = request.data["data"]["object"]
+            old_id = data.get("id")
+            old_id = old_id.rstrip("/").split("/")[-1]
+            Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("displayName"),
+                                  url=data.get("url").rstrip("/"), type="author", host=data.get('host'), github=data.get("Github"),
+                                  profileImage=data.get("profileImage"), allowRegister=False)
 
-            
+        if FollowRequest.objects.filter(requester=cur_user, receiver=user_to_follow).exists():
+            return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
 
-            cur_user = get_author_object(request.data["data"]["actor"]["url"]) # This is the user that sent the request
-            user_to_follow = get_author_object(request.data["data"]["object"]["url"]) 
+        # Unnecessary?
+        # cur_user_serialized = AuthorSerializer(
+        # data=cur_user, context={"request": request})
 
-            print("user who followed:", cur_user)
-            print("user to follow:", user_to_follow)
+        # user_to_follow_serialized = AuthorSerializer(
+        # data=user_to_follow, context={"request": request})
 
-            if not user_to_follow:
-                data = request.data["data"]["object"]
-                print("here")
-                old_id = data.get("id")
-                old_id = old_id.rstrip("/").split("/")[-1]
-                Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName= data.get("displayName"),
-                              url=data.get("url").rstrip("/"), type="author", host=data.get('host'), github=data.get("Github"),
-                              profileImage=data.get("profileImage"), allowRegister=False)
+        obj2 = request.data["data"]
+        foreign_author_url = user_to_follow.url
 
-            
-            if FollowRequest.objects.filter(requester=cur_user, receiver=user_to_follow).exists():
-                    print("already exists")
-                    return JsonResponse({"error": "Follow request already exists", "success": False}, status=500)
-            
+        # if the requested author is remote:
+        if user_to_follow.isExternalAuthor == True:
 
-            # Unnecessary?
-            #cur_user_serialized = AuthorSerializer(
-            #data=cur_user, context={"request": request})
+            node = Node.objects.filter(
+                baseUrl=user_to_follow.host.rstrip("/")+"/")
+            if node.exists():
+                node = node.first()
+                auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
+                response = requests.post(foreign_author_url.rstrip(
+                    "/") + "/inbox", auth=auth, json=obj2, headers={"origin": request.META["HTTP_HOST"]})
 
-            #user_to_follow_serialized = AuthorSerializer(
-            #data=user_to_follow, context={"request": request})
-
-            obj2 = request.data["data"]
-
-            print("FOLLOW REQUEST DATA: ", obj2)
-            foreign_author_url = user_to_follow.url
-
-
-            # if the requested author is remote:
-            if user_to_follow.isExternalAuthor == True:
-                
-                node = Node.objects.filter(
-                    baseUrl=user_to_follow.host.rstrip("/")+"/")
-                if node.exists():
-                    print("NODE FOUND")
-                    node = node.first()
-                    auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
-                    response = requests.post(foreign_author_url.rstrip("/") + "/inbox", auth=auth, json=obj2, headers={"origin": request.META["HTTP_HOST"]})
-                    print(" FOLLOW RESPONSE OBJECT SENT: ", obj2)
-                    print("WHAT WE RECEIVED:",
-                        response.status_code, response.reason)
-                    
-                    if response.status_code != 200 and response.status_code != 201:
-                        # create FollowRequest object
-                        print(response.status_code)
-                        return JsonResponse({"error": "Inbox error", "success": False}, status=500)       
-                    else:   
-                        follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
-                        print("follow req ob:", follow_request_object) 
-                else:
-                    return JsonResponse({"error": "Node not found", "success": False}, status=404)
-            
-            # Send request to local author's inbox
-            else:
-                response = requests.post(foreign_author_url.rstrip("/") + "/inbox", json=obj2, headers={"origin": request.META["HTTP_HOST"]})
                 if response.status_code != 200 and response.status_code != 201:
-                    print("response.status_code", response.status_code)
-                    return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
+                    # create FollowRequest object
+                    return JsonResponse({"error": "Inbox error", "success": False}, status=500)
                 else:
-                    follow_request_object = FollowRequest.objects.create(requester=cur_user, receiver=user_to_follow)
-                    print("follow req ob:", follow_request_object) 
+                    follow_request_object = FollowRequest.objects.create(
+                        requester=cur_user, receiver=user_to_follow)
+            else:
+                return JsonResponse({"error": "Node not found", "success": False}, status=404)
 
-            
-            return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
-        
+        # Send request to local author's inbox
+        else:
+            response = requests.post(foreign_author_url.rstrip(
+                "/") + "/inbox", json=obj2, headers={"origin": request.META["HTTP_HOST"]})
+            if response.status_code != 200 and response.status_code != 201:
+                return JsonResponse({"error": "Something went wrong posting to inbox", "success": False}, status=500)
+            else:
+                follow_request_object = FollowRequest.objects.create(
+                    requester=cur_user, receiver=user_to_follow)
+
+        return JsonResponse({"message": "success", "success": True}, safe=False, status=201)
