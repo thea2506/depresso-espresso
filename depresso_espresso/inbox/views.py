@@ -386,7 +386,7 @@ def handle_post(request, author_id):
 
     if serializer.is_valid():
         post = Post.objects.filter(id=uuid.UUID(data.get('id')))
-        if post.exists():
+        if not post.exists():
             serializer.save(id=uuid.UUID(data.get('id')))
         else:
             serializer.save()
