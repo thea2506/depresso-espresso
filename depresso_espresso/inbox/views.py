@@ -191,7 +191,7 @@ def handle_follow_response(request, author_id):
         following_author_object = following_author_object.first()
 
     # Actor Object
-    if "api" in actor.get("url"):
+    if "api" not in actor.get("url"):
         actor_url = actor.get("host").rstrip(
             "/") + f"/api/authors/{actor.get('id')}"
     else:
