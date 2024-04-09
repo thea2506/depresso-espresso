@@ -132,6 +132,7 @@ def handle_follow(request, author_id):
         follow_request_object = FollowRequest.objects.get(
             requester=actor, receiver=author)
 
+    print("CREATING NOTIFICATION", follow_request_object)
     notification_object = Notification.objects.get_or_create(author=author)[0]
     create_notification_item(
         notification_object, object_instance=follow_request_object)
