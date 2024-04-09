@@ -434,8 +434,9 @@ def handle_post(request, author_id):
     else:
         actor_url = actor['url']
 
+    actor_url = actor_url.rstrip("/")
     print(">>>>>>>>>>>>>>>>", actor_url)
-    if not Author.objects.filter(url=actor_url.rstrip("/")).exists() and not Author.objects.filter(url=actor_url.rstrip("/") + '/').exists():
+    if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(url=actor_url + '/').exists():
         print("AUTHOR DOES NOT EXIST")
         old_id = actor.get("id")
         old_id = old_id.rstrip("/").split("/")[-1]
@@ -445,8 +446,12 @@ def handle_post(request, author_id):
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-    else:
+    elif Author.objects.filter(url=actor_url).exists():
         actor_obj = Author.objects.get(url=actor_url)
+        notification_object = Notification.objects.get_or_create(author=actor_obj)[
+            0]
+    elif Author.objects.filter(url=actor_url + '/').exists():
+        actor_obj = Author.objects.get(url=actor_url + '/')
         notification_object = Notification.objects.get_or_create(author=actor_obj)[
             0]
     print("AUTHOR EXISTS")
