@@ -24,6 +24,9 @@ def get_author_object(author_url):
     else:
         normalized_author_url = author_url
 
+    author_url = author_url.rstrip("/")
+    normalized_author_url = normalized_author_url.rstrip("/")
+
     if Author.objects.filter(url=author_url).exists():
         return Author.objects.get(url=author_url)
     if Author.objects.filter(url=author_url + "/").exists():
