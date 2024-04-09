@@ -385,11 +385,11 @@ def handle_post(request, author_id):
     )
 
     if serializer.is_valid():
-        post = Post.objects.filter(id=uuid.UUID(data.get('id')))
-        if not post.exists():
+
+        # the post has not existed
+        if not Post.objects.filter(id=uuid.UUID(data.get('id'))).exists():
             serializer.save(id=uuid.UUID(data.get('id')))
-        else:
-            serializer.save()
+
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
