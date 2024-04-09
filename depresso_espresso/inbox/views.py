@@ -369,7 +369,7 @@ def handle_post(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     print("HANDLE POST IS CALLED")
-
+    print(request.data)
     data = request.data
     if not Author.objects.filter(url=data.get("author").get("url")).exists():
         old_id = old_id.rstrip("/").split("/")[-1]
