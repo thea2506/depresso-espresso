@@ -112,7 +112,7 @@ def handle_follow(request, author_id):
             actor = serializer.save(id=uuid.UUID(
                 old_id), username=uuid.uuid4(), isExternalAuthor=True)
         else:
-            print("ERROR CREATING ACTOR")
+            print("ERROR CREATING ACTOR", serializer.errors)
             return JsonResponse(serializer.errors, status=500)
 
     print("ACTOR EXISTS")
