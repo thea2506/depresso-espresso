@@ -17,7 +17,7 @@ class Author(AbstractUser):
     # These can be modified by the user
     displayName = models.CharField(null=False, blank=False, max_length=50)
     github = models.URLField(null=True, blank=True)
-    profileImage = models.URLField(null=True, blank=True)
+    profileImage = models.URLField(null=True, blank=True, max_length=1000)
     # For US.08.02. When admin changes requireRegisterPerms, this field
     # will be changed so that users need an OK to login after registering
     allowRegister = models.BooleanField(null=False, blank=False, default=False)
