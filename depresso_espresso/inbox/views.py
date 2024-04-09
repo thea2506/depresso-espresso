@@ -370,6 +370,7 @@ def handle_comment(request, author_id):
     commenting_author_object = get_author_object(data.get('author')['url'])
 
     if not commenting_author_object:
+        old_id = data.get('author')['id']
         old_id = old_id.rstrip("/").split("/")[-1]
         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
                               url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
@@ -404,7 +405,16 @@ def handle_post(request, author_id):
     author_object = Author.objects.get(id=author_id)
 
     data = request.data
-    if not Author.objects.filter(url=data.get("author").get("url")).exists():
+
+    actor = data.get("author")
+    if "api" not in actor.get("url"):
+        actor_url = actor.get("host").rstrip(
+            "/") + f"/api/authors/{actor.get('id').rstrip('/').split('/')[-1]}"
+    else:
+        actor_url = actor['url']
+
+    if not Author.objects.filter(url=actor_url).exists():
+        old_id = actor.get("id")
         old_id = old_id.rstrip("/").split("/")[-1]
         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
                               url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
@@ -434,39 +444,6 @@ def handle_post(request, author_id):
         return JsonResponse(serializer.errors, status=400)
 
     return send_notification_item(request, notification_object)
-
-
-# def handle_share(request, author_id):
-#     if not Author.objects.filter(id=author_id).exists():
-#         return JsonResponse({'error': 'Author not found'}, status=404)
-#     data = request.data
-
-#     author_object = Author.objects.get(id=author_id)
-
-#     sharing_author_object = get_author_object(data.get('author')['url'])
-
-#     if not sharing_author_object:
-#         old_id = old_id.rstrip("/").split("/")[-1]
-#         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-#                               url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-#                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
-
-#     if data.get('id') is not None:
-#         data['id'] = data.get('id').rstrip("/").split('/')[-1]
-
-#     serializer = PostSerializer(
-#         data=data, context={"request": request}
-#     )
-#     if serializer.is_valid():
-#         serializer.save()
-#         notification_object = Notification.objects.get_or_create(author=author_object)[
-#             0]
-#         create_notification_item(
-#             notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
-
-#         return send_notification_item(request, notification_object)
-#     else:
-#         return JsonResponse(serializer.errors, status=400)
 
 
 def create_notification_item(notification_object, object_instance=None, object_url=None, content_type=None):
