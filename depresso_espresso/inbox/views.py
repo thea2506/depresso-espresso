@@ -38,6 +38,7 @@ def get_author_object(author_url):
         return Author.objects.get(url=author_url)
 
     # y team
+    print("I AM HERE")
     if "api" not in author_url:
         id = author_url.rstrip("/").split("/")[-1]
         author_url += "/"
@@ -45,6 +46,8 @@ def get_author_object(author_url):
         host = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
         fixed_author_url = host.rstrip(
             "/") + f"/api/authors/{id}"
+
+        print(fixed_author_url)
         if Author.objects.filter(url=fixed_author_url).exists():
             return Author.objects.get(url=fixed_author_url)
 
