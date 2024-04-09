@@ -196,9 +196,14 @@ def handle_follow_response(request, author_id):
             "/") + f"/api/authors/{actor.get('id')}"
     else:
         actor_url = actor['url']
+    print(actor_url)
+
     actor_object_1 = Author.objects.filter(url=actor_url.rstrip("/"))
     actor_object_2 = Author.objects.filter(
         url=(actor_url.rstrip("/") + "/"))
+
+    print(actor_object_1)
+    print(actor_object_2)
 
     if not actor_object_1.exists() and not actor_object_2.exists():
 
