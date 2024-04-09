@@ -106,7 +106,9 @@ def handle_follow(request, author_id):
         # print(">>>>>>>>>>>", actor_obj)
         if "api" not in actor_obj.get("url"):
             actor_obj["url"] = actor_obj.get("host").rstrip(
-                "/") + "/" + f"api/authors/{old_id}"
+                "/") + f"/api/authors/{old_id}"
+            actor_url = actor_obj["url"]
+
         print(">>>>>>>>>>>", actor_obj)
         serializer = AuthorSerializer(
             data=actor_obj, context={"request": request})
