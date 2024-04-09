@@ -340,7 +340,7 @@ def api_comments(request, author_id, post_id):
         serializer = CommentSerializer(
             page, context={"request": request}, many=True)
 
-        return JsonResponse({"type": "comments", "items": serializer.data}, safe=False)
+        return JsonResponse({"type": "comments", "comments": serializer.data}, safe=False)
 
     elif request.method == 'POST':
         if not Post.objects.filter(id=post_id).exists():
