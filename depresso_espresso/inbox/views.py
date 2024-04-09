@@ -368,6 +368,8 @@ def handle_post(request, author_id):
 
     author_object = Author.objects.get(id=author_id)
 
+    print("HANDLE POST IS CALLED")
+
     data = request.data
     if not Author.objects.filter(url=data.get("author").get("url")).exists():
         old_id = old_id.rstrip("/").split("/")[-1]
@@ -385,9 +387,10 @@ def handle_post(request, author_id):
     )
 
     if serializer.is_valid():
-
+        print("SERIALIZER IS VALID")
         # the post has not existed
         if not Post.objects.filter(id=uuid.UUID(data.get('id'))).exists():
+            print("POST DOES NOT EXIST")
             serializer.save(id=uuid.UUID(data.get('id')))
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
