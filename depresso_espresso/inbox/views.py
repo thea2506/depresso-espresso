@@ -435,7 +435,7 @@ def handle_post(request, author_id):
         actor_url = actor['url']
 
     print(">>>>>>>>>>>>>>>>", actor_url)
-    if not Author.objects.filter(url=actor_url).exists():
+    if not Author.objects.filter(url=actor_url.rstrip("/")).exists() and not Author.objects.filter(url=actor_url.rstrip("/") + '/').exists():
         print("AUTHOR DOES NOT EXIST")
         old_id = actor.get("id")
         old_id = old_id.rstrip("/").split("/")[-1]
