@@ -16,6 +16,7 @@ from utils import Pagination
 
 def get_author_object(author_url):
     author_url = unquote(author_url)
+
     if "127.0.0.1" in author_url:
         normalized_author_url = author_url.replace("127.0.0.1", "localhost")
     elif "localhost" in author_url:
@@ -33,6 +34,20 @@ def get_author_object(author_url):
         return Author.objects.get(url=normalized_author_url)
     if Author.objects.filter(url=normalized_author_url + "/").exists():
         return Author.objects.get(url=normalized_author_url + "/")
+    if Author.objects.filter(url=author_url).exists():
+        return Author.objects.get(url=author_url)
+
+    # y team
+    if "api" not in author_url:
+        id = author_url.rstrip("/").split("/")[-1]
+        author_url += "/"
+        parsed_uri = urlparse(author_url)
+        host = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        fixed_author_url = host.rstrip(
+            "/") + f"/api/authors/{id}"
+        if Author.objects.filter(url=fixed_author_url).exists():
+            return Author.objects.get(url=fixed_author_url)
+
     return None
 
 
@@ -96,12 +111,8 @@ def handle_follow(request, author_id):
 
     normalized_actor_url = actor_url.replace("127.0.0.1", "localhost")
 
-    print("INCOMING FOLLOW REQUEST")
-    print(actor_url)
-
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
-        print("ACTOR DOES NOT EXIST")
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         actor_obj["id"] = old_id
@@ -114,31 +125,24 @@ def handle_follow(request, author_id):
             data=actor_obj, context={"request": request})
 
         if serializer.is_valid():
-            print("CREATING ACTOR")
             actor = serializer.save(id=uuid.UUID(
                 old_id), username=uuid.uuid4(), isExternalAuthor=True, host=actor_obj.get('host'))
         else:
-            print("ERROR CREATING ACTOR", serializer.errors)
             return JsonResponse(serializer.errors, status=500)
 
-    print("ACTOR EXISTS")
     if Author.objects.filter(url=actor_url).exists():
-        print("GETTING ACTOR")
         actor = Author.objects.get(url=actor_url)
     else:
         actor = Author.objects.get(url=normalized_actor_url)
 
     author = Author.objects.get(id=author_id)
     if not FollowRequest.objects.filter(requester=actor, receiver=author).exists():
-        print("CREATING FOLLOW REQUEST")
         follow_request_object = FollowRequest.objects.create(
             requester=actor, receiver=author)
     else:
-        print("FOLLOW REQUEST ALREADY EXISTS")
         follow_request_object = FollowRequest.objects.get(
             requester=actor, receiver=author)
 
-    print("CREATING NOTIFICATION", follow_request_object)
     notification_object = Notification.objects.get_or_create(author=author)[0]
     create_notification_item(
         notification_object, object_instance=follow_request_object)
