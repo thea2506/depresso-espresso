@@ -102,8 +102,11 @@ def handle_follow(request, author_id):
         actor_obj["id"] = old_id
         actor_obj["isExternalAuthor"] = True
         actor_obj["username"] = uuid.uuid4()
+
+        print(">>>>>>>>>>>", actor_obj)
         serializer = AuthorSerializer(
             data=actor_obj, context={"request": request})
+
         if serializer.is_valid():
             print("CREATING ACTOR")
             actor = serializer.save(id=uuid.UUID(
