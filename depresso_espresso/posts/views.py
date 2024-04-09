@@ -329,10 +329,15 @@ def api_post(request, author_id, post_id):
 def api_comments(request, author_id, post_id):
     user = my_authenticate(request)
     if request.method == 'GET':
+        params = request.query_params
+        page_param = params.get("page")
+        size_param = params.get("size")
         if not Post.objects.filter(id=post_id).exists():
             return JsonResponse({"error": "Post not found", "success": False}, status=404)
 
         post = Post.objects.get(id=post_id)
+        post_serializer = PostSerializer(
+            instance=post, context={"request": request}).data
         comments = Comment.objects.filter(post=post).order_by('-published')
 
         paginator = Pagination("comments")
@@ -340,7 +345,13 @@ def api_comments(request, author_id, post_id):
         serializer = CommentSerializer(
             page, context={"request": request}, many=True)
 
-        return JsonResponse({"type": "comments", "comments": serializer.data}, safe=False)
+        return JsonResponse({
+            "type": "comments",
+            "page": page_param, "size": size_param,
+            "post": post_serializer["id"],
+            "id": post_serializer["id"]+"/comments",
+            "comments": serializer.data},
+            safe=False, status=200)
 
     elif request.method == 'POST':
         if not Post.objects.filter(id=post_id).exists():
