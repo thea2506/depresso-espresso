@@ -113,6 +113,7 @@ def handle_follow(request, author_id):
 
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
+        print("ACTOR DOES NOT EXIST")
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         actor_obj["id"] = old_id
@@ -125,11 +126,14 @@ def handle_follow(request, author_id):
             data=actor_obj, context={"request": request})
 
         if serializer.is_valid():
+            print("SERIALIZER VALID")
             actor = serializer.save(id=uuid.UUID(
                 old_id), username=uuid.uuid4(), isExternalAuthor=True, host=actor_obj.get('host'))
         else:
+            print("SERIALIZER INVALID", serializer.errors)
             return JsonResponse(serializer.errors, status=500)
 
+    print("ACTOR EXISTS")
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)
     else:
