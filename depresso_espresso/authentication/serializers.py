@@ -21,6 +21,8 @@ class AuthorSerializer(serializers.ModelSerializer):
                   "host", "profileImage", "url")
 
     def get_host_url(self, obj):
+        print(obj)
+        print(obj.host)
         if obj.host and obj.host != "" and obj.host != None:
             return obj.host
         else:
