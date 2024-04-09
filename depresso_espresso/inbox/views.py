@@ -403,6 +403,7 @@ def handle_post(request, author_id):
     data = request.data
 
     actor = data.get("author")
+    print("ACTOR", actor)
     if "api" not in actor.get("url"):
         actor_url = actor.get("host").rstrip(
             "/") + f"/api/authors/{actor.get('id').rstrip('/').split('/')[-1]}"
@@ -414,13 +415,18 @@ def handle_post(request, author_id):
         print("AUTHOR DOES NOT EXIST")
         old_id = actor.get("id")
         old_id = old_id.rstrip("/").split("/")[-1]
-        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
+        actor_obj = Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                                          url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                                          profileImage=data.get("author").get("profileImage"), allowRegister=False)
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
+    else:
+        actor_obj = Author.objects.get(url=actor_url)
+        notification_object = Notification.objects.get_or_create(author=actor_obj)[
+            0]
     print("AUTHOR EXISTS")
+
     url = data.get('id')
     data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
@@ -430,7 +436,9 @@ def handle_post(request, author_id):
 
     if serializer.is_valid():
         print("SERIALIZER VALID")
-        id = data.get('id').split('/')[-1]
+        id = data.get('id').rstrip('/').split('/')[-1]
+        print("ID", id)
+        print(author_object)
         if not Post.objects.filter(id=uuid.UUID(id)).exists():
             serializer.save(id=uuid.UUID(id))
 
