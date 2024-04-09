@@ -54,7 +54,7 @@ const CommentList = ({
       try {
         const response = await axios.get(`${post.id}/comments`);
         if (response.status === 200) {
-          const comment_list = (response.data.items as CommentModel[]) || [];
+          const comment_list = (response.data.comments as CommentModel[]) || [];
 
           comment_list.forEach(async (comment: CommentModel) => {
             const response = await axios.get(`${comment.id}/likes`);
