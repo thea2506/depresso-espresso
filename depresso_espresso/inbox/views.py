@@ -36,7 +36,6 @@ def get_author_object(author_url):
         return Author.objects.get(url=author_url)
 
     # y team
-    print("I AM HERE")
     if "api" not in author_url:
         id = author_url.rstrip("/").split("/")[-1]
         author_url += "/"

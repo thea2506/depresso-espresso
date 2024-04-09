@@ -28,9 +28,7 @@ def get_author_object(author_url):
         normalized_author_url = author_url.replace("localhost", "127.0.0.1")
     else:
         normalized_author_url = author_url
-    if not Author.objects.filter(url=author_url).exists() and not Author.objects.filter(
-            url=normalized_author_url).exists() and not Author.objects.filter(url=author_url + "/").exists() and not Author.objects.filter(url=normalized_author_url + "/").exists():
-        return None
+
     if Author.objects.filter(url=author_url).exists():
         return Author.objects.get(url=author_url)
     if Author.objects.filter(url=author_url + "/").exists():
@@ -39,6 +37,20 @@ def get_author_object(author_url):
         return Author.objects.get(url=normalized_author_url)
     if Author.objects.filter(url=normalized_author_url + "/").exists():
         return Author.objects.get(url=normalized_author_url + "/")
+
+    # y team
+    if "api" not in author_url:
+        id = author_url.rstrip("/").split("/")[-1]
+        author_url += "/"
+        parsed_uri = urlparse(author_url)
+        host = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        fixed_author_url = host.rstrip(
+            "/") + f"/api/authors/{id}"
+
+        print(fixed_author_url)
+        if Author.objects.filter(url=fixed_author_url).exists():
+            return Author.objects.get(url=fixed_author_url)
+
     return None
 
 
