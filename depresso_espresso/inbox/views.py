@@ -91,6 +91,9 @@ def handle_follow(request, author_id):
     actor_url = actor_obj['url']
     normalized_actor_url = actor_url.replace("127.0.0.1", "localhost")
 
+    print("INCOMING FOLLOW REQUEST")
+    print(actor_url)
+
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
         old_id = actor_obj.get('id')
