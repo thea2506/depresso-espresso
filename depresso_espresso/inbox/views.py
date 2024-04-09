@@ -441,7 +441,8 @@ def handle_post(request, author_id):
         print(actor_obj)
         if not Post.objects.filter(id=uuid.UUID(id)).exists():
             print(">>>DATA", data)
-            data["author"] = AuthorSerializer(instance=actor_obj).data
+            data["author"] = AuthorSerializer(
+                instance=actor_obj, context={"request": request}).data
             serializer.save(id=uuid.UUID(id))
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
