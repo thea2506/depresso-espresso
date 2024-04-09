@@ -380,6 +380,7 @@ def handle_post(request, author_id):
             0]
 
     url = data.get('id')
+    print(">>>>>>>>>>>URL: ", url)
     data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
     serializer = PostSerializer(
@@ -396,12 +397,11 @@ def handle_post(request, author_id):
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-        create_notification_item(
-            notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
+    print(">>>>>>>>>>>URL: ", url)
+    create_notification_item(
+        notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
 
-        return send_notification_item(request, notification_object)
-    else:
-        return JsonResponse(serializer.errors, status=400)
+    return send_notification_item(request, notification_object)
 
 
 def handle_share(request, author_id):
