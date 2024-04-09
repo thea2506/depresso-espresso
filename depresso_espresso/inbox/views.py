@@ -115,7 +115,7 @@ def handle_follow(request, author_id):
     print("NORMALIZED ACTOR URL", normalized_actor_url)
 
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
-            url=normalized_actor_url).exists():
+            url=normalized_actor_url).exists() and not Author.objects.filter(url=actor_url + "/").exists() and not Author.objects.filter(url=normalized_actor_url + "/").exists():
         print("ACTOR DOES NOT EXIST")
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
