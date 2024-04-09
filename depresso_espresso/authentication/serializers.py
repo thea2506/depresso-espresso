@@ -20,11 +20,8 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ("type", "id", "displayName", "github",
                   "host", "profileImage", "url")
 
-    def get_host_url(self, obj):
-        if obj.host and obj.host != "" and obj.host != None:
-            return obj.host
-        else:
-            return f"{self.context['request'].build_absolute_uri('/')}".rstrip('/') + "/"
+    def get_host_url(self, _):
+        return f"{self.context['request'].build_absolute_uri('/')}".rstrip('/') + "/"
 
     def get_id_url(self, obj):
         return build_default_author_uri(obj=obj, request=self.context["request"], source="author")
