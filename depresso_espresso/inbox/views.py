@@ -371,9 +371,12 @@ def handle_comment(request, author_id):
     if not commenting_author_object:
         old_id = data.get('author')['id']
         old_id = old_id.rstrip("/").split("/")[-1]
-        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
+        commenting_author_object = Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+                                                         url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+                                                         profileImage=data.get("author").get("profileImage"), allowRegister=False)
+
+    data["author"] = AuthorSerializer(
+        instance=commenting_author_object, context={"request": request}).data
 
     serializer = CommentSerializer(
         data=data, context={"request": request}
