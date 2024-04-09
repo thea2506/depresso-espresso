@@ -134,6 +134,9 @@ def handle_follow(request, author_id):
             return JsonResponse(serializer.errors, status=500)
 
     print("ACTOR EXISTS")
+
+    print("ACTOR URL", actor_url)
+    print("NORMALIZED ACTOR URL", normalized_actor_url)
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)
     else:
