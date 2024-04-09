@@ -111,6 +111,9 @@ def handle_follow(request, author_id):
 
     normalized_actor_url = actor_url.replace("127.0.0.1", "localhost")
 
+    print("ACTOR URL", actor_url)
+    print("NORMALIZED ACTOR URL", normalized_actor_url)
+
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists():
         print("ACTOR DOES NOT EXIST")
@@ -135,11 +138,13 @@ def handle_follow(request, author_id):
 
     print("ACTOR EXISTS")
 
-    print("ACTOR URL", actor_url)
-    print("NORMALIZED ACTOR URL", normalized_actor_url)
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)
-    else:
+    elif Author.objects.filter(url=actor_url + "/").exists():
+        actor = Author.objects.get(url=actor_url + "/")
+    elif Author.objects.filter(url=normalized_actor_url + "/").exists():
+        actor = Author.objects.get(url=normalized_actor_url)
+    elif Author.objects.filter(url=normalized_actor_url).exists():
         actor = Author.objects.get(url=normalized_actor_url)
 
     author = Author.objects.get(id=author_id)
