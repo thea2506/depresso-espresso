@@ -111,6 +111,9 @@ def handle_follow(request, author_id):
 
     normalized_actor_url = actor_url.replace("127.0.0.1", "localhost")
 
+    actor_url = actor_url.rstrip("/")
+    normalized_actor_url = normalized_actor_url.rstrip("/")
+
     print("ACTOR URL", actor_url)
     print("NORMALIZED ACTOR URL", normalized_actor_url)
 
