@@ -47,7 +47,6 @@ def get_author_object(author_url):
         fixed_author_url = host.rstrip(
             "/") + f"/api/authors/{id}"
 
-        print(fixed_author_url)
         if Author.objects.filter(url=fixed_author_url).exists():
             return Author.objects.get(url=fixed_author_url)
 
@@ -119,7 +118,7 @@ def api_external_author(request, author_url):
                 host = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
                 author_url = host.rstrip(
                     "/") + f"/api/authors/{id}"
-            print(">>>>>>>>>>>>>>>", author_url)
+
             response = requests.get(author_url, auth=auth)
             if response.status_code == 200:
                 return JsonResponse(response.json(), status=response.status_code)

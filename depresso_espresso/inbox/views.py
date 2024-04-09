@@ -47,7 +47,6 @@ def get_author_object(author_url):
         fixed_author_url = host.rstrip(
             "/") + f"/api/authors/{id}"
 
-        print(fixed_author_url)
         if Author.objects.filter(url=fixed_author_url).exists():
             return Author.objects.get(url=fixed_author_url)
 
@@ -117,12 +116,8 @@ def handle_follow(request, author_id):
     actor_url = actor_url.rstrip("/")
     normalized_actor_url = normalized_actor_url.rstrip("/")
 
-    print("ACTOR URL", actor_url)
-    print("NORMALIZED ACTOR URL", normalized_actor_url)
-
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists() and not Author.objects.filter(url=actor_url + "/").exists() and not Author.objects.filter(url=normalized_actor_url + "/").exists():
-        print("ACTOR DOES NOT EXIST")
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         actor_obj["id"] = old_id
@@ -135,14 +130,10 @@ def handle_follow(request, author_id):
             data=actor_obj, context={"request": request})
 
         if serializer.is_valid():
-            print("SERIALIZER VALID")
             actor = serializer.save(id=uuid.UUID(
                 old_id), username=uuid.uuid4(), isExternalAuthor=True, host=actor_obj.get('host'))
         else:
-            print("SERIALIZER INVALID", serializer.errors)
             return JsonResponse(serializer.errors, status=500)
-
-    print("ACTOR EXISTS")
 
     if Author.objects.filter(url=actor_url).exists():
         actor = Author.objects.get(url=actor_url)
@@ -378,9 +369,6 @@ def handle_comment(request, author_id):
     data = request.data
 
     post_id = data.get('id').split('/')[-3]
-    print("data", data)
-    print("id", data.get('id'))
-    print("POST ID", post_id)
 
     data['post'] = Post.objects.get(id=post_id).id
 
@@ -427,7 +415,6 @@ def handle_post(request, author_id):
     data = request.data
 
     actor = data.get("author")
-    print("ACTOR", actor)
     if "api" not in actor.get("url"):
         actor_url = actor.get("host").rstrip(
             "/") + f"/api/authors/{actor.get('id').rstrip('/').split('/')[-1]}"
@@ -435,9 +422,7 @@ def handle_post(request, author_id):
         actor_url = actor['url']
 
     actor_url = actor_url.rstrip("/")
-    print(">>>>>>>>>>>>>>>>", actor_url)
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(url=actor_url + '/').exists():
-        print("AUTHOR DOES NOT EXIST")
         old_id = actor.get("id")
         old_id = old_id.rstrip("/").split("/")[-1]
         actor_obj = Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
@@ -454,7 +439,6 @@ def handle_post(request, author_id):
         actor_obj = Author.objects.get(url=actor_url + '/')
         notification_object = Notification.objects.get_or_create(author=actor_obj)[
             0]
-    print("AUTHOR EXISTS")
 
     url = data.get('id')
     data['id'] = data.get('id').rstrip("/").split('/')[-1]
@@ -467,12 +451,8 @@ def handle_post(request, author_id):
         instance=actor_obj, context={"request": request}).data
 
     if serializer.is_valid():
-        print("SERIALIZER VALID")
         id = data.get('id').rstrip('/').split('/')[-1]
-        print("ID", id)
-        print(actor_obj)
         if not Post.objects.filter(id=uuid.UUID(id)).exists():
-            print(">>>DATA", data)
 
             serializer.save(id=uuid.UUID(id))
 
