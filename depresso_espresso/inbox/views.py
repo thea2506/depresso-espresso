@@ -193,7 +193,7 @@ def handle_follow_response(request, author_id):
     # Actor Object
     if "api" not in actor.get("url"):
         actor_url = actor.get("host").rstrip(
-            "/") + f"/api/authors/{actor.get('id')}"
+            "/") + f"/api/authors/{actor.get('id').rstrip('/').split('/')[-1]}"
     else:
         actor_url = actor['url']
     print(actor_url)
