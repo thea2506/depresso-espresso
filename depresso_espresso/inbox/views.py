@@ -191,9 +191,14 @@ def handle_follow_response(request, author_id):
         following_author_object = following_author_object.first()
 
     # Actor Object
-    actor_object_1 = Author.objects.filter(url=actor['url'].rstrip("/"))
+    if "api" not in actor.get("url"):
+        actor_url = actor.get("host").rstrip(
+            "/") + f"/api/authors/{actor_obj.get('id')}"
+    else:
+        actor_url = actor['url']
+    actor_object_1 = Author.objects.filter(url=actor_url.rstrip("/"))
     actor_object_2 = Author.objects.filter(
-        url=(actor['url'].rstrip("/") + "/"))
+        url=(actor_url.rstrip("/") + "/"))
 
     if not actor_object_1.exists() and not actor_object_2.exists():
 
@@ -202,6 +207,7 @@ def handle_follow_response(request, author_id):
         actor["id"] = old_id
         actor["isExternalAuthor"] = True
         actor["username"] = uuid.uuid4()
+        actor["url"] = actor_url
         serializer = AuthorSerializer(
             data=actor, context={"request": request})
         if serializer.is_valid():
