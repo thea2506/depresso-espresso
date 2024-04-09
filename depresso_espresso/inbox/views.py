@@ -368,8 +368,6 @@ def handle_post(request, author_id):
 
     author_object = Author.objects.get(id=author_id)
 
-    print("HANDLE POST IS CALLED")
-    print(request.data)
     data = request.data
     if not Author.objects.filter(url=data.get("author").get("url")).exists():
         old_id = old_id.rstrip("/").split("/")[-1]
@@ -380,7 +378,6 @@ def handle_post(request, author_id):
             0]
 
     url = data.get('id')
-    print(">>>>>>>>>>>URL: ", url)
     data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
     serializer = PostSerializer(
@@ -388,53 +385,53 @@ def handle_post(request, author_id):
     )
 
     if serializer.is_valid():
-        print("SERIALIZER IS VALID")
-        # the post has not existed
-        if not Post.objects.filter(id=uuid.UUID(data.get('id'))).exists():
-            print("POST DOES NOT EXIST")
-            serializer.save(id=uuid.UUID(data.get('id')))
+
+        id = data.get('id').split('/')[-1]
+        if not Post.objects.filter(id=uuid.UUID(id)).exists():
+            serializer.save(id=uuid.UUID(id))
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
-    print(">>>>>>>>>>>URL: ", url)
-    create_notification_item(
-        notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
+        create_notification_item(
+            notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
+    else:
+        return JsonResponse(serializer.errors, status=400)
 
     return send_notification_item(request, notification_object)
 
 
-def handle_share(request, author_id):
-    if not Author.objects.filter(id=author_id).exists():
-        return JsonResponse({'error': 'Author not found'}, status=404)
-    data = request.data
+# def handle_share(request, author_id):
+#     if not Author.objects.filter(id=author_id).exists():
+#         return JsonResponse({'error': 'Author not found'}, status=404)
+#     data = request.data
 
-    author_object = Author.objects.get(id=author_id)
+#     author_object = Author.objects.get(id=author_id)
 
-    sharing_author_object = get_author_object(data.get('author')['url'])
+#     sharing_author_object = get_author_object(data.get('author')['url'])
 
-    if not sharing_author_object:
-        old_id = old_id.rstrip("/").split("/")[-1]
-        Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
-                              url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
-                              profileImage=data.get("author").get("profileImage"), allowRegister=False)
+#     if not sharing_author_object:
+#         old_id = old_id.rstrip("/").split("/")[-1]
+#         Author.objects.create(id=uuid.UUID(old_id), isExternalAuthor=True, username=uuid.uuid4(), displayName=data.get("author").get("displayName"),
+#                               url=data.get("author").get("url").rstrip("/"), type="author", host=data.get("author").get('host'), github=data.get("author").get("Github"),
+#                               profileImage=data.get("author").get("profileImage"), allowRegister=False)
 
-    if data.get('id') is not None:
-        data['id'] = data.get('id').rstrip("/").split('/')[-1]
+#     if data.get('id') is not None:
+#         data['id'] = data.get('id').rstrip("/").split('/')[-1]
 
-    serializer = PostSerializer(
-        data=data, context={"request": request}
-    )
-    if serializer.is_valid():
-        serializer.save()
-        notification_object = Notification.objects.get_or_create(author=author_object)[
-            0]
-        create_notification_item(
-            notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
+#     serializer = PostSerializer(
+#         data=data, context={"request": request}
+#     )
+#     if serializer.is_valid():
+#         serializer.save()
+#         notification_object = Notification.objects.get_or_create(author=author_object)[
+#             0]
+#         create_notification_item(
+#             notification_object, object_url=data.get('id'), content_type=ContentType.objects.get_for_model(Post))
 
-        return send_notification_item(request, notification_object)
-    else:
-        return JsonResponse(serializer.errors, status=400)
+#         return send_notification_item(request, notification_object)
+#     else:
+#         return JsonResponse(serializer.errors, status=400)
 
 
 def create_notification_item(notification_object, object_instance=None, object_url=None, content_type=None):
