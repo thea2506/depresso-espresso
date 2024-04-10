@@ -105,9 +105,13 @@ def api_inbox(request, author_id):
 
 def handle_follow(request, author_id):
     actor_obj = request.data.get('actor')
+
+    print("FOLLOWWWWWWWW")
+    print(request.data)
+
     if "api" not in actor_obj.get("url"):
         actor_url = actor_obj.get("host").rstrip(
-            "/") + f"/api/authors/{actor_obj.get('id')}"
+            "/") + f"/api/authors/{actor_obj.get('id').rstrip('/').split('/')[-1]}"
     else:
         actor_url = actor_obj['url']
 
@@ -115,7 +119,7 @@ def handle_follow(request, author_id):
 
     actor_url = actor_url.rstrip("/")
     normalized_actor_url = normalized_actor_url.rstrip("/")
-
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>", actor_url)
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists() and not Author.objects.filter(url=actor_url + "/").exists() and not Author.objects.filter(url=normalized_actor_url + "/").exists():
         old_id = actor_obj.get('id')
