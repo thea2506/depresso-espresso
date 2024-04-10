@@ -239,14 +239,18 @@ def handle_follow_response(request, author_id):
             actor_object = actor_object_2.first()
 
     # Handle accepted follow request
+    print("HERE", request.data)
     if accepted == True:
+        print("ACCEPTED")
         following_objects = Following.objects.filter(
             author=actor_object, following_author=following_author_object)
 
         if following_objects.exists():
+            print("FOLLOWING OBJECT ALREADY EXISTS")
             return JsonResponse({'success': 'Followed'}, status=201)
 
         else:
+            print("CREATING FOLLOWING OBJECT")
             following_object = Following.objects.create(
                 author=actor_object, following_author=following_author_object)
 
@@ -260,6 +264,7 @@ def handle_follow_response(request, author_id):
                 author=following_author_object, following_author=actor_object)
 
             if reverse_following_objects.exists():
+                print("REVERSE FOLLOWING OBJECT EXISTS")
                 reverse_following_object = reverse_following_objects.first()
                 reverse_following_object.areFriends = True
                 reverse_following_object.save()
