@@ -28,7 +28,7 @@ const UserDisplay = ({
             ? user_img_url
             : defaultProfileImage
         }
-        defaultValue={defaultProfileImage}
+        onError={(event) => (event.currentTarget.src = defaultProfileImage)}
         alt="Profile picture"
       />
       <p className="text-primary">{displayName}</p>
