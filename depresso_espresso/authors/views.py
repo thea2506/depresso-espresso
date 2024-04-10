@@ -18,6 +18,7 @@ from itertools import chain
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
+from authentication.checkbasic import check_basic
 
 
 def get_author_object(author_url):
@@ -78,8 +79,16 @@ def api_author(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
     if request.method == 'GET':
+        
+        node = check_basic(request)
+        if node:
+            authors = Author.objects.filter(
+                Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) & Q(allowRegister=True))
+            if not authors:
+                return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
         author_object = Author.objects.get(id=author_id)
+        
         serialized_author = AuthorSerializer(
             instance=author_object, context={'request': request})
         return JsonResponse(serialized_author.data)
