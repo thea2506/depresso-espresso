@@ -84,11 +84,8 @@ def api_posts(request, author_id):
             return JsonResponse({"type": "posts", "items": serializer.data}, safe=False)
 
         elif request.method == 'POST':
-            print("POST")
 
             data = request.data
-
-            print(data.get("content"))
 
             if data.get("id") is not None:
                 old_id = data.get("id")
@@ -113,8 +110,6 @@ def api_posts(request, author_id):
                         "request": request}).data
 
                     returned_data["type"] = "post"
-
-                    print(returned_data)
                     following_objects = Following.objects.filter(
                         author=user)
 
