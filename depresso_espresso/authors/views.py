@@ -230,6 +230,7 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"success": True}, status=200)
 
         # accept
+        print("Making followign ob between followed author:", followed_author_object.displayName, "and following author:", following_author_object)
         following_object = Following.objects.create(author=followed_author_object,
                                                     following_author=following_author_object)
 
@@ -238,6 +239,7 @@ def api_follower(request, author_id, author_url):
             author=following_author_object, following_author=followed_author_object).exists()
 
         if reverse_following_object:
+            print("reverse follow exists")
             reverse_following_object = Following.objects.get(
                 author=following_author_object, following_author=followed_author_object)
             following_object.areFriends = True
@@ -257,6 +259,7 @@ def api_follower(request, author_id, author_url):
                 response = requests.get(
                     foreign_author_url.rstrip('/') + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
                 if response.status_code == 200:
+                    print("They are friends", response.data)
                     following_object.areFriends = True
                     reverse_following_objects = Following.objects.filter(author=following_author_object,
                                                                          following_author=followed_author_object)
