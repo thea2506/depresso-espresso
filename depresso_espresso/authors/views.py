@@ -378,7 +378,7 @@ def api_discover(request):
         for node in nodes:
             auth = HTTPBasicAuth(node.ourUsername, node.ourPassword)
             response = requests.get(
-                node.baseUrl + node.service + "/authors/?size=100", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
+                node.baseUrl + node.service + "/authors/?size=100&all=true", auth=auth, headers={"origin": request.META["HTTP_HOST"]})
             if response.status_code == 200:
                 items = response.json()["items"]
                 author_dicts += items
