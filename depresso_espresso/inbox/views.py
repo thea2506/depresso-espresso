@@ -455,13 +455,16 @@ def handle_post(request, author_id):
         id = data.get('id').rstrip('/').split('/')[-1]
         if not Post.objects.filter(id=uuid.UUID(id)).exists():
 
-            serializer.save(id=uuid.UUID(id))
+            new_post = serializer.save(id=uuid.UUID(id))
+
+        else:
+            new_post = Post.objects.get(id=uuid.UUID(id))
 
         notification_object = Notification.objects.get_or_create(author=author_object)[
             0]
 
         create_notification_item(
-            notification_object, object_url=url, content_type=ContentType.objects.get_for_model(Post))
+            notification_object, object_instance=new_post)
     else:
         return JsonResponse(serializer.errors, status=400)
 

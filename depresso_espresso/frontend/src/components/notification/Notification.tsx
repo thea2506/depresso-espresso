@@ -113,6 +113,7 @@ const Notification = ({
               : notificationObject.actor
             ).profileImage || defaultImg
           }
+          onError={(event) => (event.currentTarget.src = defaultImg)}
           alt="Profile Picture"
         />
         <div>
