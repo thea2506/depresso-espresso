@@ -18,6 +18,7 @@ from itertools import chain
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from utils import Pagination
+from authentication.checkbasic import check_basic
 
 
 def get_author_object(author_url):
@@ -78,8 +79,14 @@ def api_author(request, author_id):
     if not Author.objects.filter(id=author_id).exists():
         return JsonResponse({"error": "Author not found", "success": False}, status=404)
     if request.method == 'GET':
+        
+        node = check_basic(request)
+        if node:
+            if not Author.objects.filter(isExternalAuthor=False, id=author_id).exists():
+                return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
         author_object = Author.objects.get(id=author_id)
+        
         serialized_author = AuthorSerializer(
             instance=author_object, context={'request': request})
         return JsonResponse(serialized_author.data)
@@ -202,6 +209,7 @@ def api_follower(request, author_id, author_url):
             if following_objects.exists():
                 following_object = following_objects.first()
                 following_object.areFriends = data.get("areFriends")
+                print("CREATING BETWEEN: ",following_author_object,  followed_author_object)
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
                 following_object.save()
@@ -230,6 +238,7 @@ def api_follower(request, author_id, author_url):
             return JsonResponse({"success": True}, status=200)
 
         # accept
+        print("Making followign ob between followed author:", followed_author_object.displayName, "and following author:", following_author_object)
         following_object = Following.objects.create(author=followed_author_object,
                                                     following_author=following_author_object)
 
@@ -238,6 +247,7 @@ def api_follower(request, author_id, author_url):
             author=following_author_object, following_author=followed_author_object).exists()
 
         if reverse_following_object:
+            print("reverse follow exists")
             reverse_following_object = Following.objects.get(
                 author=following_author_object, following_author=followed_author_object)
             following_object.areFriends = True
@@ -419,6 +429,7 @@ def api_make_friends(request, author_id, author_url):
             if reverse_following_object.exists():
                 reverse_following_object.update(areFriends=True)
             else:
+                print("\ncreating friend\n")
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
             return JsonResponse({"success": True}, status=200)
