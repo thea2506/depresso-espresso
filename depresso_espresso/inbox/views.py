@@ -119,18 +119,11 @@ def handle_follow(request, author_id):
 
     actor_url = actor_url.rstrip("/")
     normalized_actor_url = normalized_actor_url.rstrip("/")
+
     print(">>>>>>>>>>>>>>>>>>>>>>>>>", actor_url)
-    if Author.objects.filter(url=actor_url).exists():
-        actor = Author.objects.get(url=actor_url)
-    elif Author.objects.filter(url=actor_url + "/").exists():
-        actor = Author.objects.get(url=actor_url + "/")
-    elif Author.objects.filter(url=normalized_actor_url + "/").exists():
-        actor = Author.objects.get(url=normalized_actor_url)
-    elif Author.objects.filter(url=normalized_actor_url).exists():
-        actor = Author.objects.get(url=normalized_actor_url)
-    elif not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
+    if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists() and not Author.objects.filter(url=actor_url + "/").exists() and not Author.objects.filter(url=normalized_actor_url + "/").exists():
-        print("Author does not already exist")
+        print("author does not already exist")
         old_id = actor_obj.get('id')
         old_id = old_id.rstrip("/").split("/")[-1]
         actor_obj["id"] = old_id
@@ -148,7 +141,14 @@ def handle_follow(request, author_id):
         else:
             return JsonResponse(serializer.errors, status=500)
 
-    
+    if Author.objects.filter(url=actor_url).exists():
+        actor = Author.objects.get(url=actor_url)
+    elif Author.objects.filter(url=actor_url + "/").exists():
+        actor = Author.objects.get(url=actor_url + "/")
+    elif Author.objects.filter(url=normalized_actor_url + "/").exists():
+        actor = Author.objects.get(url=normalized_actor_url)
+    elif Author.objects.filter(url=normalized_actor_url).exists():
+        actor = Author.objects.get(url=normalized_actor_url)
 
     author = Author.objects.get(id=author_id)
     if not FollowRequest.objects.filter(requester=actor, receiver=author).exists():
