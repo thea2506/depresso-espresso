@@ -119,7 +119,7 @@ def handle_follow(request, author_id):
 
     actor_url = actor_url.rstrip("/")
     normalized_actor_url = normalized_actor_url.rstrip("/")
-
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>", actor_url)
     if not Author.objects.filter(url=actor_url).exists() and not Author.objects.filter(
             url=normalized_actor_url).exists() and not Author.objects.filter(url=actor_url + "/").exists() and not Author.objects.filter(url=normalized_actor_url + "/").exists():
         old_id = actor_obj.get('id')
