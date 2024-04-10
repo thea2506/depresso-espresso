@@ -127,6 +127,8 @@ def api_external_author(request, author_url):
                     "/") + f"/api/authors/{id}"
 
             response = requests.get(author_url, auth=auth)
+            print(">>>>>>>>>")
+            print(author_url)
             print(response.status_code)
             print(response.content)
             if response.status_code == 200:
