@@ -443,8 +443,9 @@ def api_get_image(request, author_id, post_id):
         if "image" in post.contenttype.lower():
             print(post.content)
             base64_string = post.content
-            no_prefix = base64_string.split(",")[1]
-            image_binary = base64.b64decode(no_prefix)
+            if "," in base64_string:
+              base64_string = base64_string.split(",")[1]
+            image_binary = base64.b64decode(base64_string)
             return HttpResponse(image_binary, content_type=post.contenttype)
         else:
             return JsonResponse({"message": "Post is not an image", "success": True}, status=404)
