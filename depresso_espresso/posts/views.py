@@ -411,11 +411,9 @@ def api_comments(request, author_id, post_id):
                     if node.baseUrl == post_owner_host.rstrip('/') + "/":
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
-                        
 
                         response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                                  json=returned_data, auth=auth)
-                        
 
             return JsonResponse(
                 returned_data, status=201)
@@ -438,16 +436,13 @@ def api_get_image(request, author_id, post_id):
         return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
     if request.method == 'GET':
-        print("GET IMAGE")
         post = Post.objects.get(
             id=post_id, author=Author.objects.get(id=author_id))
 
-        print(post.contenttype)
         if "image" in post.contenttype.lower():
-            print(post.content)
             base64_string = post.content
             if "," in base64_string:
-              base64_string = base64_string.split(",")[1]
+                base64_string = base64_string.split(",")[1]
             image_binary = base64.b64decode(base64_string)
             return HttpResponse(image_binary, content_type=post.contenttype)
         else:

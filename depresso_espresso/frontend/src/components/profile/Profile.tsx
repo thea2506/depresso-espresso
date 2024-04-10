@@ -104,9 +104,6 @@ const Profile = ({
                   .split("/")
                   .pop()}/make_friends/${encodeURIComponent(user.url!)}`
               );
-              if (response3.status === 200) {
-                console.log("Make friends successfully");
-              }
 
               setStatus("friends");
             } else {
