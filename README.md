@@ -21,9 +21,15 @@ Our project aims to develop a simplified blogging and social networking platform
   - Connection: Fully connected
 
 - thedeadlybird
-  - URL: https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com
+  - URL: <https://deadly-bird-justin-ce5a27ea0b51.herokuapp.com>
   - Username (for Basic Auth): thedeadlybird
   - Password (for Basic Auth): 2p(F6x@9?Y5D\7<z0CF
+  - Connection: Fully connected
+
+- webwizards
+  - URL: <https://web-wizards-roop-06e9f4b1fec9.herokuapp.com//>
+  - Username (for Basic Auth): wizards
+  - Password (for Basic Auth): 0@UR0db$Rw84
   - Connection: Fully connected
 
 ## Contributors
