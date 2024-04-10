@@ -111,7 +111,7 @@ def handle_follow(request, author_id):
 
     if "api" not in actor_obj.get("url"):
         actor_url = actor_obj.get("host").rstrip(
-            "/") + f"/api/authors/{actor_obj.get('id')}"
+            "/") + f"/api/authors/{actor_obj.get('id').rstrip('/').split('/')[-1]}"
     else:
         actor_url = actor_obj['url']
 
