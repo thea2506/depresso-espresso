@@ -435,9 +435,13 @@ def api_get_image(request, author_id, post_id):
         return JsonResponse({"message": "Post not found", "success": False}, status=404)
 
     if request.method == 'GET':
+        print("GET IMAGE")
         post = Post.objects.get(
             id=post_id, author=Author.objects.get(id=author_id))
+
+        print(post.contenttype)
         if "image" in post.contenttype.lower():
+            print(post.content)
             base64_string = post.content
             no_prefix = base64_string.split(",")[1]
             image_binary = base64.b64decode(no_prefix)
