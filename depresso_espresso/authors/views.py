@@ -209,6 +209,7 @@ def api_follower(request, author_id, author_url):
             if following_objects.exists():
                 following_object = following_objects.first()
                 following_object.areFriends = data.get("areFriends")
+                print("CREATING BETWEEN: ",following_author_object,  followed_author_object)
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
                 following_object.save()
@@ -274,8 +275,10 @@ def api_follower(request, author_id, author_url):
                         reverse_following_objects.update(areFriends=True)
                         reverse_following_object.save()
                     else:
+                        
                         reverse_following_object = Following.objects.create(author=following_author_object,
                                                                             following_author=followed_author_object)
+                        print("\ncreateing reverse:")
 
                     following_object.save()
 
@@ -424,6 +427,7 @@ def api_make_friends(request, author_id, author_url):
             if reverse_following_object.exists():
                 reverse_following_object.update(areFriends=True)
             else:
+                print("\ncreating friend\n")
                 reverse_following_object = Following.objects.create(author=following_author_object,
                                                                     following_author=followed_author_object, areFriends=True)
             return JsonResponse({"success": True}, status=200)
