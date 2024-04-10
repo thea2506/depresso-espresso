@@ -259,7 +259,7 @@ def api_follower(request, author_id, author_url):
                 response = requests.get(
                     foreign_author_url.rstrip('/') + "/followers/" + str(followed_author_object.url), auth=auth, headers={"origin": request.META["HTTP_HOST"]})
                 if response.status_code == 200:
-                    print("They are friends", response.data)
+                    
                     following_object.areFriends = True
                     reverse_following_objects = Following.objects.filter(author=following_author_object,
                                                                          following_author=followed_author_object)
