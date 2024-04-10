@@ -28,6 +28,7 @@ const UserDisplay = ({
             ? user_img_url
             : defaultProfileImage
         }
+        defaultValue={defaultProfileImage}
         alt="Profile picture"
       />
       <p className="text-primary">{displayName}</p>
