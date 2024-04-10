@@ -237,6 +237,7 @@ def handle_follow_response(request, author_id):
             actor_object = actor_object_2.first()
 
     # Handle accepted follow request
+    print("HERE", request.data)
     if accepted == True:
         print("ACCEPTED")
         following_objects = Following.objects.filter(
