@@ -377,6 +377,7 @@ def api_comments(request, author_id, post_id):
 
             # Local Author
             if post_owner.isExternalAuthor == False:
+                print("local author's post")
                 notification_object = Notification.objects.get_or_create(author=post_owner)[
                     0]
 
@@ -410,9 +411,13 @@ def api_comments(request, author_id, post_id):
                     if node.baseUrl == post_owner_host.rstrip('/') + "/":
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
+                        
+                        print("found node:", node.baseUrl)
 
                         response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                                  json=returned_data, auth=auth)
+                        
+                        print("response:", response)
 
             return JsonResponse(
                 returned_data, status=201)
