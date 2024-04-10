@@ -412,7 +412,8 @@ def api_comments(request, author_id, post_id):
                         auth = HTTPBasicAuth(
                             node.ourUsername, node.ourPassword)
                         
-                        print("found node:", node.baseUrl)
+                        print(f"SENDING HERE::::::::::::::::::::::::::::::::::::::::: {post_owner_url.rstrip('/')}/inbox" )
+                        print("Returned data", returned_data)
 
                         response = requests.post(f"{post_owner_url.rstrip('/')}/inbox",
                                                  json=returned_data, auth=auth)
