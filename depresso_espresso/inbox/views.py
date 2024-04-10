@@ -105,6 +105,10 @@ def api_inbox(request, author_id):
 
 def handle_follow(request, author_id):
     actor_obj = request.data.get('actor')
+
+    print("FOLLOWWWWWWWW")
+    print(request.data)
+
     if "api" not in actor_obj.get("url"):
         actor_url = actor_obj.get("host").rstrip(
             "/") + f"/api/authors/{actor_obj.get('id')}"
