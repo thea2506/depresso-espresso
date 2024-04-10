@@ -82,9 +82,7 @@ def api_author(request, author_id):
         
         node = check_basic(request)
         if node:
-            authors = Author.objects.filter(
-                Q(isExternalAuthor=False) & ~Q(url="") & ~Q(url=None) & Q(allowRegister=True))
-            if not authors:
+            if not Author.objects.filter(isExternalAuthor=False, id=author_id).exists():
                 return JsonResponse({"error": "Author not found", "success": False}, status=404)
 
         author_object = Author.objects.get(id=author_id)
